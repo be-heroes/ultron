@@ -4,23 +4,23 @@ Project Ultron is an open-source initiative from the emma-community aimed at cre
 
 ## Key components
 
-- emma-ultron-operator: The emma-ultron-operator is the central component of Project Ultron, acting as the orchestrator that brings together all the other components and enables the projects overall functionality. At its core, the operator is responsible for managing the lifecycle of the custom resources (CRDs) that are essential for implementing Project Ultrons advanced features such as auto-labeling, multi-cloud-node-provider routing, and the integration with scaling tools like karpenter and cluster autoscaler. By bundling all the necessary CRDs, the emma-ultron-operator simplifies the configuration and operational management of Kubernetes clusters, ensuring seamless interaction between the autoscalers, webhook servers, and labeling mechanisms.
+- **emma-ultron-operator**: The emma-ultron-operator is the central component of Project Ultron, acting as the orchestrator that brings together all the other components and enables the projects overall functionality. At its core, the operator is responsible for managing the lifecycle of the custom resources (CRDs) that are essential for implementing Project Ultrons advanced features such as auto-labeling, multi-cloud-node-provider routing, and the integration with scaling tools like karpenter and cluster autoscaler. By bundling all the necessary CRDs, the emma-ultron-operator simplifies the configuration and operational management of Kubernetes clusters, ensuring seamless interaction between the autoscalers, webhook servers, and labeling mechanisms.
 
-- emma-ultron-webhookserver: This is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the clusters available nodes.
+- **emma-ultron-webhookserver**: This is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the clusters available nodes.
 
-- emma-ultron-karpenter: Karpenter is a Kubernetes-native autoscaler designed for dynamically provisioning nodes, it is widely adopted for its ability to improve both cost and performance efficiency in dynamic cluster environments. It intelligently provisions new nodes in response to changing workload demands, ensuring that the right resources are available when needed and scaling them down when they are no longer necessary. Project Ultron integrates tightly with karpenter's pod provisioning process, adding an additional layer of automation through the use of auto-labeling.
+- **emma-ultron-karpenter**: Karpenter is a Kubernetes-native autoscaler designed for dynamically provisioning nodes, it is widely adopted for its ability to improve both cost and performance efficiency in dynamic cluster environments. It intelligently provisions new nodes in response to changing workload demands, ensuring that the right resources are available when needed and scaling them down when they are no longer necessary. Project Ultron integrates tightly with karpenter's pod provisioning process, adding an additional layer of automation through the use of auto-labeling.
 
-- emma-ultron-cluster-autoscaler: Similar to Karpenter, the cluster autoscaler is a widely used tool for dynamically adjusting the number of nodes in a Kubernetes cluster based on current resource demands. Unlike Karpenter, which is more Kubernetes-native and fine-tuned for immediate node provisioning, cluster autoscaler is known for its flexibility and broad compatibility across a wide range of cloud providers and environments. It has become a go-to solution for scaling in production environments where workloads fluctuate unpredictably, ensuring that the cluster adjusts its resources accordingly by adding or removing nodes as needed. This integration allows emma-ultron-cluster-autoscaler to automatically assign relevant labels to both new and existing pods, enabling Kubernetes to optimize pod scheduling and resource allocation in a more granular and cost effective way.
+- **emma-ultron-cluster-autoscaler**: Similar to Karpenter, the cluster autoscaler is a widely used tool for dynamically adjusting the number of nodes in a Kubernetes cluster based on current resource demands. Unlike Karpenter, which is more Kubernetes-native and fine-tuned for immediate node provisioning, cluster autoscaler is known for its flexibility and broad compatibility across a wide range of cloud providers and environments. It has become a go-to solution for scaling in production environments where workloads fluctuate unpredictably, ensuring that the cluster adjusts its resources accordingly by adding or removing nodes as needed. This integration allows emma-ultron-cluster-autoscaler to automatically assign relevant labels to both new and existing pods, enabling Kubernetes to optimize pod scheduling and resource allocation in a more granular and cost effective way.
 
 ## Use cases
 
-- Enhanced scheduling: Labels can help the Kubernetes scheduler place pods on the most appropriate nodes, considering workload types vs node availability.
+- **Enhanced scheduling**: Labels can help the Kubernetes scheduler place pods on the most appropriate nodes, considering workload types vs node availability.
 
-- Resource optimization: Labels enable better visibility and control over resource usage, enabling optimizations such as cost-effective node scaling.
+- **Resource optimization**: Labels enable better visibility and control over resource usage, enabling optimizations such as cost-effective node scaling.
 
-- Operational efficiency: Auto-labeling reduces the manual effort required in cluster operations, improving automation in scaling events.
+- **Operational efficiency**: Auto-labeling reduces the manual effort required in cluster operations, improving automation in scaling events.
 
-- Multi-cloud workload routing: By supporting multi-cloud-node-provider routing through auto-labeling, the operator will allow users to optimize workloads across multiple cloud environments seamlessly, reducing vendor lock-in and improving cost management.
+- **Multi-cloud workload routing**: By supporting multi-cloud-node-provider routing through auto-labeling, the operator will allow users to optimize workloads across multiple cloud environments seamlessly, reducing vendor lock-in and improving cost management.
 
 ## emma-ultron-operator
 
@@ -42,13 +42,13 @@ The emma-ultron-webhookserver is a critical component of Project Ultron, designe
 
 The labels applied by the emma-ultron-webhookserver can include a wide range of information:
 
-- Pod workload type: Labels can categorize workloads as batch processing, real-time applications or AI/ML jobs, allowing for better differentiation and handling of diverse workload types on available nodes.
+- **Pod workload type**: Labels can categorize workloads as batch processing, real-time applications or AI/ML jobs, allowing for better differentiation and handling of diverse workload types on available nodes.
 
-- Resource requirements: Labels reflecting the specific CPU, memory or other resource needs of a pod can guide more accurate scheduling and ensure that pods are placed on nodes with appropriate available resources.
+- **Resource requirements**: Labels reflecting the specific CPU, memory or other resource needs of a pod can guide more accurate scheduling and ensure that pods are placed on nodes with appropriate available resources.
 
-- Priority and custom labels: Users can define custom labels to express specific organizational or operational priorities, such as higher-priority workloads or specialized workflows, enabling fine-tuned control over workload handling.
+- **Priority and custom labels**: Users can define custom labels to express specific organizational or operational priorities, such as higher-priority workloads or specialized workflows, enabling fine-tuned control over workload handling.
 
-- Node-specific labels: These labels are applied to optimize pod placement based on node characteristics, ensuring that pods are scheduled on nodes that can provide the best performance or cost efficiency for the given workload.
+- **Node-specific labels**: These labels are applied to optimize pod placement based on node characteristics, ensuring that pods are scheduled on nodes that can provide the best performance or cost efficiency for the given workload.
 
 This automatic labeling system is crucial for Kubernetes clusters that rely on autoscaling mechanisms like karpenter or cluster autoscaler, where nodes and pods are frequently provisioned or de-provisioned. By seamlessly integrating into these dynamic environments, the emma-ultron-webhookserver plays a key role in optimizing resource usage and improving overall cluster performance.
 
