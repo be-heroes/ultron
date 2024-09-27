@@ -240,22 +240,6 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 }
 
 func calculateNodeType(pod corev1.Pod) string {
-	durableConfigsInterface, found := memCache.Get("durableConfigs")
-
-	if !found {
-		log.Fatalf("Failed to get durableConfigs from cache")
-	}
-
-	_ = durableConfigsInterface.([]emmaSdk.VmConfiguration)
-
-	spotConfigsInterface, found := memCache.Get("spotConfigs")
-
-	if !found {
-		log.Fatalf("Failed to get spotConfigs from cache")
-	}
-
-	_ = spotConfigsInterface.([]emmaSdk.VmConfiguration)
-
 	activeNodesInterface, found := memCache.Get("activeNodes")
 
 	if !found {
@@ -269,7 +253,29 @@ func calculateNodeType(pod corev1.Pod) string {
 		log.Fatalf("Error mapping pod: %v", err)
 	}
 
-	return ultron.FindBestNode(mappedPod, activeNodesInterface.([]ultron.Node)).Name
+	bestNode := ultron.FindBestNode(mappedPod, activeNodesInterface.([]ultron.Node))
+
+	if bestNode == nil {
+		durableConfigsInterface, found := memCache.Get("durableConfigs")
+
+		if !found {
+			log.Fatalf("Failed to get durableConfigs from cache")
+		}
+
+		_ = durableConfigsInterface.([]emmaSdk.VmConfiguration)
+
+		spotConfigsInterface, found := memCache.Get("spotConfigs")
+
+		if !found {
+			log.Fatalf("Failed to get spotConfigs from cache")
+		}
+
+		_ = spotConfigsInterface.([]emmaSdk.VmConfiguration)
+
+		//TODO: Implement logic to match a node type from a known configuration
+	}
+
+	return bestNode.Type
 }
 
 func mapK8sPodToUltronPod(k8sPod corev1.Pod) (ultron.Pod, error) {
