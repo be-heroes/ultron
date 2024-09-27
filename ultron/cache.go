@@ -17,7 +17,7 @@ const (
 	CacheKeySpotVmConfigurations    = "SPOT_VMCONFIGURATION"
 )
 
-func PopulateCache() {
+func InitializeCache() {
 	apiClient := emmaSdk.NewAPIClient(emmaSdk.NewConfiguration())
 	credentials := emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()

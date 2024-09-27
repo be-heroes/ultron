@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	ultron.PopulateCache()
+	ultron.InitializeCache()
 
 	cert, err := ultron.GenerateSelfSignedCert(
 		"emma",
