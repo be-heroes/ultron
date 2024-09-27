@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"encoding/pem"
+	"fmt"
 	"io"
 	"log"
 	"net"
@@ -17,7 +19,6 @@ import (
 func main() {
 	populateCache()
 
-	// TODO: Export the ca bundle to a file for k8s to consumne in webhook configuration
 	cert, err := ultron.GenerateSelfSignedCert(
 		"emma",
 		"emma-ultron-webhookserver-service.default.svc",
@@ -25,6 +26,15 @@ func main() {
 		[]net.IP{net.ParseIP("127.0.0.1")})
 	if err != nil {
 		log.Fatalf("Failed to generate self-signed certificate: %v", err)
+	}
+
+	certificateExportPath := os.Getenv("EMMA_WEBHOOKSERVER_CERTIFICATE_EXPORT_PATH")
+
+	if certificateExportPath != "" {
+		err = writeCACertificateToFile(cert.Certificate[0], certificateExportPath)
+		if err != nil {
+			log.Fatalf("Failed to write CA certificate to file: %v", err)
+		}
 	}
 
 	var address string
@@ -105,4 +115,24 @@ func populateCache() {
 	ultron.Cache.Set("weightedNodes", weightedNodes, cache.DefaultExpiration)
 	ultron.Cache.Set("durableConfigs", durableConfigs.Content, cache.DefaultExpiration)
 	ultron.Cache.Set("spotConfigs", spotConfigs.Content, cache.DefaultExpiration)
+}
+
+func writeCACertificateToFile(caCert []byte, filePath string) error {
+	certPEMBlock := pem.EncodeToMemory(&pem.Block{
+		Type:  ultron.CERTIFICATE_BLOCK_TYPE,
+		Bytes: caCert,
+	})
+
+	if certPEMBlock == nil {
+		return fmt.Errorf("failed to encode certificate to PEM format")
+	}
+
+	err := os.WriteFile(filePath, certPEMBlock, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write CA certificate to file: %w", err)
+	}
+
+	log.Printf("CA certificate written to %s", filePath)
+
+	return nil
 }
