@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func MapK8sPodToWeightedPod(k8sPod corev1.Pod) (WeightedPod, error) {
+func mapK8sPodToWeightedPod(k8sPod corev1.Pod) (WeightedPod, error) {
 	var totalCPURequest, totalMemoryRequest, totalCPULimit, totalMemoryLimit float64
 
 	for _, container := range k8sPod.Spec.Containers {

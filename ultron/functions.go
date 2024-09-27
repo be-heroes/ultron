@@ -33,7 +33,7 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		log.Fatalf("Failed to get weighted nodes from cache")
 	}
 
-	wPod, err := MapK8sPodToWeightedPod(pod)
+	wPod, err := mapK8sPodToWeightedPod(pod)
 	if err != nil {
 		log.Fatalf("Error mapping pod: %v", err)
 	}
@@ -93,7 +93,7 @@ func findBestVmConfiguration(wPod WeightedPod, configs []emmaSdk.VmConfiguration
 	var suitableConfigs []emmaSdk.VmConfiguration
 
 	for _, config := range configs {
-		if configMatchesPodRequirements(config, wPod) {
+		if vmConfigurationMatchesPodRequirements(config, wPod) {
 			suitableConfigs = append(suitableConfigs, config)
 		}
 	}
@@ -109,7 +109,7 @@ func findBestVmConfiguration(wPod WeightedPod, configs []emmaSdk.VmConfiguration
 	return &suitableConfigs[0]
 }
 
-func configMatchesPodRequirements(config emmaSdk.VmConfiguration, wPod WeightedPod) bool {
+func vmConfigurationMatchesPodRequirements(config emmaSdk.VmConfiguration, wPod WeightedPod) bool {
 	if float64(*config.VCpu) < wPod.RequestedCPU {
 		return false
 	}
