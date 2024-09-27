@@ -45,7 +45,7 @@ func NodeStabilityScore(node WeightedNode) float64 {
 }
 
 func WorkloadPriorityScore(pod WeightedPod) float64 {
-	if pod.Priority == HighPriority {
+	if pod.Priority == PriorityHigh {
 		return 1.0
 	}
 

@@ -18,10 +18,12 @@ const (
 	AnnotationStorageSize = "ultron.io/storage-size"
 	AnnotationPriority    = "ultron.io/priority"
 
-	DefaultDiskType      = "SSD"
-	DefaultNetworkType   = "isolated"
-	DefaultStorageSizeGB = 10.0
-	DefaultPriority      = LowPriority
+	DefaultDiskType            = "SSD"
+	DefaultNetworkType         = "isolated"
+	DefaultStorageSizeGB       = 10.0
+	DefaultPriority            = PriorityLow
+	DefaultDurableInstanceType = "emma.durable"
+	DefaultSpotInstanceType    = "emma.spot"
 )
 
 var Cache = cache.New(cache.NoExpiration, cache.NoExpiration)
@@ -33,7 +35,7 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		log.Fatalf("Failed to get weighted nodes from cache")
 	}
 
-	wPod, err := mapK8sPodToWeightedPod(pod)
+	wPod, err := MapK8sPodToWeightedPod(pod)
 	if err != nil {
 		log.Fatalf("Error mapping pod: %v", err)
 	}
@@ -41,13 +43,13 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 	bestNode := FindBestNode(wPod, weightedNodesInterface.([]WeightedNode))
 
 	if bestNode == nil {
-		durableConfigsInterface, found := Cache.Get("durableConfigs")
+		durableConfigsInterface, found := Cache.Get(CacheKeyDurableVmConfigurations)
 
 		if !found {
 			log.Fatalf("Failed to get durable VmConfiguration list from cache")
 		}
 
-		spotConfigsInterface, found := Cache.Get("spotConfigs")
+		spotConfigsInterface, found := Cache.Get(CacheKeySpotVmConfigurations)
 
 		if !found {
 			log.Fatalf("Failed to get spot VmConfiguration listfrom cache")
@@ -61,18 +63,18 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 			log.Fatalf("No suitable VmConfiguration found for the pod")
 		}
 
-		var nodeType = "durable"
+		var instanceType = DefaultDurableInstanceType
 
 		for _, config := range spotConfigs {
 			if *config.Id == *bestVmConfig.Id {
-				nodeType = "spot"
+				instanceType = DefaultSpotInstanceType
 
 				break
 			}
 		}
 
 		bestNode = &WeightedNode{
-			Selector:         fmt.Sprintf("vmconfig-%d", *bestVmConfig.Id), // TODO: Figure out best format for selectors on weighted nodes that have to be provisioned
+			Selector:         []string{fmt.Sprintf("node.kubernetes.io/instance-type: \"%s\"", instanceType)},
 			AvailableCPU:     float64(*bestVmConfig.VCpu),
 			TotalCPU:         float64(*bestVmConfig.VCpu),
 			AvailableMemory:  float64(*bestVmConfig.RamGb),
@@ -81,8 +83,8 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 			DiskType:         wPod.RequestedDiskType,
 			NetworkType:      wPod.RequestedNetworkType,
 			Price:            float64(*bestVmConfig.Cost.PricePerUnit),
-			Type:             nodeType,
-			InterruptionRate: 0, // TODO: Figure out how to calculate interuption rate metrics
+			InstanceType:     instanceType,
+			InterruptionRate: 0, // TODO: Talk with External API team about possibility of calculating this value based on historic metrics in the backend and expose it in the VmConfiguration struct
 		}
 	}
 
@@ -113,18 +115,23 @@ func vmConfigurationMatchesPodRequirements(config emmaSdk.VmConfiguration, wPod 
 	if float64(*config.VCpu) < wPod.RequestedCPU {
 		return false
 	}
+
 	if float64(*config.RamGb) < wPod.RequestedMemory {
 		return false
 	}
+
 	if float64(*config.VolumeGb) < wPod.RequestedStorage {
 		return false
 	}
+
 	if (*config.VolumeType) != wPod.RequestedDiskType {
 		return false
 	}
+
 	if !slices.Contains(config.CloudNetworkTypes, wPod.RequestedNetworkType) {
 		return false
 	}
+
 	return true
 }
 
@@ -150,9 +157,9 @@ func getPriorityFromAnnotation(annotations map[string]string) PriorityEnum {
 	if value, exists := annotations[AnnotationPriority]; exists {
 		switch value {
 		case "true":
-			return HighPriority
+			return PriorityHigh
 		case "false":
-			return LowPriority
+			return PriorityLow
 		}
 	}
 

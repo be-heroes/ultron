@@ -71,7 +71,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 		pod.Spec.NodeSelector = make(map[string]string)
 	}
 
-	pod.Spec.NodeSelector["node.kubernetes.io/instance-type"] = wNode.Type
+	pod.Spec.NodeSelector["node.kubernetes.io/instance-type"] = wNode.InstanceType
 	patchBytes, err := json.Marshal([]map[string]interface{}{
 		{
 			"op":    "add",

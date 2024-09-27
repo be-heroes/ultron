@@ -10,9 +10,9 @@ type WeightedNode struct {
 	NetworkType      string
 	Price            float64
 	MedianPrice      float64
-	Type             string
+	InstanceType     string
 	InterruptionRate float64
-	Selector         string
+	Selector         []string
 }
 
 type WeightedPod struct {
@@ -24,20 +24,20 @@ type WeightedPod struct {
 	LimitCPU             float64
 	LimitMemory          float64
 	Priority             PriorityEnum
-	Selector             string
+	Selector             []string
 }
 
 type PriorityEnum bool
 
 const (
-	LowPriority  PriorityEnum = false
-	HighPriority PriorityEnum = true
+	PriorityLow  PriorityEnum = false
+	PriorityHigh PriorityEnum = true
 )
 
 func (p PriorityEnum) String() string {
 	if p {
-		return "HighPriority"
+		return "PriorityHigh"
 	}
 
-	return "LowPriority"
+	return "PriorityLow"
 }

@@ -7,14 +7,17 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
+	"log"
 	"math/big"
 	"net"
+	"os"
 	"time"
 )
 
 const (
-	CERTIFICATE_BLOCK_TYPE     = "CERTIFICATE"
-	RSA_PRIVATE_KEY_BLOCK_TYPE = "RSA PRIVATE KEY"
+	CertificateBlockType   = "CERTIFICATE"
+	RsaPrivateKeyBlockType = "RSA PRIVATE KEY"
 )
 
 func GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
@@ -50,12 +53,32 @@ func GenerateSelfSignedCert(organization string, commonName string, dnsNames []s
 		return tls.Certificate{}, err
 	}
 
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: CERTIFICATE_BLOCK_TYPE, Bytes: certDERBytes})
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: RSA_PRIVATE_KEY_BLOCK_TYPE, Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: CertificateBlockType, Bytes: certDERBytes})
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: RsaPrivateKeyBlockType, Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
 
 	return tlsCert, nil
+}
+
+func WriteCACertificateToFile(caCert []byte, filePath string) error {
+	certPEMBlock := pem.EncodeToMemory(&pem.Block{
+		Type:  CertificateBlockType,
+		Bytes: caCert,
+	})
+
+	if certPEMBlock == nil {
+		return fmt.Errorf("failed to encode certificate to PEM format")
+	}
+
+	err := os.WriteFile(filePath, certPEMBlock, 0644)
+	if err != nil {
+		return fmt.Errorf("failed to write CA certificate to file: %w", err)
+	}
+
+	log.Printf("CA certificate written to %s", filePath)
+
+	return nil
 }
