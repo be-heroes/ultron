@@ -9,14 +9,17 @@ import (
 	"crypto/x509/pkix"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"log"
 	"math/big"
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"time"
 
+	ultron "emma.ms/ultron-webhookserver/ultron"
 	emmaSdk "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
 	admissionv1 "k8s.io/api/admission/v1"
@@ -89,7 +92,20 @@ func populateCache() {
 		log.Fatalf("Failed to fetch spot configs: %v", string(body))
 	}
 
+	// TODO: Get Nodes from cluster API server
+	activeNodes := []ultron.Node{
+		{
+			Name: "node1", AvailableCPU: 8, TotalCPU: 16, AvailableMemory: 32, TotalMemory: 64, AvailableStorage: 100,
+			DiskType: "SSD", NetworkType: "low-latency", Price: 0.50, MedianPrice: 0.40, Type: "spot", InterruptionRate: 0.2,
+		},
+		{
+			Name: "node2", AvailableCPU: 4, TotalCPU: 8, AvailableMemory: 16, TotalMemory: 32, AvailableStorage: 100,
+			DiskType: "HDD", NetworkType: "high-bandwidth", Price: 0.30, MedianPrice: 0.35, Type: "durable", InterruptionRate: 0.01,
+		},
+	}
+
 	// TODO: Map durableConfigs and spotConfigs
+	memCache.Set("activeNodes", activeNodes, cache.DefaultExpiration)
 	memCache.Set("durableConfigs", durableConfigs.Content, cache.DefaultExpiration)
 	memCache.Set("spotConfigs", spotConfigs.Content, cache.DefaultExpiration)
 }
@@ -240,10 +256,66 @@ func calculateNodeType(pod corev1.Pod) string {
 
 	_ = spotConfigsInterface.([]emmaSdk.VmConfiguration)
 
-	// TODO: Use durableConfigs and spotConfigs to determine node type
-	if val, ok := pod.Labels["high-performance"]; ok && val == "true" {
-		return "high-performance-node"
+	activeNodesInterface, found := memCache.Get("activeNodes")
+
+	if !found {
+		log.Fatalf("Failed to get activeNodes from cache")
 	}
 
-	return "custom-node"
+	_ = activeNodesInterface.([]ultron.Node)
+
+	mappedPod, err := mapK8sPodToUltronPod(pod)
+	if err != nil {
+		log.Fatalf("Error mapping pod: %v", err)
+	}
+
+	return ultron.FindBestNode(mappedPod, activeNodesInterface.([]ultron.Node)).Name
+}
+
+func mapK8sPodToUltronPod(k8sPod corev1.Pod) (ultron.Pod, error) {
+	// Get resource requests and limits
+	cpuRequest := k8sPod.Spec.Containers[0].Resources.Requests[corev1.ResourceCPU]
+	memRequest := k8sPod.Spec.Containers[0].Resources.Requests[corev1.ResourceMemory]
+	cpuLimit := k8sPod.Spec.Containers[0].Resources.Limits[corev1.ResourceCPU]
+	memLimit := k8sPod.Spec.Containers[0].Resources.Limits[corev1.ResourceMemory]
+
+	// Convert Kubernetes Quantity types to float64
+	cpuRequestFloat, err := strconv.ParseFloat(cpuRequest.AsDec().String(), 64)
+	if err != nil {
+		return ultron.Pod{}, fmt.Errorf("failed to parse CPU request: %v", err)
+	}
+
+	memRequestFloat, err := strconv.ParseFloat(memRequest.AsDec().String(), 64)
+	if err != nil {
+		return ultron.Pod{}, fmt.Errorf("failed to parse memory request: %v", err)
+	}
+
+	cpuLimitFloat, err := strconv.ParseFloat(cpuLimit.AsDec().String(), 64)
+	if err != nil {
+		return ultron.Pod{}, fmt.Errorf("failed to parse CPU limit: %v", err)
+	}
+
+	memLimitFloat, err := strconv.ParseFloat(memLimit.AsDec().String(), 64)
+	if err != nil {
+		return ultron.Pod{}, fmt.Errorf("failed to parse memory limit: %v", err)
+	}
+
+	// For this example, we assume the pod needs "SSD" disk type and "low-latency" network
+	// You can customize this based on specific Pod annotations or labels
+	requestedDiskType := "SSD"
+	requestedNetworkType := "low-latency"
+	priority := "HighPriority"
+
+	// Return the mapped Pod
+	return ultron.Pod{
+		Name:                 k8sPod.Name,
+		RequestedCPU:         cpuRequestFloat,
+		RequestedMemory:      memRequestFloat,
+		RequestedStorage:     10, // Assume a default value for storage
+		RequestedDiskType:    requestedDiskType,
+		RequestedNetworkType: requestedNetworkType,
+		LimitCPU:             cpuLimitFloat,
+		LimitMemory:          memLimitFloat,
+		Priority:             priority,
+	}, nil
 }
