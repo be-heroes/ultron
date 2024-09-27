@@ -3,7 +3,6 @@ package ultron
 import (
 	"context"
 	"fmt"
-	"os"
 
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -12,12 +11,12 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-func GetWeightedNodes() ([]WeightedNode, error) {
+func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) ([]WeightedNode, error) {
 	var err error
 
-	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
+	config, err := clientcmd.BuildConfigFromFlags(kubernetesMasterUrl, kubernetesConfigPath)
 	if err != nil {
-		fmt.Println("Falling back to localhost Kubernetes API at  https://kubernetes.docker.internal:6443")
+		fmt.Println("Falling back to docker Kubernetes API at  https://kubernetes.docker.internal:6443")
 
 		config = &rest.Config{
 			Host: "https://kubernetes.docker.internal:6443",

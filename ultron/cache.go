@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 
 	emmaSdk "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
@@ -17,9 +16,8 @@ const (
 	CacheKeySpotVmConfigurations    = "SPOT_VMCONFIGURATION"
 )
 
-func InitializeCache() {
+func InitializeCache(credentials emmaSdk.Credentials, kubernetesMasterUrl string, kubernetesConfigPath string) {
 	apiClient := emmaSdk.NewAPIClient(emmaSdk.NewConfiguration())
-	credentials := emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
 	if err != nil {
 		log.Fatalf("Failed to fetch token: %v", err)
@@ -54,7 +52,7 @@ func InitializeCache() {
 		log.Fatalf("Failed to fetch spot configs: %v", string(body))
 	}
 
-	wNodes, err := GetWeightedNodes()
+	wNodes, err := GetWeightedNodes(kubernetesMasterUrl, kubernetesConfigPath)
 	if err != nil {
 		log.Fatalf("Failed to fetch nodes: %v", err)
 	}

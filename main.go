@@ -2,16 +2,22 @@ package main
 
 import (
 	"crypto/tls"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
 	"os"
 
 	ultron "emma.ms/ultron-webhookserver/ultron"
+	emmaSdk "github.com/emma-community/emma-go-sdk"
 )
 
 func main() {
-	ultron.InitializeCache()
+	emmaApiCredentials := emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
+	kubernetesConfigPath := os.Getenv("KUBECONFIG ")
+	kubernetesMasterUrl := fmt.Sprintf("tcp://%s:%s", os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT"))
+
+	ultron.InitializeCache(emmaApiCredentials, kubernetesMasterUrl, kubernetesConfigPath)
 
 	cert, err := ultron.GenerateSelfSignedCert(
 		"emma",
