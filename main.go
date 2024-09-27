@@ -27,9 +27,16 @@ func main() {
 		log.Fatalf("Failed to generate self-signed certificate: %v", err)
 	}
 
-	// TODO: Make the port configurable via ENV variable
+	var address string
+
+	if os.Getenv("EMMA_WEBHOOKSERVER_ADDRESS") != "" {
+		address = os.Getenv("EMMA_WEBHOOKSERVER_ADDRESS")
+	} else {
+		address = ":8443"
+	}
+
 	server := &http.Server{
-		Addr: ":8443",
+		Addr: address,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		},

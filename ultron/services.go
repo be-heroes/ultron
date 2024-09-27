@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"log"
 	"strconv"
-	"time"
 
 	emmaSdk "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
 	corev1 "k8s.io/api/core/v1"
 )
 
-// TODO: Add logic to repopulate cache when items expire
-var Cache = cache.New(10*time.Minute, 20*time.Minute)
+var Cache = cache.New(cache.NoExpiration, cache.NoExpiration)
 
 func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 	weightedNodesInterface, found := Cache.Get("weightedNodes")
