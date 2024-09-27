@@ -35,7 +35,7 @@ const (
 )
 
 func (p PriorityEnum) String() string {
-	if p == true {
+	if p {
 		return "HighPriority"
 	}
 
