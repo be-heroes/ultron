@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -8,12 +9,16 @@ import (
 	"crypto/x509/pkix"
 	"encoding/json"
 	"encoding/pem"
+	"fmt"
 	"io"
 	"log"
 	"math/big"
 	"net"
 	"net/http"
+	"os"
 	"time"
+
+	emmaSdk "github.com/emma-community/emma-go-sdk"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -70,7 +75,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 		}
 	}
 
-	nodeType := callExternalAPI(pod)
+	nodeType := getNodeType(pod)
 
 	if pod.Spec.NodeSelector == nil {
 		pod.Spec.NodeSelector = make(map[string]string)
@@ -98,10 +103,53 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 	}
 }
 
-func callExternalAPI(pod corev1.Pod) string {
+func getNodeType(pod corev1.Pod) string {
+	apiClient := emmaSdk.NewAPIClient(emmaSdk.NewConfiguration())
+	credentials := emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
+	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
+
+	if err != nil {
+		return err.Error()
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+
+		return fmt.Sprintf("error fetching token: %v", string(body))
+	}
+
+	auth := context.WithValue(context.Background(), emmaSdk.ContextAccessToken, token)
+	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Execute()
+
+	if err != nil {
+		return err.Error()
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+
+		return fmt.Sprintf("error fetching vms: %v", string(body))
+	}
+
+	spotConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
+
+	if err != nil {
+		return err.Error()
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		body, _ := io.ReadAll(resp.Body)
+
+		return fmt.Sprintf("error fetching spots: %v", string(body))
+	}
+
+	_ = fmt.Sprintf("Durable configs: %v", durableConfigs)
+	_ = fmt.Sprintf("Spot configs: %v", spotConfigs)
+
 	if val, ok := pod.Labels["high-performance"]; ok && val == "true" {
 		return "high-performance-node"
 	}
+
 	return "custom-node"
 }
 
@@ -128,13 +176,11 @@ func main() {
 }
 
 func generateSelfSignedCert() (tls.Certificate, error) {
-	// Generate a private key
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
 
-	// Create a certificate template
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
@@ -155,7 +201,6 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 		BasicConstraintsValid: true,
 	}
 
-	// Set the DNS names and IP addresses the certificate will be valid for
 	certTemplate.DNSNames = []string{
 		"emma-ultron-webhookserver-service.default.svc",
 		"emma-ultron-webhookserver-service",
@@ -164,17 +209,14 @@ func generateSelfSignedCert() (tls.Certificate, error) {
 
 	certTemplate.IPAddresses = []net.IP{net.ParseIP("127.0.0.1")}
 
-	// Create the certificate
 	certDERBytes, err := x509.CreateCertificate(rand.Reader, &certTemplate, &certTemplate, &priv.PublicKey, priv)
 	if err != nil {
 		return tls.Certificate{}, err
 	}
 
-	// Encode the certificate and private key to PEM format
 	certPEM := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: certDERBytes})
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 
-	// Load the certificate into a tls.Certificate
 	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
 		return tls.Certificate{}, err
