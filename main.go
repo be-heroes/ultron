@@ -14,6 +14,11 @@ import (
 	ultron "emma.ms/ultron-webhookserver/ultron"
 	emmaSdk "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 )
 
 func main() {
@@ -100,19 +105,12 @@ func populateCache() {
 		log.Fatalf("Failed to fetch spot configs: %v", string(body))
 	}
 
-	// TODO: Get Nodes from actual API server
-	weightedNodes := []ultron.WeightedNode{
-		{
-			Selector: "kubernetes.io/hostname:node1", AvailableCPU: 8, TotalCPU: 16, AvailableMemory: 32, TotalMemory: 64, AvailableStorage: 100,
-			DiskType: "SSD", NetworkType: "isolated", Price: 0.50, MedianPrice: 0.40, Type: "spot", InterruptionRate: 0.2,
-		},
-		{
-			Selector: "kubernetes.io/hostname:node2", AvailableCPU: 4, TotalCPU: 8, AvailableMemory: 16, TotalMemory: 32, AvailableStorage: 100,
-			DiskType: "SSDPlus", NetworkType: "multi-cloud", Price: 0.30, MedianPrice: 0.35, Type: "durable", InterruptionRate: 0.01,
-		},
+	wNodes, err := getNodeDataFromK8s()
+	if err != nil {
+		log.Fatalf("Failed to fetch nodes: %v", err)
 	}
 
-	ultron.Cache.Set("weightedNodes", weightedNodes, cache.DefaultExpiration)
+	ultron.Cache.Set("weightedNodes", wNodes, cache.DefaultExpiration)
 	ultron.Cache.Set("durableConfigs", durableConfigs.Content, cache.DefaultExpiration)
 	ultron.Cache.Set("spotConfigs", spotConfigs.Content, cache.DefaultExpiration)
 }
@@ -135,4 +133,72 @@ func writeCACertificateToFile(caCert []byte, filePath string) error {
 	log.Printf("CA certificate written to %s", filePath)
 
 	return nil
+}
+
+func getNodeDataFromK8s() ([]ultron.WeightedNode, error) {
+	var config *rest.Config
+	var err error
+
+	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
+		config, err = rest.InClusterConfig()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		kubeconfig := os.Getenv("KUBECONFIG")
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	clientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	var weightedNodes []ultron.WeightedNode
+
+	for _, node := range nodes.Items {
+		cpuAllocatable := node.Status.Allocatable[v1.ResourceCPU]
+		memAllocatable := node.Status.Allocatable[v1.ResourceMemory]
+		storageAllocatable := node.Status.Allocatable[v1.ResourceEphemeralStorage]
+		availableCPU := cpuAllocatable.AsApproximateFloat64()
+		availableMemory := (float64)(memAllocatable.Value() / (1024 * 1024 * 1024))
+		availableStorage := (float64)(storageAllocatable.Value() / (1024 * 1024 * 1024))
+
+		// TODO: Extract relevant labels for the node (e.g., node type or network configuration)
+		// TODO: Implement logic to infer/fetch missing values or resort to sensible defaults
+		hostname := node.Labels["kubernetes.io/hostname"]
+		nodeType := "durable"
+		diskType := "SSD"
+		networkType := "isolated"
+		nodePrice := 0.30
+		nodeMedianPrice := 0.25
+		nodeInteruptionRate := 0.05
+
+		weightedNode := ultron.WeightedNode{
+			Selector:         hostname,
+			AvailableCPU:     availableCPU,
+			TotalCPU:         availableCPU,    // TODO: Change usage of allocatable CPU as total CPU
+			AvailableMemory:  availableMemory, // TODO: Change usage of allocatable memory as total memory
+			TotalMemory:      availableMemory,
+			AvailableStorage: availableStorage,
+			DiskType:         diskType,
+			NetworkType:      networkType,
+			Price:            nodePrice,
+			MedianPrice:      nodeMedianPrice,
+			Type:             nodeType,
+			InterruptionRate: nodeInteruptionRate,
+		}
+
+		weightedNodes = append(weightedNodes, weightedNode)
+	}
+
+	return weightedNodes, nil
 }

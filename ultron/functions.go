@@ -3,11 +3,25 @@ package ultron
 import (
 	"fmt"
 	"log"
+	"slices"
+	"sort"
 	"strconv"
 
 	emmaSdk "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
 	corev1 "k8s.io/api/core/v1"
+)
+
+const (
+	AnnotationDiskType    = "ultron.io/disk-type"
+	AnnotationNetworkType = "ultron.io/network-type"
+	AnnotationStorageSize = "ultron.io/storage-size"
+	AnnotationPriority    = "ultron.io/priority"
+
+	DefaultDiskType      = "SSD"
+	DefaultNetworkType   = "isolated"
+	DefaultStorageSizeGB = 10.0
+	DefaultPriority      = LowPriority
 )
 
 var Cache = cache.New(cache.NoExpiration, cache.NoExpiration)
@@ -19,7 +33,7 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		log.Fatalf("Failed to get weighted nodes from cache")
 	}
 
-	wPod, err := mapK8sPodToWeightedPod(pod)
+	wPod, err := MapK8sPodToWeightedPod(pod)
 	if err != nil {
 		log.Fatalf("Error mapping pod: %v", err)
 	}
@@ -33,65 +47,113 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 			log.Fatalf("Failed to get durable VmConfiguration list from cache")
 		}
 
-		_ = durableConfigsInterface.([]emmaSdk.VmConfiguration)
-
 		spotConfigsInterface, found := Cache.Get("spotConfigs")
 
 		if !found {
 			log.Fatalf("Failed to get spot VmConfiguration listfrom cache")
 		}
 
-		_ = spotConfigsInterface.([]emmaSdk.VmConfiguration)
+		durableConfigs := durableConfigsInterface.([]emmaSdk.VmConfiguration)
+		spotConfigs := spotConfigsInterface.([]emmaSdk.VmConfiguration)
+		bestVmConfig := findBestVmConfiguration(wPod, append(durableConfigs, spotConfigs...))
 
-		//TODO: Implement logic to match a node type from a known VmConfiguration
-		bestNode = &WeightedNode{}
+		if bestVmConfig == nil {
+			log.Fatalf("No suitable VmConfiguration found for the pod")
+		}
+
+		var nodeType = "durable"
+
+		for _, config := range spotConfigs {
+			if *config.Id == *bestVmConfig.Id {
+				nodeType = "spot"
+				break
+			}
+		}
+
+		bestNode = &WeightedNode{
+			Selector:         fmt.Sprintf("vmconfig-%d", *bestVmConfig.Id), // TODO: Figure out best format for selectors on weighted nodes that have to be provisioned
+			AvailableCPU:     float64(*bestVmConfig.VCpu),
+			TotalCPU:         float64(*bestVmConfig.VCpu),
+			AvailableMemory:  float64(*bestVmConfig.RamGb),
+			TotalMemory:      float64(*bestVmConfig.RamGb),
+			AvailableStorage: float64(*bestVmConfig.VolumeGb),
+			DiskType:         wPod.RequestedDiskType,
+			NetworkType:      wPod.RequestedNetworkType,
+			Price:            float64(*bestVmConfig.Cost.PricePerUnit),
+			Type:             nodeType,
+			InterruptionRate: 0, // TODO: Figure out how to calculate interuption rate metrics
+		}
 	}
 
 	return bestNode
 }
 
-func mapK8sPodToWeightedPod(k8sPod corev1.Pod) (WeightedPod, error) {
-	// TODO: Implement logic for mapping multiple containers in a pod
-	cpuRequest := k8sPod.Spec.Containers[0].Resources.Requests[corev1.ResourceCPU]
-	memRequest := k8sPod.Spec.Containers[0].Resources.Requests[corev1.ResourceMemory]
-	cpuLimit := k8sPod.Spec.Containers[0].Resources.Limits[corev1.ResourceCPU]
-	memLimit := k8sPod.Spec.Containers[0].Resources.Limits[corev1.ResourceMemory]
+func findBestVmConfiguration(wPod WeightedPod, configs []emmaSdk.VmConfiguration) *emmaSdk.VmConfiguration {
+	var suitableConfigs []emmaSdk.VmConfiguration
 
-	cpuRequestFloat, err := strconv.ParseFloat(cpuRequest.AsDec().String(), 64)
-	if err != nil {
-		return WeightedPod{}, fmt.Errorf("failed to parse CPU request: %v", err)
+	for _, config := range configs {
+		if configMatchesPodRequirements(config, wPod) {
+			suitableConfigs = append(suitableConfigs, config)
+		}
 	}
 
-	memRequestFloat, err := strconv.ParseFloat(memRequest.AsDec().String(), 64)
-	if err != nil {
-		return WeightedPod{}, fmt.Errorf("failed to parse memory request: %v", err)
+	if len(suitableConfigs) == 0 {
+		return nil
 	}
 
-	cpuLimitFloat, err := strconv.ParseFloat(cpuLimit.AsDec().String(), 64)
-	if err != nil {
-		return WeightedPod{}, fmt.Errorf("failed to parse CPU limit: %v", err)
+	sort.Slice(suitableConfigs, func(i, j int) bool {
+		return (*suitableConfigs[i].Cost.PricePerUnit) < (*suitableConfigs[j].Cost.PricePerUnit)
+	})
+
+	return &suitableConfigs[0]
+}
+
+func configMatchesPodRequirements(config emmaSdk.VmConfiguration, wPod WeightedPod) bool {
+	if float64(*config.VCpu) < wPod.RequestedCPU {
+		return false
+	}
+	if float64(*config.RamGb) < wPod.RequestedMemory {
+		return false
+	}
+	if float64(*config.VolumeGb) < wPod.RequestedStorage {
+		return false
+	}
+	if (*config.VolumeType) != wPod.RequestedDiskType {
+		return false
+	}
+	if !slices.Contains(config.CloudNetworkTypes, wPod.RequestedNetworkType) {
+		return false
+	}
+	return true
+}
+
+func getAnnotationOrDefault(annotations map[string]string, key, defaultValue string) string {
+	if value, exists := annotations[key]; exists {
+		return value
 	}
 
-	memLimitFloat, err := strconv.ParseFloat(memLimit.AsDec().String(), 64)
-	if err != nil {
-		return WeightedPod{}, fmt.Errorf("failed to parse memory limit: %v", err)
+	return defaultValue
+}
+
+func getFloatAnnotationOrDefault(annotations map[string]string, key string, defaultValue float64) float64 {
+	if valueStr, exists := annotations[key]; exists {
+		if value, err := strconv.ParseFloat(valueStr, 64); err == nil {
+			return value
+		}
 	}
 
-	// TODO: Implement logic to determine disk type, network type, storage size and priority
-	requestedDiskType := "SSD"
-	requestedNetworkType := "isolated"
-	requestedStorageSize := 10.0
-	priority := LowPriority
+	return defaultValue
+}
 
-	return WeightedPod{
-		Selector:             fmt.Sprintf("metadata.name=%s", k8sPod.Name),
-		RequestedCPU:         cpuRequestFloat,
-		RequestedMemory:      memRequestFloat,
-		RequestedStorage:     requestedStorageSize,
-		RequestedDiskType:    requestedDiskType,
-		RequestedNetworkType: requestedNetworkType,
-		LimitCPU:             cpuLimitFloat,
-		LimitMemory:          memLimitFloat,
-		Priority:             priority,
-	}, nil
+func getPriorityFromAnnotation(annotations map[string]string) PriorityEnum {
+	if value, exists := annotations[AnnotationPriority]; exists {
+		switch value {
+		case "true":
+			return HighPriority
+		case "false":
+			return LowPriority
+		}
+	}
+
+	return DefaultPriority
 }
