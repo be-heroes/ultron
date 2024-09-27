@@ -20,24 +20,28 @@ func MapK8sPodToWeightedPod(k8sPod corev1.Pod) (WeightedPod, error) {
 		if err != nil {
 			return WeightedPod{}, fmt.Errorf("failed to parse CPU request: %v", err)
 		}
+
 		totalCPURequest += cpuRequestFloat
 
 		memRequestFloat, err := strconv.ParseFloat(memRequest.AsDec().String(), 64)
 		if err != nil {
 			return WeightedPod{}, fmt.Errorf("failed to parse memory request: %v", err)
 		}
+
 		totalMemoryRequest += memRequestFloat
 
 		cpuLimitFloat, err := strconv.ParseFloat(cpuLimit.AsDec().String(), 64)
 		if err != nil {
 			return WeightedPod{}, fmt.Errorf("failed to parse CPU limit: %v", err)
 		}
+
 		totalCPULimit += cpuLimitFloat
 
 		memLimitFloat, err := strconv.ParseFloat(memLimit.AsDec().String(), 64)
 		if err != nil {
 			return WeightedPod{}, fmt.Errorf("failed to parse memory limit: %v", err)
 		}
+
 		totalMemoryLimit += memLimitFloat
 	}
 

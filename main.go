@@ -34,7 +34,6 @@ func main() {
 	}
 
 	certificateExportPath := os.Getenv("EMMA_WEBHOOKSERVER_CERTIFICATE_EXPORT_PATH")
-
 	if certificateExportPath != "" {
 		err = writeCACertificateToFile(cert.Certificate[0], certificateExportPath)
 		if err != nil {
@@ -42,11 +41,9 @@ func main() {
 		}
 	}
 
-	var address string
+	address := os.Getenv("EMMA_WEBHOOKSERVER_ADDRESS")
 
-	if os.Getenv("EMMA_WEBHOOKSERVER_ADDRESS") != "" {
-		address = os.Getenv("EMMA_WEBHOOKSERVER_ADDRESS")
-	} else {
+	if address == "" {
 		address = ":8443"
 	}
 
@@ -69,7 +66,6 @@ func populateCache() {
 	apiClient := emmaSdk.NewAPIClient(emmaSdk.NewConfiguration())
 	credentials := emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
-
 	if err != nil {
 		log.Fatalf("Failed to fetch token: %v", err)
 	}
@@ -82,19 +78,17 @@ func populateCache() {
 
 	auth := context.WithValue(context.Background(), emmaSdk.ContextAccessToken, token.GetAccessToken())
 	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Execute()
-
 	if err != nil {
-		log.Fatalf("Failed to fetch vm configs: %v", err)
+		log.Fatalf("Failed to fetch durable configs: %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
 
-		log.Fatalf("Failed to fetch vm configs: %v", string(body))
+		log.Fatalf("Failed to fetch durable configs: %v", string(body))
 	}
 
 	spotConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
-
 	if err != nil {
 		log.Fatalf("Failed to fetch spot configs: %v", err)
 	}
@@ -136,19 +130,17 @@ func writeCACertificateToFile(caCert []byte, filePath string) error {
 }
 
 func getNodeDataFromK8s() ([]ultron.WeightedNode, error) {
-	var config *rest.Config
 	var err error
 
-	if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
-		config, err = rest.InClusterConfig()
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		kubeconfig := os.Getenv("KUBECONFIG")
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfig)
-		if err != nil {
-			return nil, err
+	config, err := clientcmd.BuildConfigFromFlags("", os.Getenv("KUBECONFIG"))
+	if err != nil {
+		fmt.Println("Falling back to localhost Kubernetes API at  https://kubernetes.docker.internal:6443")
+
+		config = &rest.Config{
+			Host: "https://kubernetes.docker.internal:6443",
+			TLSClientConfig: rest.TLSClientConfig{
+				Insecure: true,
+			},
 		}
 	}
 
@@ -157,12 +149,12 @@ func getNodeDataFromK8s() ([]ultron.WeightedNode, error) {
 		return nil, err
 	}
 
+	var weightedNodes []ultron.WeightedNode
 	nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		return nil, err
+		// TODO: Ensure that we have RBAC in place to allow the service account to list nodes. For now just silence error and return empty array
+		return weightedNodes, nil
 	}
-
-	var weightedNodes []ultron.WeightedNode
 
 	for _, node := range nodes.Items {
 		cpuAllocatable := node.Status.Allocatable[v1.ResourceCPU]

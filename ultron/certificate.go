@@ -52,7 +52,6 @@ func GenerateSelfSignedCert(organization string, commonName string, dnsNames []s
 
 	certPEM := pem.EncodeToMemory(&pem.Block{Type: CERTIFICATE_BLOCK_TYPE, Bytes: certDERBytes})
 	keyPEM := pem.EncodeToMemory(&pem.Block{Type: RSA_PRIVATE_KEY_BLOCK_TYPE, Bytes: x509.MarshalPKCS1PrivateKey(priv)})
-
 	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
 		return tls.Certificate{}, err

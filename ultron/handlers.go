@@ -18,12 +18,14 @@ func MutatePods(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Could not read request body: %v", err)
 		http.Error(w, "could not read request body", http.StatusBadRequest)
+
 		return
 	}
 
 	if err := json.Unmarshal(body, &admissionReviewReq); err != nil {
 		log.Printf("Could not unmarshal request: %v", err)
 		http.Error(w, "could not unmarshal request", http.StatusBadRequest)
+
 		return
 	}
 
@@ -38,6 +40,7 @@ func MutatePods(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Printf("Could not marshal response: %v", err)
 		http.Error(w, "could not marshal response", http.StatusInternalServerError)
+
 		return
 	}
 
@@ -56,6 +59,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 	var pod corev1.Pod
 	if err := json.Unmarshal(request.Object.Raw, &pod); err != nil {
 		log.Printf("Could not unmarshal pod object: %v", err)
+
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
 		}
@@ -77,6 +81,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 	})
 	if err != nil {
 		log.Printf("Could not create patch: %v", err)
+
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
 		}

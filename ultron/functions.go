@@ -66,6 +66,7 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		for _, config := range spotConfigs {
 			if *config.Id == *bestVmConfig.Id {
 				nodeType = "spot"
+
 				break
 			}
 		}
