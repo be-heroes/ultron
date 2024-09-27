@@ -46,7 +46,10 @@ func MutatePods(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(respBytes)
+
+	if _, err := w.Write(respBytes); err != nil {
+		log.Printf("Could not write response: %v", err)
+	}
 }
 
 func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.AdmissionResponse {
