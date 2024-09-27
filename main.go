@@ -211,7 +211,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 		}
 	}
 
-	nodeType := calculateNodeType(pod)
+	nodeType := matchNodeType(pod)
 
 	if pod.Spec.NodeSelector == nil {
 		pod.Spec.NodeSelector = make(map[string]string)
@@ -239,7 +239,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 	}
 }
 
-func calculateNodeType(pod corev1.Pod) string {
+func matchNodeType(pod corev1.Pod) string {
 	activeNodesInterface, found := memCache.Get("activeNodes")
 
 	if !found {
