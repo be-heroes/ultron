@@ -24,6 +24,31 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
+var apiClient *emmaSdk.APIClient = emmaSdk.NewAPIClient(emmaSdk.NewConfiguration())
+var credentials = emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
+
+func main() {
+	// TODO: Export the ca bundle to a file for k8s to use
+	cert, err := generateSelfSignedCert()
+	if err != nil {
+		log.Fatalf("Failed to generate self-signed certificate: %v", err)
+	}
+
+	server := &http.Server{
+		Addr: ":8443",
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{cert},
+		},
+		Handler: http.HandlerFunc(mutatePods),
+	}
+
+	log.Println("Starting webhook server with self-signed certificate...")
+
+	if err := server.ListenAndServeTLS("", ""); err != nil {
+		log.Fatalf("Failed to listen and serve webhook server: %v", err)
+	}
+}
+
 func mutatePods(w http.ResponseWriter, r *http.Request) {
 	var admissionReviewReq admissionv1.AdmissionReview
 	var admissionReviewResp admissionv1.AdmissionReview
@@ -75,7 +100,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 		}
 	}
 
-	nodeType := getNodeType(pod)
+	nodeType := evalNodeType(pod)
 
 	if pod.Spec.NodeSelector == nil {
 		pod.Spec.NodeSelector = make(map[string]string)
@@ -103,9 +128,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 	}
 }
 
-func getNodeType(pod corev1.Pod) string {
-	apiClient := emmaSdk.NewAPIClient(emmaSdk.NewConfiguration())
-	credentials := emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
+func evalNodeType(pod corev1.Pod) string {
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
 
 	if err != nil {
@@ -143,36 +166,14 @@ func getNodeType(pod corev1.Pod) string {
 		return fmt.Sprintf("error fetching spots: %v", string(body))
 	}
 
-	_ = fmt.Sprintf("Durable configs: %v", durableConfigs)
-	_ = fmt.Sprintf("Spot configs: %v", spotConfigs)
+	log.Printf("Durable configs: %v", durableConfigs)
+	log.Printf("Spot configs: %v", spotConfigs)
 
 	if val, ok := pod.Labels["high-performance"]; ok && val == "true" {
 		return "high-performance-node"
 	}
 
 	return "custom-node"
-}
-
-func main() {
-	// TODO: Export the ca bundle to a file for k8s to use
-	cert, err := generateSelfSignedCert()
-	if err != nil {
-		log.Fatalf("Failed to generate self-signed certificate: %v", err)
-	}
-
-	server := &http.Server{
-		Addr: ":8443",
-		TLSConfig: &tls.Config{
-			Certificates: []tls.Certificate{cert},
-		},
-		Handler: http.HandlerFunc(mutatePods),
-	}
-
-	log.Println("Starting webhook server with self-signed certificate...")
-
-	if err := server.ListenAndServeTLS("", ""); err != nil {
-		log.Fatalf("Failed to listen and serve webhook server: %v", err)
-	}
 }
 
 func generateSelfSignedCert() (tls.Certificate, error) {
