@@ -74,4 +74,4 @@ docker run -e EMMA_CLIENT_ID=your_client_id -e EMMA_CLIENT_SECRET=your_client_se
 
 - [Project Ultron => Abstract](https://github.com/emma-community/emma-ultron-operator/blob/main/docs/ultron_abstract.md)
 - [Project Ultron => Algorithm](https://github.com/emma-community/emma-ultron-operator/blob/main/docs/ultron_algorithm.md)
-- [Project Ultron => Sequence Diagram](https://github.com/emma-community/emma-ultron-operator/blob/main/docs/ultron.png)
+- [Project Ultron => WebHookServer Sequence Diagram](https://github.com/emma-community/emma-ultron-operator/blob/main/docs/ultron.png)
