@@ -30,14 +30,14 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 	}
 
 	if wNode == nil {
-		vmConfiguration, err := MatchWeightedPodToComputeConfiguration(wPod)
+		computeConfiguration, err := MatchWeightedPodToComputeConfiguration(wPod)
 		if err != nil {
 			return nil, err
 		}
 
 		var instanceType string
 
-		if vmConfiguration.ComputeType == ComputeTypeDurable {
+		if computeConfiguration.ComputeType == ComputeTypeDurable {
 			instanceType = DefaultDurableInstanceType
 		} else {
 			instanceType = DefaultEphemeralInstanceType
@@ -45,14 +45,14 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 
 		wNode = &WeightedNode{
 			Selector:         map[string]string{"node.kubernetes.io/instance-type": instanceType},
-			AvailableCPU:     float64(*vmConfiguration.VCpu),
-			TotalCPU:         float64(*vmConfiguration.VCpu),
-			AvailableMemory:  float64(*vmConfiguration.RamGb),
-			TotalMemory:      float64(*vmConfiguration.RamGb),
-			AvailableStorage: float64(*vmConfiguration.VolumeGb),
+			AvailableCPU:     float64(*computeConfiguration.VCpu),
+			TotalCPU:         float64(*computeConfiguration.VCpu),
+			AvailableMemory:  float64(*computeConfiguration.RamGb),
+			TotalMemory:      float64(*computeConfiguration.RamGb),
+			AvailableStorage: float64(*computeConfiguration.VolumeGb),
 			DiskType:         wPod.RequestedDiskType,
 			NetworkType:      wPod.RequestedNetworkType,
-			Price:            float64(*vmConfiguration.Cost.PricePerUnit),
+			Price:            float64(*computeConfiguration.Cost.PricePerUnit),
 			InstanceType:     instanceType,
 			InterruptionRate: 0, // TODO: Talk with External API team about possibility of calculating this value based on historic metrics in the backend and expose it in the VmConfiguration struct
 		}
