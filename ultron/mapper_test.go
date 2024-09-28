@@ -1,7 +1,6 @@
 package ultron
 
 import (
-	"log"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -40,12 +39,8 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 		},
 	}
 
-	log.Printf("pod: %+v", pod)
-
 	// Act
 	weightedPod, err := MapPodToWeightedPod(pod)
-
-	log.Printf("weightedPod: %+v", weightedPod)
 
 	// Assert
 	assert.NoError(t, err)

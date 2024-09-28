@@ -68,8 +68,11 @@ func TestComputePodSpec(t *testing.T) {
 		Spec: corev1.PodSpec{},
 	}
 
+	actualMapPodToWeightedPod := MapPodToWeightedPod
 	MapPodToWeightedPod = mockMapPodToWeightedPod
+	actualGetWeightedNodesFromCache := GetWeightedNodesFromCache
 	GetWeightedNodesFromCache = mockGetWeightedNodesFromCache
+	actualGetAllComputeConfigurationsFromCache := GetAllComputeConfigurationsFromCache
 	GetAllComputeConfigurationsFromCache = mockGetAllComputeConfigurationsFromCache
 
 	weightedNode, err := ComputePodSpec(pod)
@@ -85,9 +88,14 @@ func TestComputePodSpec(t *testing.T) {
 	if weightedNode.AvailableCPU != 4 {
 		t.Errorf("Expected AvailableCPU to be 4, but got %f", weightedNode.AvailableCPU)
 	}
+
+	MapPodToWeightedPod = actualMapPodToWeightedPod
+	GetWeightedNodesFromCache = actualGetWeightedNodesFromCache
+	GetAllComputeConfigurationsFromCache = actualGetAllComputeConfigurationsFromCache
 }
 
 func TestMatchWeightedPodToWeightedNode(t *testing.T) {
+	actualGetWeightedNodesFromCache := GetWeightedNodesFromCache
 	GetWeightedNodesFromCache = mockGetWeightedNodesFromCache
 
 	mockPod := WeightedPod{
@@ -113,9 +121,12 @@ func TestMatchWeightedPodToWeightedNode(t *testing.T) {
 	if matchedNode.AvailableCPU != 4 {
 		t.Errorf("Expected AvailableCPU to be 4, but got %f", matchedNode.AvailableCPU)
 	}
+
+	GetWeightedNodesFromCache = actualGetWeightedNodesFromCache
 }
 
 func TestMatchWeightedPodToWeightedNode_NoMatch(t *testing.T) {
+	actualGetWeightedNodesFromCache := GetWeightedNodesFromCache
 	GetWeightedNodesFromCache = func() ([]WeightedNode, error) {
 		return []WeightedNode{
 			{
@@ -138,9 +149,12 @@ func TestMatchWeightedPodToWeightedNode_NoMatch(t *testing.T) {
 	if matchedNode.AvailableCPU != 0 {
 		t.Errorf("Expected no matching node, but found one with AvailableCPU: %f", matchedNode.AvailableCPU)
 	}
+
+	GetWeightedNodesFromCache = actualGetWeightedNodesFromCache
 }
 
 func TestMatchWeightedPodToWeightedNode_Error(t *testing.T) {
+	actualGetWeightedNodesFromCache := GetWeightedNodesFromCache
 	GetWeightedNodesFromCache = func() ([]WeightedNode, error) {
 		return nil, errors.New("cache error")
 	}
@@ -158,6 +172,8 @@ func TestMatchWeightedPodToWeightedNode_Error(t *testing.T) {
 	if err.Error() != "cache error" {
 		t.Errorf("Expected error message 'cache error', got %v", err)
 	}
+
+	GetWeightedNodesFromCache = actualGetWeightedNodesFromCache
 }
 
 func TestMatchWeightedPodToComputeConfiguration(t *testing.T) {
@@ -169,6 +185,7 @@ func TestMatchWeightedPodToComputeConfiguration(t *testing.T) {
 		RequestedNetworkType: "isolated",
 	}
 
+	actualGetAllComputeConfigurationsFromCache := GetAllComputeConfigurationsFromCache
 	GetAllComputeConfigurationsFromCache = mockGetAllComputeConfigurationsFromCache
 
 	computeConfig, err := MatchWeightedPodToComputeConfiguration(wPod)
@@ -183,6 +200,8 @@ func TestMatchWeightedPodToComputeConfiguration(t *testing.T) {
 	if *computeConfig.VCpu != 4 {
 		t.Errorf("Expected VCpu to be 4, but got %d", *computeConfig.VCpu)
 	}
+
+	GetAllComputeConfigurationsFromCache = actualGetAllComputeConfigurationsFromCache
 }
 
 func TestCalculateWeightedNodeMedianPrice(t *testing.T) {
@@ -196,7 +215,9 @@ func TestCalculateWeightedNodeMedianPrice(t *testing.T) {
 		NetworkType:      "isolated",
 	}
 
+	actualGetAllComputeConfigurationsFromCache := GetAllComputeConfigurationsFromCache
 	GetAllComputeConfigurationsFromCache = mockGetAllComputeConfigurationsFromCache
+	actualGetWeightedNodesFromCache := GetWeightedNodesFromCache
 	GetWeightedNodesFromCache = mockGetWeightedNodesFromCache
 
 	medianPrice, err := CalculateWeightedNodeMedianPrice(wNode)
@@ -208,4 +229,7 @@ func TestCalculateWeightedNodeMedianPrice(t *testing.T) {
 	if math.Abs(medianPrice-expectedPrice) > 0.001 {
 		t.Errorf("Expected median price to be %f, but got %f", expectedPrice, medianPrice)
 	}
+
+	GetAllComputeConfigurationsFromCache = actualGetAllComputeConfigurationsFromCache
+	GetWeightedNodesFromCache = actualGetWeightedNodesFromCache
 }
