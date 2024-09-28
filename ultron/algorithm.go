@@ -1,9 +1,5 @@
 package ultron
 
-import (
-	"math"
-)
-
 const (
 	Alpha   = 1.0 // ResourceFitScore weight
 	Beta    = 0.5 // DiskTypeScore weight
@@ -61,29 +57,4 @@ func TotalScore(node WeightedNode, pod WeightedPod) float64 {
 	priority := Zeta * WorkloadPriorityScore(pod)
 
 	return resourceFit + diskType + networkType + price - stability + priority
-}
-
-func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
-	weightedNodes, err := GetWeightedNodesFromCache()
-	if err != nil {
-		return nil, err
-	}
-
-	var bestNode WeightedNode
-	highestScore := math.Inf(-1)
-
-	for _, node := range weightedNodes {
-		if node.AvailableCPU < pod.RequestedCPU || node.AvailableMemory < pod.RequestedMemory {
-			continue
-		}
-
-		score := TotalScore(node, pod)
-
-		if score > highestScore {
-			highestScore = score
-			bestNode = node
-		}
-	}
-
-	return &bestNode, nil
 }

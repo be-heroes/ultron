@@ -65,14 +65,26 @@ func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 }
 
 func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
+	const bytesInGiB = 1024 * 1024 * 1024
+
 	cpuAllocatable := node.Status.Allocatable[v1.ResourceCPU]
 	memAllocatable := node.Status.Allocatable[v1.ResourceMemory]
 	storageAllocatable := node.Status.Allocatable[v1.ResourceEphemeralStorage]
+
 	availableCPU := cpuAllocatable.AsApproximateFloat64()
-	availableMemory := (float64)(memAllocatable.Value() / (1024 * 1024 * 1024))
-	availableStorage := (float64)(storageAllocatable.Value() / (1024 * 1024 * 1024))
-	hostname := node.Labels[LabelHostName]
-	instanceType := node.Labels[LabelInstanceType]
+	availableMemory := float64(memAllocatable.Value()) / float64(bytesInGiB)
+	availableStorage := float64(storageAllocatable.Value()) / float64(bytesInGiB)
+
+	hostname, ok := node.Labels[LabelHostName]
+	if !ok || hostname == "" {
+		return WeightedNode{}, fmt.Errorf("missing required label: %s", LabelHostName)
+	}
+
+	instanceType, ok := node.Labels[LabelInstanceType]
+	if !ok || instanceType == "" {
+		return WeightedNode{}, fmt.Errorf("missing required label: %s", LabelInstanceType)
+	}
+
 	diskType := node.Annotations[AnnotationDiskType]
 	networkType := node.Annotations[AnnotationNetworkType]
 

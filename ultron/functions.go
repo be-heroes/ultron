@@ -1,6 +1,7 @@
 package ultron
 
 import (
+	"math"
 	"slices"
 	"sort"
 	"strconv"
@@ -113,6 +114,31 @@ func MatchWeightedNodeToVmConfiguration(wNode WeightedNode) (*emma.VmConfigurati
 	})
 
 	return &suitableConfigs[0], nil
+}
+
+func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
+	wNodes, err := GetWeightedNodesFromCache()
+	if err != nil {
+		return nil, err
+	}
+
+	var match WeightedNode
+	highestScore := math.Inf(-1)
+
+	for _, wNode := range wNodes {
+		if wNode.AvailableCPU < pod.RequestedCPU || wNode.AvailableMemory < pod.RequestedMemory {
+			continue
+		}
+
+		score := TotalScore(wNode, pod)
+
+		if score > highestScore {
+			highestScore = score
+			match = wNode
+		}
+	}
+
+	return &match, nil
 }
 
 func vmConfigurationMatchesWeightedNodeRequirements(config emma.VmConfiguration, wNode WeightedNode) bool {
