@@ -30,7 +30,7 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 	}
 
 	if wNode == nil {
-		vmConfiguration, err := MatchWeightedPodToVmConfiguration(wPod)
+		vmConfiguration, err := MatchWeightedPodToComputeConfiguration(wPod)
 		if err != nil {
 			return nil, err
 		}
@@ -61,16 +61,16 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 	return wNode, nil
 }
 
-func MatchWeightedPodToVmConfiguration(wPod WeightedPod) (*VmConfiguration, error) {
-	var suitableConfigs []VmConfiguration
-	vmConfigurations, err := GetAllVmConfigurationsFromCache()
+func MatchWeightedPodToComputeConfiguration(wPod WeightedPod) (*ComputeConfiguration, error) {
+	var suitableConfigs []ComputeConfiguration
+	computeConfigurations, err := GetAllComputeConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, config := range vmConfigurations {
-		if vmConfigurationMatchesWeightedPodRequirements(config, wPod) {
-			suitableConfigs = append(suitableConfigs, config)
+	for _, computeConfig := range computeConfigurations {
+		if computeConfigurationMatchesWeightedPodRequirements(computeConfig, wPod) {
+			suitableConfigs = append(suitableConfigs, computeConfig)
 		}
 	}
 
@@ -85,16 +85,16 @@ func MatchWeightedPodToVmConfiguration(wPod WeightedPod) (*VmConfiguration, erro
 	return &suitableConfigs[0], nil
 }
 
-func MatchWeightedNodeToVmConfiguration(wNode WeightedNode) (*VmConfiguration, error) {
-	var suitableConfigs []VmConfiguration
-	vmConfigurations, err := GetAllVmConfigurationsFromCache()
+func MatchWeightedNodeToComputeConfiguration(wNode WeightedNode) (*ComputeConfiguration, error) {
+	var suitableConfigs []ComputeConfiguration
+	computeConfigurations, err := GetAllComputeConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
 
-	for _, config := range vmConfigurations {
-		if vmConfigurationMatchesWeightedNodeRequirements(config, wNode) {
-			suitableConfigs = append(suitableConfigs, config)
+	for _, computeConfig := range computeConfigurations {
+		if computeConfigurationMatchesWeightedNodeRequirements(computeConfig, wNode) {
+			suitableConfigs = append(suitableConfigs, computeConfig)
 		}
 	}
 
@@ -137,14 +137,14 @@ func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
 func CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error) {
 	var totalCost float64
 	var matchCount int32
-	allVmConfigurations, err := GetAllVmConfigurationsFromCache()
+	computeConfigurations, err := GetAllComputeConfigurationsFromCache()
 	if err != nil {
 		return 0, err
 	}
 
-	for _, vmConfiguration := range allVmConfigurations {
-		if vmConfigurationMatchesWeightedNodeRequirements(vmConfiguration, wNode) && vmConfiguration.Cost != nil && vmConfiguration.Cost.PricePerUnit != nil {
-			totalCost += float64(*vmConfiguration.Cost.PricePerUnit)
+	for _, computeConfig := range computeConfigurations {
+		if computeConfigurationMatchesWeightedNodeRequirements(computeConfig, wNode) && computeConfig.Cost != nil && computeConfig.Cost.PricePerUnit != nil {
+			totalCost += float64(*computeConfig.Cost.PricePerUnit)
 			matchCount++
 		}
 	}
@@ -152,48 +152,48 @@ func CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error) {
 	return totalCost / float64(matchCount), nil
 }
 
-func vmConfigurationMatchesWeightedNodeRequirements(vmConfiguration VmConfiguration, wNode WeightedNode) bool {
-	if float64(*vmConfiguration.VCpu) < wNode.AvailableCPU {
+func computeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ComputeConfiguration, wNode WeightedNode) bool {
+	if float64(*computeConfiguration.VCpu) < wNode.AvailableCPU {
 		return false
 	}
 
-	if float64(*vmConfiguration.RamGb) < wNode.AvailableMemory {
+	if float64(*computeConfiguration.RamGb) < wNode.AvailableMemory {
 		return false
 	}
 
-	if float64(*vmConfiguration.VolumeGb) < wNode.AvailableStorage {
+	if float64(*computeConfiguration.VolumeGb) < wNode.AvailableStorage {
 		return false
 	}
 
-	if (*vmConfiguration.VolumeType) != wNode.DiskType {
+	if (*computeConfiguration.VolumeType) != wNode.DiskType {
 		return false
 	}
 
-	if !slices.Contains(vmConfiguration.CloudNetworkTypes, wNode.NetworkType) {
+	if !slices.Contains(computeConfiguration.CloudNetworkTypes, wNode.NetworkType) {
 		return false
 	}
 
 	return true
 }
 
-func vmConfigurationMatchesWeightedPodRequirements(vmConfiguration VmConfiguration, wPod WeightedPod) bool {
-	if float64(*vmConfiguration.VCpu) < wPod.RequestedCPU {
+func computeConfigurationMatchesWeightedPodRequirements(computeConfiguration ComputeConfiguration, wPod WeightedPod) bool {
+	if float64(*computeConfiguration.VCpu) < wPod.RequestedCPU {
 		return false
 	}
 
-	if float64(*vmConfiguration.RamGb) < wPod.RequestedMemory {
+	if float64(*computeConfiguration.RamGb) < wPod.RequestedMemory {
 		return false
 	}
 
-	if float64(*vmConfiguration.VolumeGb) < wPod.RequestedStorage {
+	if float64(*computeConfiguration.VolumeGb) < wPod.RequestedStorage {
 		return false
 	}
 
-	if (*vmConfiguration.VolumeType) != wPod.RequestedDiskType {
+	if (*computeConfiguration.VolumeType) != wPod.RequestedDiskType {
 		return false
 	}
 
-	if !slices.Contains(vmConfiguration.CloudNetworkTypes, wPod.RequestedNetworkType) {
+	if !slices.Contains(computeConfiguration.CloudNetworkTypes, wPod.RequestedNetworkType) {
 		return false
 	}
 

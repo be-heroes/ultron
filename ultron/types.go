@@ -39,7 +39,7 @@ const (
 	ComputeTypeEphemeral ComputeType = "ephemeral"
 )
 
-type VmConfiguration struct {
+type ComputeConfiguration struct {
 	emma.VmConfiguration
 	ComputeType ComputeType
 }

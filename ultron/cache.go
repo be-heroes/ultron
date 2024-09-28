@@ -66,13 +66,13 @@ func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, k
 	return nil
 }
 
-func GetAllVmConfigurationsFromCache() ([]VmConfiguration, error) {
-	dureableConfigurations, err := GetDurableVmConfigurationsFromCache()
+func GetAllComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
+	dureableConfigurations, err := GetDurableComputeConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
 
-	ephemeralConfigurations, err := GetEphemeralVmConfigurationsFromCache()
+	ephemeralConfigurations, err := GetEphemeralComputeConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +80,14 @@ func GetAllVmConfigurationsFromCache() ([]VmConfiguration, error) {
 	return append(dureableConfigurations, ephemeralConfigurations...), nil
 }
 
-func GetEphemeralVmConfigurationsFromCache() ([]VmConfiguration, error) {
+func GetEphemeralComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
 	ephemeralConfigsInterface, found := memCache.Get(CacheKeySpotVmConfigurations)
 
 	if !found {
 		return nil, fmt.Errorf("failed to get spot configurations from cache")
 	}
 
-	ephemeralConfigurations := ephemeralConfigsInterface.([]VmConfiguration)
+	ephemeralConfigurations := ephemeralConfigsInterface.([]ComputeConfiguration)
 
 	for i := range ephemeralConfigurations {
 		ephemeralConfigurations[i].ComputeType = ComputeTypeEphemeral
@@ -96,14 +96,14 @@ func GetEphemeralVmConfigurationsFromCache() ([]VmConfiguration, error) {
 	return ephemeralConfigurations, nil
 }
 
-func GetDurableVmConfigurationsFromCache() ([]VmConfiguration, error) {
+func GetDurableComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
 	durableConfigsInterface, found := memCache.Get(CacheKeyDurableVmConfigurations)
 
 	if !found {
 		return nil, fmt.Errorf("failed to get durable configurations from cache")
 	}
 
-	durableConfigurations := durableConfigsInterface.([]VmConfiguration)
+	durableConfigurations := durableConfigsInterface.([]ComputeConfiguration)
 
 	for i := range durableConfigurations {
 		durableConfigurations[i].ComputeType = ComputeTypeDurable

@@ -56,13 +56,13 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 			return nil, err
 		}
 
-		vmConfiguration, err := MatchWeightedNodeToVmConfiguration(wNode)
+		computeConfiguration, err := MatchWeightedNodeToComputeConfiguration(wNode)
 		if err != nil {
 			return nil, err
 		}
 
-		if vmConfiguration.Cost != nil && vmConfiguration.Cost.PricePerUnit != nil {
-			wNode.Price = float64(*vmConfiguration.Cost.PricePerUnit)
+		if computeConfiguration.Cost != nil && computeConfiguration.Cost.PricePerUnit != nil {
+			wNode.Price = float64(*computeConfiguration.Cost.PricePerUnit)
 		}
 
 		medianPrice, err := CalculateWeightedNodeMedianPrice(wNode)
