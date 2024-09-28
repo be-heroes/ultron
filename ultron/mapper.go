@@ -75,11 +75,7 @@ func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
 	totalCPU := cpuCapacity.AsApproximateFloat64()
 	totalMemory := float64(memCapacity.Value()) / float64(bytesInGiB)
 	totalStorage := float64(storageCapacity.Value()) / float64(bytesInGiB)
-
-	hostname, ok := node.Labels[LabelHostName]
-	if !ok || hostname == "" {
-		return WeightedNode{}, fmt.Errorf("missing required label: %s", LabelHostName)
-	}
+	hostname := node.Labels[LabelHostName]
 
 	instanceType, ok := node.Labels[LabelInstanceType]
 	if !ok || instanceType == "" {
