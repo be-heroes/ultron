@@ -60,21 +60,21 @@ func main() {
 		certificateCommonName = "emma-ultron-webhookserver-service.default.svc"
 	}
 
-	certificateDnsNamesString := os.Getenv(EnvironmentVariableKeyServerCertificateDnsNames)
+	certificateDnsNamesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateDnsNames)
 
-	if certificateDnsNamesString == "" {
-		certificateDnsNamesString = "emma-ultron-webhookserver-service.default.svc,emma-ultron-webhookserver-service,localhost"
+	if certificateDnsNamesCSV == "" {
+		certificateDnsNamesCSV = "emma-ultron-webhookserver-service.default.svc,emma-ultron-webhookserver-service,localhost"
 	}
 
-	certificateIpAddressesString := os.Getenv(EnvironmentVariableKeyServerCertificateIpAddresses)
+	certificateIpAddressesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateIpAddresses)
 
-	if certificateIpAddressesString == "" {
-		certificateIpAddressesString = "127.0.0.1"
+	if certificateIpAddressesCSV == "" {
+		certificateIpAddressesCSV = "127.0.0.1"
 	}
 
 	var certificateIpAddresses []net.IP
 
-	for _, ipAddress := range strings.Split(certificateIpAddressesString, ",") {
+	for _, ipAddress := range strings.Split(certificateIpAddressesCSV, ",") {
 		certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
 	}
 
@@ -83,7 +83,7 @@ func main() {
 	cert, err := ultron.GenerateSelfSignedCert(
 		certificateOrganization,
 		certificateCommonName,
-		strings.Split(certificateDnsNamesString, ","),
+		strings.Split(certificateDnsNamesCSV, ","),
 		certificateIpAddresses)
 	if err != nil {
 		log.Fatalf("Failed to generate self-signed certificate: %v", err)

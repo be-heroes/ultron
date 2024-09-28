@@ -48,7 +48,7 @@ func WorkloadPriorityScore(pod WeightedPod) float64 {
 	return 0.0
 }
 
-func RankMatch(node WeightedNode, pod WeightedPod) float64 {
+func Score(node WeightedNode, pod WeightedPod) float64 {
 	resourceFit := Alpha * ResourceFitScore(node, pod)
 	diskType := Beta * DiskTypeScore(node, pod)
 	networkType := Gamma * NetworkTypeScore(node, pod)

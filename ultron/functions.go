@@ -130,7 +130,7 @@ func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
 			continue
 		}
 
-		score := RankMatch(wNode, pod)
+		score := Score(wNode, pod)
 
 		if score > highestScore {
 			highestScore = score
