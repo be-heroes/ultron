@@ -82,8 +82,14 @@ func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
 		return WeightedNode{}, fmt.Errorf("missing required label: %s", LabelInstanceType)
 	}
 
+	selector := map[string]string{LabelInstanceType: instanceType}
+
+	if hostname != "" {
+		selector[LabelHostName] = hostname
+	}
+
 	return WeightedNode{
-		Selector:         map[string]string{LabelHostName: hostname, LabelInstanceType: instanceType},
+		Selector:         selector,
 		AvailableCPU:     availableCPU,
 		TotalCPU:         totalCPU,
 		AvailableMemory:  availableMemory,
