@@ -29,7 +29,13 @@ func MutatePods(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	admissionResponse := handleAdmissionReview(admissionReviewReq.Request)
+	admissionResponse, err := handleAdmissionReview(admissionReviewReq.Request)
+	if err != nil {
+		log.Printf("Could not handle addmission review: %v", err)
+		http.Error(w, "could not handle addmission review", http.StatusInternalServerError)
+
+		return
+	}
 
 	admissionReviewResp.Response = admissionResponse
 	admissionReviewResp.Kind = admissionReviewReq.Kind
@@ -49,32 +55,30 @@ func MutatePods(w http.ResponseWriter, r *http.Request) {
 
 	if _, err := w.Write(respBytes); err != nil {
 		log.Printf("Could not write response: %v", err)
+		http.Error(w, "could not write response", http.StatusInternalServerError)
 	}
 }
 
-func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.AdmissionResponse {
+func handleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 	if request.Kind.Kind != "Pod" {
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
-		}
+		}, nil
 	}
 
 	var pod corev1.Pod
 	if err := json.Unmarshal(request.Object.Raw, &pod); err != nil {
-		log.Printf("Could not unmarshal pod object: %v", err)
-
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
-		}
+		}, err
 	}
 
-	wNode := ComputePodSpec(pod)
-
-	if pod.Spec.NodeSelector == nil {
-		pod.Spec.NodeSelector = make(map[string]string)
+	wNode, err := ComputePodSpec(&pod)
+	if err != nil {
+		return nil, err
 	}
 
-	pod.Spec.NodeSelector["node.kubernetes.io/instance-type"] = wNode.InstanceType
+	pod.Spec.NodeSelector = wNode.Selector
 	patchBytes, err := json.Marshal([]map[string]interface{}{
 		{
 			"op":    "add",
@@ -83,16 +87,14 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) *admissionv1.A
 		},
 	})
 	if err != nil {
-		log.Printf("Could not create patch: %v", err)
-
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
-		}
+		}, err
 	}
 
 	return &admissionv1.AdmissionResponse{
 		Allowed:   true,
 		Patch:     patchBytes,
 		PatchType: func() *admissionv1.PatchType { pt := admissionv1.PatchTypeJSONPatch; return &pt }(),
-	}
+	}, nil
 }

@@ -3,7 +3,6 @@ package ultron
 import (
 	"context"
 	"io"
-	"log"
 	"net/http"
 
 	emmaSdk "github.com/emma-community/emma-go-sdk"
@@ -11,53 +10,55 @@ import (
 )
 
 const (
-	CacheKeyWNodes                  = "WNODES"
+	CacheKeyWeightedNodes           = "WEIGHTED_NODES"
 	CacheKeyDurableVmConfigurations = "DURABLE_VMCONFIGURATION"
 	CacheKeySpotVmConfigurations    = "SPOT_VMCONFIGURATION"
 )
 
-func InitializeCache(credentials emmaSdk.Credentials, kubernetesMasterUrl string, kubernetesConfigPath string) {
+func InitializeCache(credentials emmaSdk.Credentials, kubernetesMasterUrl string, kubernetesConfigPath string) error {
 	apiClient := emmaSdk.NewAPIClient(emmaSdk.NewConfiguration())
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
 	if err != nil {
-		log.Fatalf("Failed to fetch token: %v", err)
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		_, err := io.ReadAll(resp.Body)
 
-		log.Fatalf("Failed to fetch token: %v", string(body))
+		return err
 	}
 
 	auth := context.WithValue(context.Background(), emmaSdk.ContextAccessToken, token.GetAccessToken())
 	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Execute()
 	if err != nil {
-		log.Fatalf("Failed to fetch durable configs: %v", err)
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		_, err := io.ReadAll(resp.Body)
 
-		log.Fatalf("Failed to fetch durable configs: %v", string(body))
+		return err
 	}
 
 	spotConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
 	if err != nil {
-		log.Fatalf("Failed to fetch spot configs: %v", err)
+		return err
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		body, _ := io.ReadAll(resp.Body)
+		_, err := io.ReadAll(resp.Body)
 
-		log.Fatalf("Failed to fetch spot configs: %v", string(body))
+		return err
 	}
 
 	wNodes, err := GetWeightedNodes(kubernetesMasterUrl, kubernetesConfigPath)
 	if err != nil {
-		log.Fatalf("Failed to fetch nodes: %v", err)
+		return err
 	}
 
-	Cache.Set(CacheKeyWNodes, wNodes, cache.DefaultExpiration)
+	Cache.Set(CacheKeyWeightedNodes, wNodes, cache.DefaultExpiration)
 	Cache.Set(CacheKeyDurableVmConfigurations, durableConfigs.Content, cache.DefaultExpiration)
 	Cache.Set(CacheKeySpotVmConfigurations, spotConfigs.Content, cache.DefaultExpiration)
+
+	return nil
 }

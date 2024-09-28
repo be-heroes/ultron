@@ -9,15 +9,18 @@ import (
 	"os"
 
 	ultron "emma.ms/ultron-webhookserver/ultron"
-	emmaSdk "github.com/emma-community/emma-go-sdk"
+	emma "github.com/emma-community/emma-go-sdk"
 )
 
 func main() {
-	emmaApiCredentials := emmaSdk.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
-	kubernetesConfigPath := os.Getenv("KUBECONFIG ")
+	kubernetesConfigPath := os.Getenv("KUBECONFIG")
 	kubernetesMasterUrl := fmt.Sprintf("tcp://%s:%s", os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT"))
+	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
 
-	ultron.InitializeCache(emmaApiCredentials, kubernetesMasterUrl, kubernetesConfigPath)
+	err := ultron.InitializeCache(emmaApiCredentials, kubernetesMasterUrl, kubernetesConfigPath)
+	if err != nil {
+		log.Fatalf("Failed to initialize cache with error: %v", err)
+	}
 
 	cert, err := ultron.GenerateSelfSignedCert(
 		"emma",

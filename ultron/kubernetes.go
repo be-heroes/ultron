@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	emma "github.com/emma-community/emma-go-sdk"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -39,6 +40,7 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 	}
 
 	for _, node := range nodes.Items {
+		vmConfiguration := matchVmConfiguration(&node)
 		cpuAllocatable := node.Status.Allocatable[v1.ResourceCPU]
 		memAllocatable := node.Status.Allocatable[v1.ResourceMemory]
 		storageAllocatable := node.Status.Allocatable[v1.ResourceEphemeralStorage]
@@ -49,14 +51,14 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 		instanceType := node.Labels["node.kubernetes.io/instance-type"]
 		diskType := node.Annotations[AnnotationDiskType]
 		networkType := node.Annotations[AnnotationNetworkType]
+		nodePrice := float64(*vmConfiguration.Cost.PricePerUnit)
 
-		// TODO: Extract node price, median price and interruption rate from emma External API VmConfigurations
-		nodePrice := 0.30
+		// TODO: Calculate median price and interruption rate
 		nodeMedianPrice := 0.25
 		nodeInteruptionRate := 0.05
 
 		weightedNode := WeightedNode{
-			Selector:         []string{fmt.Sprintf("kubernetes.io/hostname: \"%s\"", hostname), fmt.Sprintf("node.kubernetes.io/instance-type: \"%s\"", instanceType)},
+			Selector:         map[string]string{"kubernetes.io/hostname": hostname, "node.kubernetes.io/instance-type": instanceType},
 			AvailableCPU:     availableCPU,
 			TotalCPU:         availableCPU,
 			AvailableMemory:  availableMemory,
@@ -74,4 +76,10 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 	}
 
 	return weightedNodes, nil
+}
+
+func matchVmConfiguration(node *v1.Node) emma.VmConfiguration {
+	// TODO: Implement logic to match node to VmConfiguration
+
+	return emma.VmConfiguration{}
 }

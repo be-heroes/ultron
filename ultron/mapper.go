@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func MapK8sPodToWeightedPod(k8sPod corev1.Pod) (WeightedPod, error) {
+func MapK8sPodToWeightedPod(k8sPod *corev1.Pod) (WeightedPod, error) {
 	var totalCPURequest, totalMemoryRequest, totalCPULimit, totalMemoryLimit float64
 
 	for _, container := range k8sPod.Spec.Containers {
@@ -51,7 +51,7 @@ func MapK8sPodToWeightedPod(k8sPod corev1.Pod) (WeightedPod, error) {
 	priority := getPriorityFromAnnotation(k8sPod.Annotations)
 
 	return WeightedPod{
-		Selector:             []string{fmt.Sprintf("metadata.name=%s", k8sPod.Name)},
+		Selector:             map[string]string{"metadata.name": k8sPod.Name},
 		RequestedCPU:         totalCPURequest,
 		RequestedMemory:      totalMemoryRequest,
 		RequestedStorage:     requestedStorageSize,

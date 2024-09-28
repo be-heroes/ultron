@@ -12,7 +12,7 @@ type WeightedNode struct {
 	MedianPrice      float64
 	InstanceType     string
 	InterruptionRate float64
-	Selector         []string
+	Selector         map[string]string
 }
 
 type WeightedPod struct {
@@ -24,7 +24,7 @@ type WeightedPod struct {
 	LimitCPU             float64
 	LimitMemory          float64
 	Priority             PriorityEnum
-	Selector             []string
+	Selector             map[string]string
 }
 
 type PriorityEnum bool

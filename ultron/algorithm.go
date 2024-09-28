@@ -64,7 +64,7 @@ func TotalScore(node WeightedNode, pod WeightedPod) float64 {
 }
 
 func FindBestNode(pod WeightedPod, nodes []WeightedNode) *WeightedNode {
-	var bestNode *WeightedNode
+	var bestNode WeightedNode
 	highestScore := math.Inf(-1)
 
 	for _, node := range nodes {
@@ -76,9 +76,9 @@ func FindBestNode(pod WeightedPod, nodes []WeightedNode) *WeightedNode {
 
 		if score > highestScore {
 			highestScore = score
-			bestNode = &node
+			bestNode = node
 		}
 	}
 
-	return bestNode
+	return &bestNode
 }

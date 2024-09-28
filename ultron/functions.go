@@ -2,7 +2,6 @@ package ultron
 
 import (
 	"fmt"
-	"log"
 	"slices"
 	"sort"
 	"strconv"
@@ -28,16 +27,16 @@ const (
 
 var Cache = cache.New(cache.NoExpiration, cache.NoExpiration)
 
-func ComputePodSpec(pod corev1.Pod) *WeightedNode {
-	weightedNodesInterface, found := Cache.Get("weightedNodes")
+func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
+	weightedNodesInterface, found := Cache.Get(CacheKeyWeightedNodes)
 
 	if !found {
-		log.Fatalf("Failed to get weighted nodes from cache")
+		return nil, fmt.Errorf("failed to get weighted nodes from cache")
 	}
 
 	wPod, err := MapK8sPodToWeightedPod(pod)
 	if err != nil {
-		log.Fatalf("Error mapping pod: %v", err)
+		return nil, err
 	}
 
 	bestNode := FindBestNode(wPod, weightedNodesInterface.([]WeightedNode))
@@ -46,13 +45,13 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		durableConfigsInterface, found := Cache.Get(CacheKeyDurableVmConfigurations)
 
 		if !found {
-			log.Fatalf("Failed to get durable VmConfiguration list from cache")
+			return nil, fmt.Errorf("failed to get durable VmConfiguration list from cache")
 		}
 
 		spotConfigsInterface, found := Cache.Get(CacheKeySpotVmConfigurations)
 
 		if !found {
-			log.Fatalf("Failed to get spot VmConfiguration listfrom cache")
+			return nil, fmt.Errorf("failed to get spot VmConfiguration list from cache")
 		}
 
 		durableConfigs := durableConfigsInterface.([]emmaSdk.VmConfiguration)
@@ -60,13 +59,13 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		bestVmConfig := findBestVmConfiguration(wPod, append(durableConfigs, spotConfigs...))
 
 		if bestVmConfig == nil {
-			log.Fatalf("No suitable VmConfiguration found for the pod")
+			return nil, fmt.Errorf("no suitable VmConfiguration found")
 		}
 
 		var instanceType = DefaultDurableInstanceType
 
 		for _, config := range spotConfigs {
-			if *config.Id == *bestVmConfig.Id {
+			if config.Id == bestVmConfig.Id {
 				instanceType = DefaultSpotInstanceType
 
 				break
@@ -74,7 +73,7 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		}
 
 		bestNode = &WeightedNode{
-			Selector:         []string{fmt.Sprintf("node.kubernetes.io/instance-type: \"%s\"", instanceType)},
+			Selector:         map[string]string{"node.kubernetes.io/instance-type": instanceType},
 			AvailableCPU:     float64(*bestVmConfig.VCpu),
 			TotalCPU:         float64(*bestVmConfig.VCpu),
 			AvailableMemory:  float64(*bestVmConfig.RamGb),
@@ -88,7 +87,7 @@ func ComputePodSpec(pod corev1.Pod) *WeightedNode {
 		}
 	}
 
-	return bestNode
+	return bestNode, nil
 }
 
 func findBestVmConfiguration(wPod WeightedPod, configs []emmaSdk.VmConfiguration) *emmaSdk.VmConfiguration {
