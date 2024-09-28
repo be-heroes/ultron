@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
-	v1 "k8s.io/api/core/v1"
 )
 
 func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
@@ -67,9 +66,9 @@ func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
 	const bytesInGiB = 1024 * 1024 * 1024
 
-	cpuAllocatable := node.Status.Allocatable[v1.ResourceCPU]
-	memAllocatable := node.Status.Allocatable[v1.ResourceMemory]
-	storageAllocatable := node.Status.Allocatable[v1.ResourceEphemeralStorage]
+	cpuAllocatable := node.Status.Allocatable[corev1.ResourceCPU]
+	memAllocatable := node.Status.Allocatable[corev1.ResourceMemory]
+	storageAllocatable := node.Status.Allocatable[corev1.ResourceEphemeralStorage]
 
 	availableCPU := cpuAllocatable.AsApproximateFloat64()
 	availableMemory := float64(memAllocatable.Value()) / float64(bytesInGiB)
