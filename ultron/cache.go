@@ -87,6 +87,7 @@ func GetEphemeralComputeConfigurationsFromCache() ([]ComputeConfiguration, error
 		return nil, fmt.Errorf("failed to get spot configurations from cache")
 	}
 
+	// TODO: Ensure this works. The embedding of the inherited type might not deserialize correctly
 	ephemeralConfigurations := ephemeralConfigsInterface.([]ComputeConfiguration)
 
 	for i := range ephemeralConfigurations {
@@ -103,6 +104,7 @@ func GetDurableComputeConfigurationsFromCache() ([]ComputeConfiguration, error) 
 		return nil, fmt.Errorf("failed to get durable configurations from cache")
 	}
 
+	// TODO: Ensure this works. The embedding of the inherited type might not deserialize correctly
 	durableConfigurations := durableConfigsInterface.([]ComputeConfiguration)
 
 	for i := range durableConfigurations {
