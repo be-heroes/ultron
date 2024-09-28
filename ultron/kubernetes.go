@@ -17,7 +17,7 @@ const (
 	AnnotationPriority    = "ultron.io/priority"
 	LabelHostName         = "kubernetes.io/hostname"
 	LabelInstanceType     = "node.kubernetes.io/instance-type"
-	MetaDataName          = "metadata.name"
+	MetadataName          = "metadata.name"
 )
 
 func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) ([]WeightedNode, error) {

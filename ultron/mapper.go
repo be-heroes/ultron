@@ -51,7 +51,7 @@ func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 	priority := getPriorityFromAnnotation(pod.Annotations)
 
 	return WeightedPod{
-		Selector:             map[string]string{MetaDataName: pod.Name},
+		Selector:             map[string]string{MetadataName: pod.Name},
 		RequestedCPU:         totalCPURequest,
 		RequestedMemory:      totalMemoryRequest,
 		RequestedStorage:     requestedStorageSize,
