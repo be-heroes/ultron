@@ -44,7 +44,7 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 		}
 
 		wNode = &WeightedNode{
-			Selector:         map[string]string{"node.kubernetes.io/instance-type": instanceType},
+			Selector:         map[string]string{LabelInstanceType: instanceType},
 			AvailableCPU:     float64(*computeConfiguration.VCpu),
 			TotalCPU:         float64(*computeConfiguration.VCpu),
 			AvailableMemory:  float64(*computeConfiguration.RamGb),
