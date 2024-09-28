@@ -16,6 +16,8 @@ const (
 	CacheKeySpotVmConfigurations    = "SPOT_VMCONFIGURATION"
 )
 
+var memCache = cache.New(cache.NoExpiration, cache.NoExpiration)
+
 func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, kubernetesConfigPath string) error {
 	apiClient := emma.NewAPIClient(emma.NewConfiguration())
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
@@ -57,20 +59,20 @@ func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, k
 		return err
 	}
 
-	Cache.Set(CacheKeyWeightedNodes, wNodes, cache.DefaultExpiration)
-	Cache.Set(CacheKeyDurableVmConfigurations, durableConfigs.Content, cache.DefaultExpiration)
-	Cache.Set(CacheKeySpotVmConfigurations, spotConfigs.Content, cache.DefaultExpiration)
+	memCache.Set(CacheKeyWeightedNodes, wNodes, cache.DefaultExpiration)
+	memCache.Set(CacheKeyDurableVmConfigurations, durableConfigs.Content, cache.DefaultExpiration)
+	memCache.Set(CacheKeySpotVmConfigurations, spotConfigs.Content, cache.DefaultExpiration)
 
 	return nil
 }
 
 func GetAllVmConfigurationsFromCache() ([]emma.VmConfiguration, error) {
-	dureableConfigurations, err := GetDurableConfigurationsFromCache()
+	dureableConfigurations, err := GetDurableVmConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
 
-	spotConfigurations, err := GetSpotConfigurationsFromCache()
+	spotConfigurations, err := GetSpotVmConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
@@ -78,28 +80,28 @@ func GetAllVmConfigurationsFromCache() ([]emma.VmConfiguration, error) {
 	return append(dureableConfigurations, spotConfigurations...), nil
 }
 
-func GetSpotConfigurationsFromCache() ([]emma.VmConfiguration, error) {
-	spotConfigsInterface, found := Cache.Get(CacheKeySpotVmConfigurations)
+func GetSpotVmConfigurationsFromCache() ([]emma.VmConfiguration, error) {
+	spotConfigsInterface, found := memCache.Get(CacheKeySpotVmConfigurations)
 
 	if !found {
-		return nil, fmt.Errorf("failed to get spot VmConfiguration list from cache")
+		return nil, fmt.Errorf("failed to get spot configurations from cache")
 	}
 
 	return spotConfigsInterface.([]emma.VmConfiguration), nil
 }
 
-func GetDurableConfigurationsFromCache() ([]emma.VmConfiguration, error) {
-	durableConfigsInterface, found := Cache.Get(CacheKeyDurableVmConfigurations)
+func GetDurableVmConfigurationsFromCache() ([]emma.VmConfiguration, error) {
+	durableConfigsInterface, found := memCache.Get(CacheKeyDurableVmConfigurations)
 
 	if !found {
-		return nil, fmt.Errorf("failed to get durable VmConfiguration list from cache")
+		return nil, fmt.Errorf("failed to get durable configurations from cache")
 	}
 
 	return durableConfigsInterface.([]emma.VmConfiguration), nil
 }
 
 func GetWeightedNodesFromCache() ([]WeightedNode, error) {
-	weightedNodesInterface, found := Cache.Get(CacheKeyWeightedNodes)
+	weightedNodesInterface, found := memCache.Get(CacheKeyWeightedNodes)
 
 	if !found {
 		return nil, fmt.Errorf("failed to get weighted nodes from cache")

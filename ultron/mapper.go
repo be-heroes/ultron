@@ -5,12 +5,13 @@ import (
 	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 )
 
-func MapPodToWeightedPod(k8sPod *corev1.Pod) (WeightedPod, error) {
+func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 	var totalCPURequest, totalMemoryRequest, totalCPULimit, totalMemoryLimit float64
 
-	for _, container := range k8sPod.Spec.Containers {
+	for _, container := range pod.Spec.Containers {
 		cpuRequest := container.Resources.Requests[corev1.ResourceCPU]
 		memRequest := container.Resources.Requests[corev1.ResourceMemory]
 		cpuLimit := container.Resources.Limits[corev1.ResourceCPU]
@@ -45,13 +46,13 @@ func MapPodToWeightedPod(k8sPod *corev1.Pod) (WeightedPod, error) {
 		totalMemoryLimit += memLimitFloat
 	}
 
-	requestedDiskType := getAnnotationOrDefault(k8sPod.Annotations, AnnotationDiskType, DefaultDiskType)
-	requestedNetworkType := getAnnotationOrDefault(k8sPod.Annotations, AnnotationNetworkType, DefaultNetworkType)
-	requestedStorageSize := getFloatAnnotationOrDefault(k8sPod.Annotations, AnnotationStorageSize, DefaultStorageSizeGB)
-	priority := getPriorityFromAnnotation(k8sPod.Annotations)
+	requestedDiskType := getAnnotationOrDefault(pod.Annotations, AnnotationDiskType, DefaultDiskType)
+	requestedNetworkType := getAnnotationOrDefault(pod.Annotations, AnnotationNetworkType, DefaultNetworkType)
+	requestedStorageSize := getFloatAnnotationOrDefault(pod.Annotations, AnnotationStorageSize, DefaultStorageSizeGB)
+	priority := getPriorityFromAnnotation(pod.Annotations)
 
 	return WeightedPod{
-		Selector:             map[string]string{"metadata.name": k8sPod.Name},
+		Selector:             map[string]string{MetaDataName: pod.Name},
 		RequestedCPU:         totalCPURequest,
 		RequestedMemory:      totalMemoryRequest,
 		RequestedStorage:     requestedStorageSize,
@@ -61,4 +62,34 @@ func MapPodToWeightedPod(k8sPod *corev1.Pod) (WeightedPod, error) {
 		LimitMemory:          totalMemoryLimit,
 		Priority:             priority,
 	}, nil
+}
+
+func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
+	cpuAllocatable := node.Status.Allocatable[v1.ResourceCPU]
+	memAllocatable := node.Status.Allocatable[v1.ResourceMemory]
+	storageAllocatable := node.Status.Allocatable[v1.ResourceEphemeralStorage]
+	availableCPU := cpuAllocatable.AsApproximateFloat64()
+	availableMemory := (float64)(memAllocatable.Value() / (1024 * 1024 * 1024))
+	availableStorage := (float64)(storageAllocatable.Value() / (1024 * 1024 * 1024))
+	hostname := node.Labels[LabelHostName]
+	instanceType := node.Labels[LabelInstanceType]
+	diskType := node.Annotations[AnnotationDiskType]
+	networkType := node.Annotations[AnnotationNetworkType]
+
+	weightedNode := WeightedNode{
+		Selector:         map[string]string{LabelHostName: hostname, LabelInstanceType: instanceType},
+		AvailableCPU:     availableCPU,
+		TotalCPU:         availableCPU,
+		AvailableMemory:  availableMemory,
+		TotalMemory:      availableMemory,
+		AvailableStorage: availableStorage,
+		DiskType:         diskType,
+		NetworkType:      networkType,
+		Price:            0,
+		MedianPrice:      0,
+		InstanceType:     instanceType,
+		InterruptionRate: 0,
+	}
+
+	return weightedNode, nil
 }

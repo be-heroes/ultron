@@ -16,8 +16,8 @@ import (
 )
 
 const (
-	CertificateBlockType   = "CERTIFICATE"
-	RsaPrivateKeyBlockType = "RSA PRIVATE KEY"
+	BlockTypeCertificate   = "CERTIFICATE"
+	BlockTypeRsaPrivateKey = "RSA PRIVATE KEY"
 )
 
 func GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
@@ -53,8 +53,8 @@ func GenerateSelfSignedCert(organization string, commonName string, dnsNames []s
 		return tls.Certificate{}, err
 	}
 
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: CertificateBlockType, Bytes: certDERBytes})
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: RsaPrivateKeyBlockType, Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: BlockTypeCertificate, Bytes: certDERBytes})
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: BlockTypeRsaPrivateKey, Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
 		return tls.Certificate{}, err
@@ -63,9 +63,9 @@ func GenerateSelfSignedCert(organization string, commonName string, dnsNames []s
 	return tlsCert, nil
 }
 
-func WriteCACertificateToFile(caCert []byte, filePath string) error {
+func ExportCACert(caCert []byte, filePath string) error {
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{
-		Type:  CertificateBlockType,
+		Type:  BlockTypeCertificate,
 		Bytes: caCert,
 	})
 

@@ -6,16 +6,10 @@ import (
 	"strconv"
 
 	emma "github.com/emma-community/emma-go-sdk"
-	"github.com/patrickmn/go-cache"
 	corev1 "k8s.io/api/core/v1"
 )
 
 const (
-	AnnotationDiskType    = "ultron.io/disk-type"
-	AnnotationNetworkType = "ultron.io/network-type"
-	AnnotationStorageSize = "ultron.io/storage-size"
-	AnnotationPriority    = "ultron.io/priority"
-
 	DefaultDiskType            = "SSD"
 	DefaultNetworkType         = "isolated"
 	DefaultStorageSizeGB       = 10.0
@@ -23,8 +17,6 @@ const (
 	DefaultDurableInstanceType = "emma.durable"
 	DefaultSpotInstanceType    = "emma.spot"
 )
-
-var Cache = cache.New(cache.NoExpiration, cache.NoExpiration)
 
 func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 	wPod, err := MapPodToWeightedPod(pod)
@@ -44,7 +36,7 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 		}
 
 		instanceType := DefaultDurableInstanceType
-		spotConfigurations, err := GetSpotConfigurationsFromCache()
+		spotConfigurations, err := GetSpotVmConfigurationsFromCache()
 		if err != nil {
 			return nil, err
 		}

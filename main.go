@@ -7,55 +7,114 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strings"
 
 	ultron "emma.ms/ultron-webhookserver/ultron"
 	emma "github.com/emma-community/emma-go-sdk"
 )
 
+const (
+	EnvironmentVariableKeyKubernetesConfig              = "KUBECONFIG"
+	EnvironmentVariableKeyKubernetesServiceHost         = "KUBERNETES_SERVICE_HOST"
+	EnvironmentVariableKeyKubernetesServicePort         = "KUBERNETES_SERVICE_PORT"
+	EnvironmentVariableKeyEmmaClientId                  = "EMMA_CLIENT_ID"
+	EnvironmentVariableKeyEmmaClientSecret              = "EMMA_CLIENT_SECRET"
+	EnvironmentVariableKeyServerAddress                 = "SERVER_ADDRESS"
+	EnvironmentVariableKeyServerCertificateOrganization = "SERVER_CERTIFICATE_ORGANIZATION"
+	EnvironmentVariableKeyServerCertificateCommonName   = "SERVER_CERTIFICATE_COMMON_NAME"
+	EnvironmentVariableKeyServerCertificateDnsNames     = "SERVER_CERTIFICATE_DNS_NAMES"
+	EnvironmentVariableKeyServerCertificateIpAddresses  = "SERVER_CERTIFICATE_IP_ADDRESSES"
+	EnvironmentVariableKeyServerCertificateExportPath   = "SERVER_CERTIFICATE_EXPORT_PATH"
+)
+
 func main() {
-	kubernetesConfigPath := os.Getenv("KUBECONFIG")
-	kubernetesMasterUrl := fmt.Sprintf("tcp://%s:%s", os.Getenv("KUBERNETES_SERVICE_HOST"), os.Getenv("KUBERNETES_SERVICE_PORT"))
-	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv("EMMA_CLIENT_ID"), ClientSecret: os.Getenv("EMMA_CLIENT_SECRET")}
+	kubernetesConfigPath := os.Getenv(EnvironmentVariableKeyKubernetesConfig)
+	kubernetesMasterUrl := fmt.Sprintf("tcp://%s:%s", os.Getenv(EnvironmentVariableKeyKubernetesServiceHost), os.Getenv(EnvironmentVariableKeyKubernetesServicePort))
+	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv(EnvironmentVariableKeyEmmaClientId), ClientSecret: os.Getenv(EnvironmentVariableKeyEmmaClientSecret)}
+
+	log.Println("Initializing cache")
 
 	err := ultron.InitializeCache(emmaApiCredentials, kubernetesMasterUrl, kubernetesConfigPath)
 	if err != nil {
 		log.Fatalf("Failed to initialize cache with error: %v", err)
 	}
 
+	log.Println("Initialized cache")
+	log.Println("Initializing server")
+
+	serverAddress := os.Getenv(EnvironmentVariableKeyServerAddress)
+
+	if serverAddress == "" {
+		serverAddress = ":8443"
+	}
+
+	certificateOrganization := os.Getenv(EnvironmentVariableKeyServerCertificateOrganization)
+
+	if certificateOrganization == "" {
+		certificateOrganization = "emma"
+	}
+
+	certificateCommonName := os.Getenv(EnvironmentVariableKeyServerCertificateCommonName)
+
+	if certificateCommonName == "" {
+		certificateCommonName = "emma-ultron-webhookserver-service.default.svc"
+	}
+
+	certificateDnsNamesString := os.Getenv(EnvironmentVariableKeyServerCertificateDnsNames)
+
+	if certificateDnsNamesString == "" {
+		certificateDnsNamesString = "emma-ultron-webhookserver-service.default.svc,emma-ultron-webhookserver-service,localhost"
+	}
+
+	certificateIpAddressesString := os.Getenv(EnvironmentVariableKeyServerCertificateIpAddresses)
+
+	if certificateIpAddressesString == "" {
+		certificateIpAddressesString = "127.0.0.1"
+	}
+
+	var certificateIpAddresses []net.IP
+
+	for _, ipAddress := range strings.Split(certificateIpAddressesString, ",") {
+		certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
+	}
+
+	log.Println("Generating self-signed certificate")
+
 	cert, err := ultron.GenerateSelfSignedCert(
-		"emma",
-		"emma-ultron-webhookserver-service.default.svc",
-		[]string{"emma-ultron-webhookserver-service.default.svc", "emma-ultron-webhookserver-service", "localhost"},
-		[]net.IP{net.ParseIP("127.0.0.1")})
+		certificateOrganization,
+		certificateCommonName,
+		strings.Split(certificateDnsNamesString, ","),
+		certificateIpAddresses)
 	if err != nil {
 		log.Fatalf("Failed to generate self-signed certificate: %v", err)
 	}
 
-	certificateExportPath := os.Getenv("EMMA_WEBHOOKSERVER_CERTIFICATE_EXPORT_PATH")
+	log.Println("Generated self-signed certificate")
+
+	certificateExportPath := os.Getenv(EnvironmentVariableKeyServerCertificateExportPath)
+
 	if certificateExportPath != "" {
-		err = ultron.WriteCACertificateToFile(cert.Certificate[0], certificateExportPath)
+		log.Println("Exporting CA certificate")
+
+		err = ultron.ExportCACert(cert.Certificate[0], certificateExportPath)
 		if err != nil {
-			log.Fatalf("Failed to write CA certificate to file: %v", err)
+			log.Fatalf("Failed to export CA certificate to file: %v", err)
 		}
-	}
 
-	address := os.Getenv("EMMA_WEBHOOKSERVER_ADDRESS")
-
-	if address == "" {
-		address = ":8443"
+		log.Println("Exported CA certificate")
 	}
 
 	server := &http.Server{
-		Addr: address,
+		Addr: serverAddress,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		},
 		Handler: http.HandlerFunc(ultron.MutatePods),
 	}
 
-	log.Println("Starting webhook server with self-signed certificate...")
+	log.Println("Initialized server")
 
 	if err := server.ListenAndServeTLS("", ""); err != nil {
-		log.Fatalf("Failed to listen and serve webhook server: %v", err)
+		log.Fatalf("Failed to listen and serve server: %v", err)
 	}
 }
