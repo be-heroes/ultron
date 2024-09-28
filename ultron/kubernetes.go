@@ -40,7 +40,11 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 	}
 
 	for _, node := range nodes.Items {
-		vmConfiguration := matchVmConfiguration(&node)
+		vmConfiguration, err := matchVmConfiguration(&node)
+		if err != nil {
+			return nil, err
+		}
+
 		cpuAllocatable := node.Status.Allocatable[v1.ResourceCPU]
 		memAllocatable := node.Status.Allocatable[v1.ResourceMemory]
 		storageAllocatable := node.Status.Allocatable[v1.ResourceEphemeralStorage]
@@ -51,7 +55,13 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 		instanceType := node.Labels["node.kubernetes.io/instance-type"]
 		diskType := node.Annotations[AnnotationDiskType]
 		networkType := node.Annotations[AnnotationNetworkType]
-		nodePrice := float64(*vmConfiguration.Cost.PricePerUnit)
+
+		var nodePrice float64
+		if vmConfiguration.Cost != nil && vmConfiguration.Cost.PricePerUnit != nil {
+			nodePrice = float64(*vmConfiguration.Cost.PricePerUnit)
+		} else {
+			nodePrice = 0
+		}
 
 		// TODO: Calculate median price and interruption rate
 		nodeMedianPrice := 0.25
@@ -78,8 +88,7 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 	return weightedNodes, nil
 }
 
-func matchVmConfiguration(node *v1.Node) emma.VmConfiguration {
-	// TODO: Implement logic to match node to VmConfiguration
+func matchVmConfiguration(node *v1.Node) (*emma.VmConfiguration, error) {
 
-	return emma.VmConfiguration{}
+	return &emma.VmConfiguration{}, nil
 }

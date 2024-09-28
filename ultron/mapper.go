@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func MapK8sPodToWeightedPod(k8sPod *corev1.Pod) (WeightedPod, error) {
+func MapPodToWeightedPod(k8sPod *corev1.Pod) (WeightedPod, error) {
 	var totalCPURequest, totalMemoryRequest, totalCPULimit, totalMemoryLimit float64
 
 	for _, container := range k8sPod.Spec.Containers {
@@ -18,28 +18,28 @@ func MapK8sPodToWeightedPod(k8sPod *corev1.Pod) (WeightedPod, error) {
 
 		cpuRequestFloat, err := strconv.ParseFloat(cpuRequest.AsDec().String(), 64)
 		if err != nil {
-			return WeightedPod{}, fmt.Errorf("failed to parse CPU request: %v", err)
+			return WeightedPod{}, fmt.Errorf("failed to parse CPU request: %w", err)
 		}
 
 		totalCPURequest += cpuRequestFloat
 
 		memRequestFloat, err := strconv.ParseFloat(memRequest.AsDec().String(), 64)
 		if err != nil {
-			return WeightedPod{}, fmt.Errorf("failed to parse memory request: %v", err)
+			return WeightedPod{}, fmt.Errorf("failed to parse memory request: %w", err)
 		}
 
 		totalMemoryRequest += memRequestFloat
 
 		cpuLimitFloat, err := strconv.ParseFloat(cpuLimit.AsDec().String(), 64)
 		if err != nil {
-			return WeightedPod{}, fmt.Errorf("failed to parse CPU limit: %v", err)
+			return WeightedPod{}, fmt.Errorf("failed to parse CPU limit: %w", err)
 		}
 
 		totalCPULimit += cpuLimitFloat
 
 		memLimitFloat, err := strconv.ParseFloat(memLimit.AsDec().String(), 64)
 		if err != nil {
-			return WeightedPod{}, fmt.Errorf("failed to parse memory limit: %v", err)
+			return WeightedPod{}, fmt.Errorf("failed to parse memory limit: %w", err)
 		}
 
 		totalMemoryLimit += memLimitFloat

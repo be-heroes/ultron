@@ -63,11 +63,16 @@ func TotalScore(node WeightedNode, pod WeightedPod) float64 {
 	return resourceFit + diskType + networkType + price - stability + priority
 }
 
-func FindBestNode(pod WeightedPod, nodes []WeightedNode) *WeightedNode {
+func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
+	weightedNodes, err := GetWeightedNodesFromCache()
+	if err != nil {
+		return nil, err
+	}
+
 	var bestNode WeightedNode
 	highestScore := math.Inf(-1)
 
-	for _, node := range nodes {
+	for _, node := range weightedNodes {
 		if node.AvailableCPU < pod.RequestedCPU || node.AvailableMemory < pod.RequestedMemory {
 			continue
 		}
@@ -80,5 +85,5 @@ func FindBestNode(pod WeightedPod, nodes []WeightedNode) *WeightedNode {
 		}
 	}
 
-	return &bestNode
+	return &bestNode, nil
 }
