@@ -87,14 +87,20 @@ func GetEphemeralComputeConfigurationsFromCache() ([]ComputeConfiguration, error
 		return nil, fmt.Errorf("failed to get spot configurations from cache")
 	}
 
-	// TODO: Ensure this works. The embedding of the inherited type might not deserialize correctly
-	ephemeralConfigurations := ephemeralConfigsInterface.([]ComputeConfiguration)
+	ephemeralConfigurations := ephemeralConfigsInterface.([]emma.VmConfiguration)
+
+	var convertedConfigurations []ComputeConfiguration
 
 	for i := range ephemeralConfigurations {
-		ephemeralConfigurations[i].ComputeType = ComputeTypeEphemeral
+		convertedConfiguration := ComputeConfiguration{
+			VmConfiguration: ephemeralConfigurations[i],
+			ComputeType:     ComputeTypeEphemeral,
+		}
+
+		convertedConfigurations = append(convertedConfigurations, convertedConfiguration)
 	}
 
-	return ephemeralConfigurations, nil
+	return convertedConfigurations, nil
 }
 
 func GetDurableComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
@@ -104,14 +110,20 @@ func GetDurableComputeConfigurationsFromCache() ([]ComputeConfiguration, error) 
 		return nil, fmt.Errorf("failed to get durable configurations from cache")
 	}
 
-	// TODO: Ensure this works. The embedding of the inherited type might not deserialize correctly
-	durableConfigurations := durableConfigsInterface.([]ComputeConfiguration)
+	durableConfigurations := durableConfigsInterface.([]emma.VmConfiguration)
+
+	var convertedConfigurations []ComputeConfiguration
 
 	for i := range durableConfigurations {
-		durableConfigurations[i].ComputeType = ComputeTypeDurable
+		convertedConfiguration := ComputeConfiguration{
+			VmConfiguration: durableConfigurations[i],
+			ComputeType:     ComputeTypeDurable,
+		}
+
+		convertedConfigurations = append(convertedConfigurations, convertedConfiguration)
 	}
 
-	return durableConfigurations, nil
+	return convertedConfigurations, nil
 }
 
 func GetWeightedNodesFromCache() ([]WeightedNode, error) {
