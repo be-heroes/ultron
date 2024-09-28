@@ -43,37 +43,31 @@ func main() {
 	log.Println("Initializing server")
 
 	serverAddress := os.Getenv(EnvironmentVariableKeyServerAddress)
-
 	if serverAddress == "" {
 		serverAddress = ":8443"
 	}
 
 	certificateOrganization := os.Getenv(EnvironmentVariableKeyServerCertificateOrganization)
-
 	if certificateOrganization == "" {
 		certificateOrganization = "emma"
 	}
 
 	certificateCommonName := os.Getenv(EnvironmentVariableKeyServerCertificateCommonName)
-
 	if certificateCommonName == "" {
 		certificateCommonName = "emma-ultron-webhookserver-service.default.svc"
 	}
 
 	certificateDnsNamesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateDnsNames)
-
 	if certificateDnsNamesCSV == "" {
 		certificateDnsNamesCSV = "emma-ultron-webhookserver-service.default.svc,emma-ultron-webhookserver-service,localhost"
 	}
 
 	certificateIpAddressesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateIpAddresses)
-
 	if certificateIpAddressesCSV == "" {
 		certificateIpAddressesCSV = "127.0.0.1"
 	}
 
 	var certificateIpAddresses []net.IP
-
 	for _, ipAddress := range strings.Split(certificateIpAddressesCSV, ",") {
 		certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
 	}
@@ -92,7 +86,6 @@ func main() {
 	log.Println("Generated self-signed certificate")
 
 	certificateExportPath := os.Getenv(EnvironmentVariableKeyServerCertificateExportPath)
-
 	if certificateExportPath != "" {
 		log.Println("Exporting CA certificate")
 

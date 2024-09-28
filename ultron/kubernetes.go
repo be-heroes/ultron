@@ -71,7 +71,6 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 		}
 
 		wNode.MedianPrice = medianPrice
-
 		// TODO: Talk with External API team about possibility of calculating this value based on historic metrics in the backend and exposing it in the VmConfiguration struct
 		// wNode.InterruptionRate = vmConfiguration.InterruptionRate
 

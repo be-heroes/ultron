@@ -14,8 +14,8 @@ const (
 	DefaultNetworkType           = "isolated"
 	DefaultStorageSizeGB         = 10.0
 	DefaultPriority              = PriorityLow
-	DefaultDurableInstanceType   = "emma.durable"
-	DefaultEphemeralInstanceType = "emma.ephemeral"
+	DefaultDurableInstanceType   = "ultron.durable"
+	DefaultEphemeralInstanceType = "ultron.ephemeral"
 )
 
 func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {

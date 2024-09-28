@@ -22,21 +22,18 @@ func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 		}
 
 		totalCPURequest += cpuRequestFloat
-
 		memRequestFloat, err := strconv.ParseFloat(memRequest.AsDec().String(), 64)
 		if err != nil {
 			return WeightedPod{}, fmt.Errorf("failed to parse memory request: %w", err)
 		}
 
 		totalMemoryRequest += memRequestFloat
-
 		cpuLimitFloat, err := strconv.ParseFloat(cpuLimit.AsDec().String(), 64)
 		if err != nil {
 			return WeightedPod{}, fmt.Errorf("failed to parse CPU limit: %w", err)
 		}
 
 		totalCPULimit += cpuLimitFloat
-
 		memLimitFloat, err := strconv.ParseFloat(memLimit.AsDec().String(), 64)
 		if err != nil {
 			return WeightedPod{}, fmt.Errorf("failed to parse memory limit: %w", err)
@@ -72,7 +69,6 @@ func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
 	cpuCapacity := node.Status.Capacity[corev1.ResourceCPU]
 	memCapacity := node.Status.Capacity[corev1.ResourceMemory]
 	storageCapacity := node.Status.Capacity[corev1.ResourceEphemeralStorage]
-
 	availableCPU := cpuAllocatable.AsApproximateFloat64()
 	availableMemory := float64(memAllocatable.Value()) / float64(bytesInGiB)
 	availableStorage := float64(storageAllocatable.Value()) / float64(bytesInGiB)
