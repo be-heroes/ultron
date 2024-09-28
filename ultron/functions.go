@@ -221,9 +221,9 @@ func getFloatAnnotationOrDefault(annotations map[string]string, key string, defa
 func getPriorityFromAnnotation(annotations map[string]string) PriorityEnum {
 	if value, exists := annotations[AnnotationPriority]; exists {
 		switch value {
-		case "true":
+		case "PriorityHigh":
 			return PriorityHigh
-		case "false":
+		case "PriorityLow":
 			return PriorityLow
 		}
 	}

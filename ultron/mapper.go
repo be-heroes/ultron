@@ -8,6 +8,10 @@ import (
 )
 
 var MapPodToWeightedPod = func(pod *corev1.Pod) (WeightedPod, error) {
+	if pod.Name == "" {
+		return WeightedPod{}, fmt.Errorf("missing required field: %s", MetadataName)
+	}
+
 	var totalCPURequest, totalMemoryRequest, totalCPULimit, totalMemoryLimit float64
 
 	for _, container := range pod.Spec.Containers {
