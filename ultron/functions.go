@@ -141,48 +141,66 @@ func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
 	return &match, nil
 }
 
-func vmConfigurationMatchesWeightedNodeRequirements(config emma.VmConfiguration, wNode WeightedNode) bool {
-	if float64(*config.VCpu) < wNode.AvailableCPU {
+func CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error) {
+	var totalCost float64
+	var matchCount int32
+	allVmConfigurations, err := GetAllVmConfigurationsFromCache()
+	if err != nil {
+		return 0, err
+	}
+
+	for _, vmConfiguration := range allVmConfigurations {
+		if vmConfigurationMatchesWeightedNodeRequirements(vmConfiguration, wNode) && vmConfiguration.Cost != nil && vmConfiguration.Cost.PricePerUnit != nil {
+			totalCost += float64(*vmConfiguration.Cost.PricePerUnit)
+			matchCount++
+		}
+	}
+
+	return totalCost / float64(matchCount), nil
+}
+
+func vmConfigurationMatchesWeightedNodeRequirements(vmConfiguration emma.VmConfiguration, wNode WeightedNode) bool {
+	if float64(*vmConfiguration.VCpu) < wNode.AvailableCPU {
 		return false
 	}
 
-	if float64(*config.RamGb) < wNode.AvailableMemory {
+	if float64(*vmConfiguration.RamGb) < wNode.AvailableMemory {
 		return false
 	}
 
-	if float64(*config.VolumeGb) < wNode.AvailableStorage {
+	if float64(*vmConfiguration.VolumeGb) < wNode.AvailableStorage {
 		return false
 	}
 
-	if (*config.VolumeType) != wNode.DiskType {
+	if (*vmConfiguration.VolumeType) != wNode.DiskType {
 		return false
 	}
 
-	if !slices.Contains(config.CloudNetworkTypes, wNode.NetworkType) {
+	if !slices.Contains(vmConfiguration.CloudNetworkTypes, wNode.NetworkType) {
 		return false
 	}
 
 	return true
 }
 
-func vmConfigurationMatchesWeightedPodRequirements(config emma.VmConfiguration, wPod WeightedPod) bool {
-	if float64(*config.VCpu) < wPod.RequestedCPU {
+func vmConfigurationMatchesWeightedPodRequirements(vmConfiguration emma.VmConfiguration, wPod WeightedPod) bool {
+	if float64(*vmConfiguration.VCpu) < wPod.RequestedCPU {
 		return false
 	}
 
-	if float64(*config.RamGb) < wPod.RequestedMemory {
+	if float64(*vmConfiguration.RamGb) < wPod.RequestedMemory {
 		return false
 	}
 
-	if float64(*config.VolumeGb) < wPod.RequestedStorage {
+	if float64(*vmConfiguration.VolumeGb) < wPod.RequestedStorage {
 		return false
 	}
 
-	if (*config.VolumeType) != wPod.RequestedDiskType {
+	if (*vmConfiguration.VolumeType) != wPod.RequestedDiskType {
 		return false
 	}
 
-	if !slices.Contains(config.CloudNetworkTypes, wPod.RequestedNetworkType) {
+	if !slices.Contains(vmConfiguration.CloudNetworkTypes, wPod.RequestedNetworkType) {
 		return false
 	}
 

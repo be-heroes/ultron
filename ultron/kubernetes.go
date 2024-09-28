@@ -65,9 +65,15 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 			wNode.Price = float64(*vmConfiguration.Cost.PricePerUnit)
 		}
 
-		// TODO: Figure out strategy for calculating median prices and interruption rates
-		wNode.MedianPrice = 0.25
-		wNode.InterruptionRate = 0.05
+		medianPrice, err := CalculateWeightedNodeMedianPrice(wNode)
+		if err != nil {
+			return nil, err
+		}
+
+		wNode.MedianPrice = medianPrice
+
+		// TODO: Talk with External API team about possibility of calculating this value based on historic metrics in the backend and exposing it in the VmConfiguration struct
+		// wNode.InterruptionRate = vmConfiguration.InterruptionRate
 
 		wNodes = append(wNodes, wNode)
 	}
