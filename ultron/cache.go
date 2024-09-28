@@ -43,7 +43,7 @@ func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, k
 		return err
 	}
 
-	spotConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
+	ephemeralConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
 	if err != nil {
 		return err
 	}
@@ -61,7 +61,7 @@ func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, k
 
 	memCache.Set(CacheKeyWeightedNodes, wNodes, cache.DefaultExpiration)
 	memCache.Set(CacheKeyDurableVmConfigurations, durableConfigs.Content, cache.DefaultExpiration)
-	memCache.Set(CacheKeySpotVmConfigurations, spotConfigs.Content, cache.DefaultExpiration)
+	memCache.Set(CacheKeySpotVmConfigurations, ephemeralConfigs.Content, cache.DefaultExpiration)
 
 	return nil
 }
