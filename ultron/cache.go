@@ -66,38 +66,50 @@ func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, k
 	return nil
 }
 
-func GetAllVmConfigurationsFromCache() ([]emma.VmConfiguration, error) {
+func GetAllVmConfigurationsFromCache() ([]VmConfiguration, error) {
 	dureableConfigurations, err := GetDurableVmConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
 
-	spotConfigurations, err := GetSpotVmConfigurationsFromCache()
+	ephemeralConfigurations, err := GetEphemeralVmConfigurationsFromCache()
 	if err != nil {
 		return nil, err
 	}
 
-	return append(dureableConfigurations, spotConfigurations...), nil
+	return append(dureableConfigurations, ephemeralConfigurations...), nil
 }
 
-func GetSpotVmConfigurationsFromCache() ([]emma.VmConfiguration, error) {
-	spotConfigsInterface, found := memCache.Get(CacheKeySpotVmConfigurations)
+func GetEphemeralVmConfigurationsFromCache() ([]VmConfiguration, error) {
+	ephemeralConfigsInterface, found := memCache.Get(CacheKeySpotVmConfigurations)
 
 	if !found {
 		return nil, fmt.Errorf("failed to get spot configurations from cache")
 	}
 
-	return spotConfigsInterface.([]emma.VmConfiguration), nil
+	ephemeralConfigurations := ephemeralConfigsInterface.([]VmConfiguration)
+
+	for i := range ephemeralConfigurations {
+		ephemeralConfigurations[i].ComputeType = ComputeTypeEphemeral
+	}
+
+	return ephemeralConfigurations, nil
 }
 
-func GetDurableVmConfigurationsFromCache() ([]emma.VmConfiguration, error) {
+func GetDurableVmConfigurationsFromCache() ([]VmConfiguration, error) {
 	durableConfigsInterface, found := memCache.Get(CacheKeyDurableVmConfigurations)
 
 	if !found {
 		return nil, fmt.Errorf("failed to get durable configurations from cache")
 	}
 
-	return durableConfigsInterface.([]emma.VmConfiguration), nil
+	durableConfigurations := durableConfigsInterface.([]VmConfiguration)
+
+	for i := range durableConfigurations {
+		durableConfigurations[i].ComputeType = ComputeTypeDurable
+	}
+
+	return durableConfigurations, nil
 }
 
 func GetWeightedNodesFromCache() ([]WeightedNode, error) {

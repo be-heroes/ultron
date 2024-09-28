@@ -1,5 +1,9 @@
 package ultron
 
+import (
+	emma "github.com/emma-community/emma-go-sdk"
+)
+
 type WeightedNode struct {
 	AvailableCPU     float64
 	TotalCPU         float64
@@ -26,6 +30,18 @@ type WeightedPod struct {
 	LimitMemory          float64
 	Priority             PriorityEnum
 	Selector             map[string]string
+}
+
+type ComputeType string
+
+const (
+	ComputeTypeDurable   ComputeType = "durable"
+	ComputeTypeEphemeral ComputeType = "ephemeral"
+)
+
+type VmConfiguration struct {
+	emma.VmConfiguration
+	ComputeType ComputeType
 }
 
 type PriorityEnum bool

@@ -6,17 +6,16 @@ import (
 	"sort"
 	"strconv"
 
-	emma "github.com/emma-community/emma-go-sdk"
 	corev1 "k8s.io/api/core/v1"
 )
 
 const (
-	DefaultDiskType            = "SSD"
-	DefaultNetworkType         = "isolated"
-	DefaultStorageSizeGB       = 10.0
-	DefaultPriority            = PriorityLow
-	DefaultDurableInstanceType = "emma.durable"
-	DefaultSpotInstanceType    = "emma.spot"
+	DefaultDiskType              = "SSD"
+	DefaultNetworkType           = "isolated"
+	DefaultStorageSizeGB         = 10.0
+	DefaultPriority              = PriorityLow
+	DefaultDurableInstanceType   = "emma.durable"
+	DefaultEphemeralInstanceType = "emma.ephemeral"
 )
 
 func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
@@ -36,18 +35,12 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 			return nil, err
 		}
 
-		instanceType := DefaultDurableInstanceType
-		spotConfigurations, err := GetSpotVmConfigurationsFromCache()
-		if err != nil {
-			return nil, err
-		}
+		var instanceType string
 
-		for _, config := range spotConfigurations {
-			if config.Id == vmConfiguration.Id {
-				instanceType = DefaultSpotInstanceType
-
-				break
-			}
+		if vmConfiguration.ComputeType == ComputeTypeDurable {
+			instanceType = DefaultDurableInstanceType
+		} else {
+			instanceType = DefaultEphemeralInstanceType
 		}
 
 		wNode = &WeightedNode{
@@ -68,8 +61,8 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 	return wNode, nil
 }
 
-func MatchWeightedPodToVmConfiguration(wPod WeightedPod) (*emma.VmConfiguration, error) {
-	var suitableConfigs []emma.VmConfiguration
+func MatchWeightedPodToVmConfiguration(wPod WeightedPod) (*VmConfiguration, error) {
+	var suitableConfigs []VmConfiguration
 	vmConfigurations, err := GetAllVmConfigurationsFromCache()
 	if err != nil {
 		return nil, err
@@ -92,8 +85,8 @@ func MatchWeightedPodToVmConfiguration(wPod WeightedPod) (*emma.VmConfiguration,
 	return &suitableConfigs[0], nil
 }
 
-func MatchWeightedNodeToVmConfiguration(wNode WeightedNode) (*emma.VmConfiguration, error) {
-	var suitableConfigs []emma.VmConfiguration
+func MatchWeightedNodeToVmConfiguration(wNode WeightedNode) (*VmConfiguration, error) {
+	var suitableConfigs []VmConfiguration
 	vmConfigurations, err := GetAllVmConfigurationsFromCache()
 	if err != nil {
 		return nil, err
@@ -159,7 +152,7 @@ func CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error) {
 	return totalCost / float64(matchCount), nil
 }
 
-func vmConfigurationMatchesWeightedNodeRequirements(vmConfiguration emma.VmConfiguration, wNode WeightedNode) bool {
+func vmConfigurationMatchesWeightedNodeRequirements(vmConfiguration VmConfiguration, wNode WeightedNode) bool {
 	if float64(*vmConfiguration.VCpu) < wNode.AvailableCPU {
 		return false
 	}
@@ -183,7 +176,7 @@ func vmConfigurationMatchesWeightedNodeRequirements(vmConfiguration emma.VmConfi
 	return true
 }
 
-func vmConfigurationMatchesWeightedPodRequirements(vmConfiguration emma.VmConfiguration, wPod WeightedPod) bool {
+func vmConfigurationMatchesWeightedPodRequirements(vmConfiguration VmConfiguration, wPod WeightedPod) bool {
 	if float64(*vmConfiguration.VCpu) < wPod.RequestedCPU {
 		return false
 	}
