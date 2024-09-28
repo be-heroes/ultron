@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
+var MapPodToWeightedPod = func(pod *corev1.Pod) (WeightedPod, error) {
 	var totalCPURequest, totalMemoryRequest, totalCPULimit, totalMemoryLimit float64
 
 	for _, container := range pod.Spec.Containers {
@@ -60,7 +60,7 @@ func MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 	}, nil
 }
 
-func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
+var MapNodeToWeightedNode = func(node *corev1.Node) (WeightedNode, error) {
 	const bytesInGiB = 1024 * 1024 * 1024
 
 	cpuAllocatable := node.Status.Allocatable[corev1.ResourceCPU]

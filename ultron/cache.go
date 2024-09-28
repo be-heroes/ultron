@@ -18,7 +18,7 @@ const (
 
 var memCache = cache.New(cache.NoExpiration, cache.NoExpiration)
 
-func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, kubernetesConfigPath string) error {
+var InitializeCache = func(credentials emma.Credentials, kubernetesMasterUrl string, kubernetesConfigPath string) error {
 	apiClient := emma.NewAPIClient(emma.NewConfiguration())
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
 	if err != nil {
@@ -66,7 +66,7 @@ func InitializeCache(credentials emma.Credentials, kubernetesMasterUrl string, k
 	return nil
 }
 
-func GetAllComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
+var GetAllComputeConfigurationsFromCache = func() ([]ComputeConfiguration, error) {
 	dureableConfigurations, err := GetDurableComputeConfigurationsFromCache()
 	if err != nil {
 		return nil, err
@@ -80,7 +80,7 @@ func GetAllComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
 	return append(dureableConfigurations, ephemeralConfigurations...), nil
 }
 
-func GetEphemeralComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
+var GetEphemeralComputeConfigurationsFromCache = func() ([]ComputeConfiguration, error) {
 	ephemeralConfigsInterface, found := memCache.Get(CacheKeySpotVmConfigurations)
 
 	if !found {
@@ -103,7 +103,7 @@ func GetEphemeralComputeConfigurationsFromCache() ([]ComputeConfiguration, error
 	return convertedConfigurations, nil
 }
 
-func GetDurableComputeConfigurationsFromCache() ([]ComputeConfiguration, error) {
+var GetDurableComputeConfigurationsFromCache = func() ([]ComputeConfiguration, error) {
 	durableConfigsInterface, found := memCache.Get(CacheKeyDurableVmConfigurations)
 
 	if !found {
@@ -126,7 +126,7 @@ func GetDurableComputeConfigurationsFromCache() ([]ComputeConfiguration, error) 
 	return convertedConfigurations, nil
 }
 
-func GetWeightedNodesFromCache() ([]WeightedNode, error) {
+var GetWeightedNodesFromCache = func() ([]WeightedNode, error) {
 	weightedNodesInterface, found := memCache.Get(CacheKeyWeightedNodes)
 
 	if !found {

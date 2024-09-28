@@ -18,7 +18,7 @@ const (
 	DefaultEphemeralInstanceType = "ultron.ephemeral"
 )
 
-func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
+var ComputePodSpec = func(pod *corev1.Pod) (*WeightedNode, error) {
 	wPod, err := MapPodToWeightedPod(pod)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
 	return wNode, nil
 }
 
-func MatchWeightedPodToComputeConfiguration(wPod WeightedPod) (*ComputeConfiguration, error) {
+var MatchWeightedPodToComputeConfiguration = func(wPod WeightedPod) (*ComputeConfiguration, error) {
 	var suitableConfigs []ComputeConfiguration
 	computeConfigurations, err := GetAllComputeConfigurationsFromCache()
 	if err != nil {
@@ -85,7 +85,7 @@ func MatchWeightedPodToComputeConfiguration(wPod WeightedPod) (*ComputeConfigura
 	return &suitableConfigs[0], nil
 }
 
-func MatchWeightedNodeToComputeConfiguration(wNode WeightedNode) (*ComputeConfiguration, error) {
+var MatchWeightedNodeToComputeConfiguration = func(wNode WeightedNode) (*ComputeConfiguration, error) {
 	var suitableConfigs []ComputeConfiguration
 	computeConfigurations, err := GetAllComputeConfigurationsFromCache()
 	if err != nil {
@@ -109,7 +109,7 @@ func MatchWeightedNodeToComputeConfiguration(wNode WeightedNode) (*ComputeConfig
 	return &suitableConfigs[0], nil
 }
 
-func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
+var MatchWeightedPodToWeightedNode = func(pod WeightedPod) (*WeightedNode, error) {
 	wNodes, err := GetWeightedNodesFromCache()
 	if err != nil {
 		return nil, err
@@ -134,7 +134,7 @@ func MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
 	return &match, nil
 }
 
-func CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error) {
+var CalculateWeightedNodeMedianPrice = func(wNode WeightedNode) (float64, error) {
 	var totalCost float64
 	var matchCount int32
 	computeConfigurations, err := GetAllComputeConfigurationsFromCache()

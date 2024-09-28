@@ -20,7 +20,7 @@ const (
 	MetadataName          = "metadata.name"
 )
 
-func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) ([]WeightedNode, error) {
+var GetWeightedNodes = func(kubernetesMasterUrl string, kubernetesConfigPath string) ([]WeightedNode, error) {
 	var err error
 
 	if kubernetesMasterUrl == "tcp://:" {

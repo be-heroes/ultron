@@ -10,7 +10,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func MutatePods(w http.ResponseWriter, r *http.Request) {
+var MutatePods = func(w http.ResponseWriter, r *http.Request) {
 	var admissionReviewReq admissionv1.AdmissionReview
 	var admissionReviewResp admissionv1.AdmissionReview
 

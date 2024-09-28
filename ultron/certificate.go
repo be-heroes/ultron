@@ -8,7 +8,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"math/big"
 	"net"
 	"os"
@@ -20,7 +19,11 @@ const (
 	BlockTypeRsaPrivateKey = "RSA PRIVATE KEY"
 )
 
-func GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
+var GenerateSelfSignedCert = func(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
+	if organization == "" || commonName == "" {
+		return tls.Certificate{}, fmt.Errorf("organization and common name must be provided")
+	}
+
 	priv, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		return tls.Certificate{}, err
@@ -63,7 +66,11 @@ func GenerateSelfSignedCert(organization string, commonName string, dnsNames []s
 	return tlsCert, nil
 }
 
-func ExportCACert(caCert []byte, filePath string) error {
+var ExportCACert = func(caCert []byte, filePath string) error {
+	if caCert == nil {
+		return fmt.Errorf("CA certificate is nil")
+	}
+
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{
 		Type:  BlockTypeCertificate,
 		Bytes: caCert,
@@ -77,8 +84,6 @@ func ExportCACert(caCert []byte, filePath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to write CA certificate to file: %w", err)
 	}
-
-	log.Printf("CA certificate written to %s", filePath)
 
 	return nil
 }
