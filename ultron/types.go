@@ -6,6 +6,7 @@ type WeightedNode struct {
 	AvailableMemory  float64
 	TotalMemory      float64
 	AvailableStorage float64
+	TotalStorage     float64
 	DiskType         string
 	NetworkType      string
 	Price            float64

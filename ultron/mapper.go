@@ -69,10 +69,16 @@ func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
 	cpuAllocatable := node.Status.Allocatable[corev1.ResourceCPU]
 	memAllocatable := node.Status.Allocatable[corev1.ResourceMemory]
 	storageAllocatable := node.Status.Allocatable[corev1.ResourceEphemeralStorage]
+	cpuCapacity := node.Status.Capacity[corev1.ResourceCPU]
+	memCapacity := node.Status.Capacity[corev1.ResourceMemory]
+	storageCapacity := node.Status.Capacity[corev1.ResourceEphemeralStorage]
 
 	availableCPU := cpuAllocatable.AsApproximateFloat64()
 	availableMemory := float64(memAllocatable.Value()) / float64(bytesInGiB)
 	availableStorage := float64(storageAllocatable.Value()) / float64(bytesInGiB)
+	totalCPU := cpuCapacity.AsApproximateFloat64()
+	totalMemory := float64(memCapacity.Value()) / float64(bytesInGiB)
+	totalStorage := float64(storageCapacity.Value()) / float64(bytesInGiB)
 
 	hostname, ok := node.Labels[LabelHostName]
 	if !ok || hostname == "" {
@@ -84,23 +90,19 @@ func MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
 		return WeightedNode{}, fmt.Errorf("missing required label: %s", LabelInstanceType)
 	}
 
-	diskType := node.Annotations[AnnotationDiskType]
-	networkType := node.Annotations[AnnotationNetworkType]
-
-	weightedNode := WeightedNode{
+	return WeightedNode{
 		Selector:         map[string]string{LabelHostName: hostname, LabelInstanceType: instanceType},
 		AvailableCPU:     availableCPU,
-		TotalCPU:         availableCPU,
+		TotalCPU:         totalCPU,
 		AvailableMemory:  availableMemory,
-		TotalMemory:      availableMemory,
+		TotalMemory:      totalMemory,
 		AvailableStorage: availableStorage,
-		DiskType:         diskType,
-		NetworkType:      networkType,
+		TotalStorage:     totalStorage,
+		DiskType:         node.Annotations[AnnotationDiskType],
+		NetworkType:      node.Annotations[AnnotationNetworkType],
 		Price:            0,
 		MedianPrice:      0,
 		InstanceType:     instanceType,
 		InterruptionRate: 0,
-	}
-
-	return weightedNode, nil
+	}, nil
 }
