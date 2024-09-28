@@ -23,6 +23,10 @@ const (
 func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) ([]WeightedNode, error) {
 	var err error
 
+	if kubernetesMasterUrl == "tcp://:" {
+		kubernetesMasterUrl = ""
+	}
+
 	config, err := clientcmd.BuildConfigFromFlags(kubernetesMasterUrl, kubernetesConfigPath)
 	if err != nil {
 		fmt.Println("Falling back to docker Kubernetes API at  https://kubernetes.docker.internal:6443")
@@ -43,8 +47,7 @@ func GetWeightedNodes(kubernetesMasterUrl string, kubernetesConfigPath string) (
 	var wNodes []WeightedNode
 	nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
-		// TODO: Ensure that we have RBAC in place to allow the service account to list nodes. For now just silence error and return empty array
-		return wNodes, nil
+		return nil, err
 	}
 
 	for _, node := range nodes.Items {
