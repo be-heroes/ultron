@@ -2,7 +2,7 @@
 
 The emma-ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation, and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the cluster.
 
-The labels applied by the emma-ultron-webhookserver can include a wide range of information:
+The labels applied by the emma-ultron can include a wide range of information:
 
 - **Pod workload type**: Labels can categorize workloads as batch processing, real-time applications or AI/ML jobs, allowing for better differentiation and handling of diverse workload types on available nodes.
 
@@ -31,8 +31,8 @@ The application requires the following environment variables to be set:
 ### Clone the repository
 
 ```sh
-git clone https://github.com/emma-community/emma-ultron-webhookserver
-cd emma-ultron-webhookserver
+git clone https://github.com/emma-community/emma-ultron
+cd emma-ultron
 ```
 
 ### Set up environment variables
