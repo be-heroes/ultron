@@ -81,7 +81,7 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]WeightedNode, error) {
 			return nil, err
 		}
 
-		if computeConfiguration.Cost != nil && computeConfiguration.Cost.PricePerUnit != nil {
+		if computeConfiguration != nil && computeConfiguration.Cost != nil && computeConfiguration.Cost.PricePerUnit != nil {
 			wNode.Price = float64(*computeConfiguration.Cost.PricePerUnit)
 		}
 
