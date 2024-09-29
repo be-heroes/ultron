@@ -155,3 +155,62 @@ func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 		t.Errorf("Expected error '%s', but got '%v'", expectedErr, err)
 	}
 }
+
+func TestGetAnnotationOrDefault(t *testing.T) {
+	mapper := ultron.NewIMapper()
+	tests := []struct {
+		annotations   map[string]string
+		key           string
+		defaultValue  string
+		expectedValue string
+	}{
+		{map[string]string{"key1": "value1"}, "key1", "default", "value1"},
+		{map[string]string{"key1": "value1"}, "key2", "default", "default"},
+	}
+
+	for _, test := range tests {
+		result := mapper.GetAnnotationOrDefault(test.annotations, test.key, test.defaultValue)
+		if result != test.expectedValue {
+			t.Errorf("expected %v, got %v", test.expectedValue, result)
+		}
+	}
+}
+
+func TestGetFloatAnnotationOrDefault(t *testing.T) {
+	mapper := ultron.NewIMapper()
+	tests := []struct {
+		annotations   map[string]string
+		key           string
+		defaultValue  float64
+		expectedValue float64
+	}{
+		{map[string]string{"key1": "3.14"}, "key1", 1.23, 3.14},
+		{map[string]string{"key1": "invalid"}, "key1", 1.23, 1.23},
+		{map[string]string{}, "key2", 1.23, 1.23},
+	}
+
+	for _, test := range tests {
+		result := mapper.GetFloatAnnotationOrDefault(test.annotations, test.key, test.defaultValue)
+		if result != test.expectedValue {
+			t.Errorf("expected %v, got %v", test.expectedValue, result)
+		}
+	}
+}
+
+func TestGetPriorityFromAnnotation(t *testing.T) {
+	mapper := ultron.NewIMapper()
+	tests := []struct {
+		annotations   map[string]string
+		expectedValue ultron.PriorityEnum
+	}{
+		{map[string]string{ultron.AnnotationPriority: "PriorityHigh"}, ultron.PriorityHigh},
+		{map[string]string{ultron.AnnotationPriority: "PriorityLow"}, ultron.PriorityLow},
+	}
+
+	for _, test := range tests {
+		result := mapper.GetPriorityFromAnnotation(test.annotations)
+		if result != test.expectedValue {
+			t.Errorf("expected %v, got %v", test.expectedValue, result)
+		}
+	}
+}
