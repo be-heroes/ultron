@@ -159,7 +159,7 @@ func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 		t.Fatalf("Expected error for missing instance type, but got none")
 	}
 
-	expectedErr := fmt.Sprintf("missing required label: %s", ultron.LabelInstanceType)
+	expectedErr := fmt.Sprintf("missing required label: %s or %s", ultron.LabelHostName, ultron.LabelInstanceType)
 	if err.Error() != expectedErr {
 		t.Errorf("Expected error '%s', but got '%v'", expectedErr, err)
 	}
