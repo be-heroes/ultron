@@ -27,7 +27,7 @@ type ICache struct {
 }
 
 func NewICache(innerCache *cache.Cache) *ICache {
-	if innerCache != nil {
+	if innerCache == nil {
 		innerCache = cache.New(cache.NoExpiration, cache.NoExpiration)
 	}
 
