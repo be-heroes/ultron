@@ -1,6 +1,6 @@
-# emma-ultron-webhookserver
+# emma-ultron
 
-The emma-ultron-webhookserver is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation, and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the cluster.
+The emma-ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation, and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the cluster.
 
 The labels applied by the emma-ultron-webhookserver can include a wide range of information:
 
@@ -12,7 +12,7 @@ The labels applied by the emma-ultron-webhookserver can include a wide range of 
 
 - **Node-specific labels**: These labels are applied to optimize pod placement based on node characteristics, ensuring that pods are scheduled on nodes that can provide the best performance or cost efficiency for the given workload.
 
-This automatic labeling system is crucial for Kubernetes clusters that rely on autoscaling mechanisms like karpenter or cluster autoscaler, where nodes and pods are frequently provisioned or de-provisioned. By seamlessly integrating into these dynamic environments, the emma-ultron-webhookserver plays a key role in optimizing resource usage and improving overall cluster performance.
+This automatic labeling system is crucial for Kubernetes clusters that rely on autoscaling mechanisms like karpenter or cluster autoscaler, where nodes and pods are frequently provisioned or de-provisioned. By seamlessly integrating into these dynamic environments, the emma-ultron plays a key role in optimizing resource usage and improving overall cluster performance.
 
 ## Prerequisites
 
@@ -61,13 +61,13 @@ To build and run the application using Docker.
 ### Build the Docker image
 
 ```sh
-docker build -t emma-ultron-webhookserver:latest .
+docker build -t emma-ultron:latest .
 ```
 
 ### Run the Docker container
 
 ```sh
-docker run -e EMMA_CLIENT_ID=your_client_id -e EMMA_CLIENT_SECRET=your_client_secret emma-ultron-webhookserver:latest
+docker run -e EMMA_CLIENT_ID=your_client_id -e EMMA_CLIENT_SECRET=your_client_secret emma-ultron:latest
 ```
 
 ## Additional links
