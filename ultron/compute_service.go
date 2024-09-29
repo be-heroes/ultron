@@ -77,7 +77,8 @@ func (cs IComputeService) ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error)
 			NetworkType:      wPod.RequestedNetworkType,
 			Price:            float64(*computeConfiguration.Cost.PricePerUnit),
 			InstanceType:     instanceType,
-			InterruptionRate: 0, // TODO: Talk with External API team about possibility of calculating this value based on historic metrics in the backend and expose it in the VmConfiguration struct
+			// InterruptionRate: *float64(*computeConfiguration.InterruptionRate),
+			InterruptionRate: 0, // TODO: Replace with above once External API is updated
 		}
 	}
 

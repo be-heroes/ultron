@@ -91,7 +91,7 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]WeightedNode, error) {
 		}
 
 		wNode.MedianPrice = medianPrice
-		// TODO: Talk with External API team about possibility of calculating this value based on historic metrics in the backend and exposing it in the VmConfiguration struct
+		// TODO: Uncomment once External API is updated
 		// wNode.InterruptionRate = vmConfiguration.InterruptionRate
 
 		wNodes = append(wNodes, wNode)
