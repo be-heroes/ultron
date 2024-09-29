@@ -1,10 +1,11 @@
-package ultron_test
+package mapper_test
 
 import (
 	"fmt"
 	"testing"
 
-	ultron "ultron/ultron"
+	ultron "ultron/internal"
+	mapper "ultron/internal/mapper"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -12,7 +13,7 @@ import (
 )
 
 func TestMapPodToWeightedPod_Success(t *testing.T) {
-	mapper := ultron.NewIMapper()
+	mapper := mapper.NewIMapper()
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -64,7 +65,7 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 }
 
 func TestMapPodToWeightedPod_MissingName(t *testing.T) {
-	mapper := ultron.NewIMapper()
+	mapper := mapper.NewIMapper()
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -85,7 +86,7 @@ func TestMapPodToWeightedPod_MissingName(t *testing.T) {
 
 func TestMapNodeToWeightedNode_Success(t *testing.T) {
 	// Arrange
-	mapper := ultron.NewIMapper()
+	mapper := mapper.NewIMapper()
 
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -142,7 +143,7 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 
 func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 	// Arrange
-	mapper := ultron.NewIMapper()
+	mapper := mapper.NewIMapper()
 
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -167,7 +168,7 @@ func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 
 func TestGetAnnotationOrDefault(t *testing.T) {
 	// Arrange
-	mapper := ultron.NewIMapper()
+	mapper := mapper.NewIMapper()
 	tests := []struct {
 		annotations   map[string]string
 		key           string
@@ -189,7 +190,7 @@ func TestGetAnnotationOrDefault(t *testing.T) {
 
 func TestGetFloatAnnotationOrDefault(t *testing.T) {
 	// Arrange
-	mapper := ultron.NewIMapper()
+	mapper := mapper.NewIMapper()
 	tests := []struct {
 		annotations   map[string]string
 		key           string
@@ -212,7 +213,7 @@ func TestGetFloatAnnotationOrDefault(t *testing.T) {
 
 func TestGetPriorityFromAnnotation(t *testing.T) {
 	// Arrange
-	mapper := ultron.NewIMapper()
+	mapper := mapper.NewIMapper()
 	tests := []struct {
 		annotations   map[string]string
 		expectedValue ultron.PriorityEnum

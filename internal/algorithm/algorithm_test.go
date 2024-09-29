@@ -1,14 +1,15 @@
-package ultron_test
+package algorithm_test
 
 import (
 	"testing"
 
-	ultron "ultron/ultron"
+	ultron "ultron/internal"
+	algorithm "ultron/internal/algorithm"
 )
 
 func TestResourceFitScore(t *testing.T) {
 	// Arrange
-	alg := ultron.NewIAlgorithm()
+	alg := algorithm.NewIAlgorithm()
 
 	node := ultron.WeightedNode{
 		TotalCPU:        8,
@@ -34,7 +35,7 @@ func TestResourceFitScore(t *testing.T) {
 
 func TestDiskTypeScore(t *testing.T) {
 	// Arrange
-	alg := ultron.NewIAlgorithm()
+	alg := algorithm.NewIAlgorithm()
 
 	node := ultron.WeightedNode{
 		DiskType: "SSD",
@@ -64,7 +65,7 @@ func TestDiskTypeScore(t *testing.T) {
 
 func TestNetworkTypeScore(t *testing.T) {
 	// Arrange
-	alg := ultron.NewIAlgorithm()
+	alg := algorithm.NewIAlgorithm()
 
 	node := ultron.WeightedNode{
 		NetworkType: "10G",
@@ -94,7 +95,7 @@ func TestNetworkTypeScore(t *testing.T) {
 
 func TestPriceScore(t *testing.T) {
 	// Arrange
-	alg := ultron.NewIAlgorithm()
+	alg := algorithm.NewIAlgorithm()
 
 	node := ultron.WeightedNode{
 		Price:       10.0,
@@ -121,7 +122,7 @@ func TestPriceScore(t *testing.T) {
 
 func TestNodeStabilityScore(t *testing.T) {
 	// Arrange
-	alg := ultron.NewIAlgorithm()
+	alg := algorithm.NewIAlgorithm()
 
 	node := ultron.WeightedNode{
 		Price:            10.0,
@@ -149,7 +150,7 @@ func TestNodeStabilityScore(t *testing.T) {
 
 func TestWorkloadPriorityScore(t *testing.T) {
 	// Arrange
-	alg := ultron.NewIAlgorithm()
+	alg := algorithm.NewIAlgorithm()
 
 	pod := ultron.WeightedPod{
 		Priority: ultron.PriorityHigh,
@@ -175,7 +176,7 @@ func TestWorkloadPriorityScore(t *testing.T) {
 
 func TestScore(t *testing.T) {
 	// Arrange
-	alg := ultron.NewIAlgorithm()
+	alg := algorithm.NewIAlgorithm()
 
 	node := ultron.WeightedNode{
 		TotalCPU:         8,
@@ -200,12 +201,12 @@ func TestScore(t *testing.T) {
 	// Act
 	score := alg.Score(node, pod)
 
-	resourceFit := ultron.Alpha * alg.ResourceFitScore(node, pod)
-	diskType := ultron.Beta * alg.DiskTypeScore(node, pod)
-	networkType := ultron.Gamma * alg.NetworkTypeScore(node, pod)
-	price := ultron.Delta * alg.PriceScore(node)
-	stability := ultron.Epsilon * alg.NodeStabilityScore(node)
-	priority := ultron.Zeta * alg.WorkloadPriorityScore(pod)
+	resourceFit := algorithm.Alpha * alg.ResourceFitScore(node, pod)
+	diskType := algorithm.Beta * alg.DiskTypeScore(node, pod)
+	networkType := algorithm.Gamma * alg.NetworkTypeScore(node, pod)
+	price := algorithm.Delta * alg.PriceScore(node)
+	stability := algorithm.Epsilon * alg.NodeStabilityScore(node)
+	priority := algorithm.Zeta * alg.WorkloadPriorityScore(pod)
 
 	expected := resourceFit + diskType + networkType + price - stability + priority
 

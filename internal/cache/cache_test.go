@@ -1,20 +1,21 @@
-package ultron_test
+package cache_test
 
 import (
 	"testing"
 
-	ultron "ultron/ultron"
+	ultron "ultron/internal"
+	cache "ultron/internal/cache"
 
 	emma "github.com/emma-community/emma-go-sdk"
-	"github.com/patrickmn/go-cache"
+	goCache "github.com/patrickmn/go-cache"
 )
 
 func TestNewICache(t *testing.T) {
 	// Arrange
-	var iCache *ultron.ICache = nil
+	var iCache *cache.ICache = nil
 
 	// Act
-	iCache = ultron.NewICache(nil)
+	iCache = cache.NewICache(nil)
 
 	// Assert
 	if iCache == nil {
@@ -24,7 +25,7 @@ func TestNewICache(t *testing.T) {
 
 func TestGetEphemeralComputeConfigurations(t *testing.T) {
 	// Arrange
-	iCache := ultron.NewICache(nil)
+	iCache := cache.NewICache(nil)
 
 	vmConfigs := []emma.VmConfiguration{
 		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
@@ -32,7 +33,7 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 	}
 
 	// Act
-	iCache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, vmConfigs, cache.DefaultExpiration)
+	iCache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, vmConfigs, goCache.DefaultExpiration)
 
 	computeConfigs, err := iCache.GetEphemeralComputeConfigurations()
 
@@ -57,7 +58,7 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 
 func TestGetEphemeralComputeConfigurations_NotFound(t *testing.T) {
 	// Arrange
-	iCache := ultron.NewICache(nil)
+	iCache := cache.NewICache(nil)
 
 	// Act
 	_, err := iCache.GetEphemeralComputeConfigurations()
@@ -70,7 +71,7 @@ func TestGetEphemeralComputeConfigurations_NotFound(t *testing.T) {
 
 func TestGetDurableComputeConfigurations(t *testing.T) {
 	// Arrange
-	iCache := ultron.NewICache(nil)
+	iCache := cache.NewICache(nil)
 
 	vmConfigs := []emma.VmConfiguration{
 		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
@@ -78,7 +79,7 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 	}
 
 	// Act
-	iCache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, vmConfigs, cache.DefaultExpiration)
+	iCache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, vmConfigs, goCache.DefaultExpiration)
 
 	computeConfigs, err := iCache.GetDurableComputeConfigurations()
 
@@ -103,7 +104,7 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 
 func TestGetDurableComputeConfigurations_NotFound(t *testing.T) {
 	// Arrange
-	iCache := ultron.NewICache(nil)
+	iCache := cache.NewICache(nil)
 
 	// Act
 	_, err := iCache.GetDurableComputeConfigurations()

@@ -1,10 +1,12 @@
-package ultron
+package handlers
 
 import (
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
+
+	services "ultron/internal/services"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -16,10 +18,10 @@ type MutationHandler interface {
 }
 
 type IMutationHandler struct {
-	computeService ComputeService
+	computeService services.ComputeService
 }
 
-func NewIMutationHandler(computeService ComputeService) *IMutationHandler {
+func NewIMutationHandler(computeService services.ComputeService) *IMutationHandler {
 	return &IMutationHandler{
 		computeService: computeService,
 	}

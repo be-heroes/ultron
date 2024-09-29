@@ -1,39 +1,35 @@
-package ultron
+package services
 
 import (
 	"math"
 	"slices"
 	"sort"
 
+	ultron "ultron/internal"
+	algorithm "ultron/internal/algorithm"
+	cache "ultron/internal/cache"
+	mapper "ultron/internal/mapper"
+
 	corev1 "k8s.io/api/core/v1"
 )
 
-const (
-	DefaultDiskType              = "SSD"
-	DefaultNetworkType           = "isolated"
-	DefaultStorageSizeGB         = 10.0
-	DefaultPriority              = PriorityLow
-	DefaultDurableInstanceType   = "ultron.durable"
-	DefaultEphemeralInstanceType = "ultron.ephemeral"
-)
-
 type ComputeService interface {
-	ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error)
-	MatchWeightedPodToComputeConfiguration(wPod WeightedPod) (*ComputeConfiguration, error)
-	MatchWeightedNodeToComputeConfiguration(wNode WeightedNode) (*ComputeConfiguration, error)
-	MatchWeightedPodToWeightedNode(wPod WeightedPod) (*WeightedNode, error)
-	CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error)
-	ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ComputeConfiguration, wNode WeightedNode) bool
-	ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ComputeConfiguration, wPod WeightedPod) bool
+	ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error)
+	MatchWeightedPodToComputeConfiguration(wPod ultron.WeightedPod) (*ultron.ComputeConfiguration, error)
+	MatchWeightedNodeToComputeConfiguration(wNode ultron.WeightedNode) (*ultron.ComputeConfiguration, error)
+	MatchWeightedPodToWeightedNode(wPod ultron.WeightedPod) (*ultron.WeightedNode, error)
+	CalculateWeightedNodeMedianPrice(wNode ultron.WeightedNode) (float64, error)
+	ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ultron.ComputeConfiguration, wNode ultron.WeightedNode) bool
+	ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ultron.ComputeConfiguration, wPod ultron.WeightedPod) bool
 }
 
 type IComputeService struct {
-	algorithm Algorithm
-	cache     Cache
-	mapper    Mapper
+	algorithm algorithm.Algorithm
+	cache     cache.Cache
+	mapper    mapper.Mapper
 }
 
-func NewIComputeService(algorithm Algorithm, cache Cache, mapper Mapper) *IComputeService {
+func NewIComputeService(algorithm algorithm.Algorithm, cache cache.Cache, mapper mapper.Mapper) *IComputeService {
 	return &IComputeService{
 		algorithm: algorithm,
 		cache:     cache,
@@ -41,7 +37,7 @@ func NewIComputeService(algorithm Algorithm, cache Cache, mapper Mapper) *ICompu
 	}
 }
 
-func (cs IComputeService) ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error) {
+func (cs IComputeService) ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
 	wPod, err := cs.mapper.MapPodToWeightedPod(pod)
 	if err != nil {
 		return nil, err
@@ -60,14 +56,14 @@ func (cs IComputeService) ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error)
 
 		var instanceType string
 
-		if computeConfiguration.ComputeType == ComputeTypeDurable {
-			instanceType = DefaultDurableInstanceType
+		if computeConfiguration.ComputeType == ultron.ComputeTypeDurable {
+			instanceType = ultron.DefaultDurableInstanceType
 		} else {
-			instanceType = DefaultEphemeralInstanceType
+			instanceType = ultron.DefaultEphemeralInstanceType
 		}
 
-		wNode = &WeightedNode{
-			Selector:         map[string]string{LabelInstanceType: instanceType},
+		wNode = &ultron.WeightedNode{
+			Selector:         map[string]string{ultron.LabelInstanceType: instanceType},
 			AvailableCPU:     float64(*computeConfiguration.VCpu),
 			TotalCPU:         float64(*computeConfiguration.VCpu),
 			AvailableMemory:  float64(*computeConfiguration.RamGb),
@@ -85,8 +81,8 @@ func (cs IComputeService) ComputePodSpec(pod *corev1.Pod) (*WeightedNode, error)
 	return wNode, nil
 }
 
-func (cs IComputeService) MatchWeightedPodToComputeConfiguration(wPod WeightedPod) (*ComputeConfiguration, error) {
-	var suitableConfigs []ComputeConfiguration
+func (cs IComputeService) MatchWeightedPodToComputeConfiguration(wPod ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
+	var suitableConfigs []ultron.ComputeConfiguration
 	computeConfigurations, err := cs.cache.GetAllComputeConfigurations()
 	if err != nil {
 		return nil, err
@@ -109,8 +105,8 @@ func (cs IComputeService) MatchWeightedPodToComputeConfiguration(wPod WeightedPo
 	return &suitableConfigs[0], nil
 }
 
-func (cs IComputeService) MatchWeightedNodeToComputeConfiguration(wNode WeightedNode) (*ComputeConfiguration, error) {
-	var suitableConfigs []ComputeConfiguration
+func (cs IComputeService) MatchWeightedNodeToComputeConfiguration(wNode ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
+	var suitableConfigs []ultron.ComputeConfiguration
 	computeConfigurations, err := cs.cache.GetAllComputeConfigurations()
 	if err != nil {
 		return nil, err
@@ -133,13 +129,13 @@ func (cs IComputeService) MatchWeightedNodeToComputeConfiguration(wNode Weighted
 	return &suitableConfigs[0], nil
 }
 
-func (cs IComputeService) MatchWeightedPodToWeightedNode(pod WeightedPod) (*WeightedNode, error) {
+func (cs IComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod) (*ultron.WeightedNode, error) {
 	wNodes, err := cs.cache.GetWeightedNodes()
 	if err != nil {
 		return nil, err
 	}
 
-	var match WeightedNode
+	var match ultron.WeightedNode
 	highestScore := math.Inf(-1)
 
 	for _, wNode := range wNodes {
@@ -158,7 +154,7 @@ func (cs IComputeService) MatchWeightedPodToWeightedNode(pod WeightedPod) (*Weig
 	return &match, nil
 }
 
-func (cs IComputeService) CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error) {
+func (cs IComputeService) CalculateWeightedNodeMedianPrice(wNode ultron.WeightedNode) (float64, error) {
 	var totalCost float64
 	var matchCount int32
 	computeConfigurations, err := cs.cache.GetAllComputeConfigurations()
@@ -176,7 +172,7 @@ func (cs IComputeService) CalculateWeightedNodeMedianPrice(wNode WeightedNode) (
 	return totalCost / float64(matchCount), nil
 }
 
-func (cs IComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ComputeConfiguration, wNode WeightedNode) bool {
+func (cs IComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ultron.ComputeConfiguration, wNode ultron.WeightedNode) bool {
 	if float64(*computeConfiguration.VCpu) < wNode.AvailableCPU {
 		return false
 	}
@@ -200,7 +196,7 @@ func (cs IComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(co
 	return true
 }
 
-func (cs IComputeService) ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ComputeConfiguration, wPod WeightedPod) bool {
+func (cs IComputeService) ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ultron.ComputeConfiguration, wPod ultron.WeightedPod) bool {
 	if float64(*computeConfiguration.VCpu) < wPod.RequestedCPU {
 		return false
 	}

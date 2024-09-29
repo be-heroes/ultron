@@ -1,8 +1,12 @@
-package ultron
+package kubernetes
 
 import (
 	"context"
 	"fmt"
+
+	ultron "ultron/internal"
+	mapper "ultron/internal/mapper"
+	services "ultron/internal/services"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -10,28 +14,18 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-const (
-	AnnotationDiskType    = "ultron.io/disk-type"
-	AnnotationNetworkType = "ultron.io/network-type"
-	AnnotationStorageSize = "ultron.io/storage-size"
-	AnnotationPriority    = "ultron.io/priority"
-	LabelHostName         = "kubernetes.io/hostname"
-	LabelInstanceType     = "node.kubernetes.io/instance-type"
-	MetadataName          = "metadata.name"
-)
-
 type KubernetesClient interface {
-	GetWeightedNodes() ([]WeightedNode, error)
+	GetWeightedNodes() ([]ultron.WeightedNode, error)
 }
 
 type IKubernetesClient struct {
-	mapper               Mapper
-	computeService       ComputeService
+	mapper               mapper.Mapper
+	computeService       services.ComputeService
 	kubernetesMasterUrl  string
 	kubernetesConfigPath string
 }
 
-func NewIKubernetesClient(kubernetesMasterUrl string, kubernetesConfigPath string, mapper Mapper, computeService ComputeService) *IKubernetesClient {
+func NewIKubernetesClient(kubernetesMasterUrl string, kubernetesConfigPath string, mapper mapper.Mapper, computeService services.ComputeService) *IKubernetesClient {
 	return &IKubernetesClient{
 		kubernetesMasterUrl:  kubernetesMasterUrl,
 		kubernetesConfigPath: kubernetesConfigPath,
@@ -40,7 +34,7 @@ func NewIKubernetesClient(kubernetesMasterUrl string, kubernetesConfigPath strin
 	}
 }
 
-func (kc IKubernetesClient) GetWeightedNodes() ([]WeightedNode, error) {
+func (kc IKubernetesClient) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 	var err error
 
 	if kc.kubernetesMasterUrl == "tcp://:" {
@@ -64,7 +58,7 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]WeightedNode, error) {
 		return nil, err
 	}
 
-	var wNodes []WeightedNode
+	var wNodes []ultron.WeightedNode
 	nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err

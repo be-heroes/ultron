@@ -1,25 +1,21 @@
-package ultron
+package cache
 
 import (
 	"fmt"
 	"time"
 
+	ultron "ultron/internal"
+
 	emma "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
 )
 
-const (
-	CacheKeyWeightedNodes           = "WEIGHTED_NODES"
-	CacheKeyDurableVmConfigurations = "DURABLE_VMCONFIGURATION"
-	CacheKeySpotVmConfigurations    = "SPOT_VMCONFIGURATION"
-)
-
 type Cache interface {
 	AddCacheItem(key string, value interface{}, d time.Duration)
-	GetAllComputeConfigurations() ([]ComputeConfiguration, error)
-	GetEphemeralComputeConfigurations() ([]ComputeConfiguration, error)
-	GetDurableComputeConfigurations() ([]ComputeConfiguration, error)
-	GetWeightedNodes() ([]WeightedNode, error)
+	GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error)
+	GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error)
+	GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error)
+	GetWeightedNodes() ([]ultron.WeightedNode, error)
 }
 
 type ICache struct {
@@ -40,7 +36,7 @@ func (c *ICache) AddCacheItem(key string, value interface{}, d time.Duration) {
 	c.memCache.Set(key, value, cache.DefaultExpiration)
 }
 
-func (c *ICache) GetAllComputeConfigurations() ([]ComputeConfiguration, error) {
+func (c *ICache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
 	durableConfigurations, err := c.GetDurableComputeConfigurations()
 	if err != nil {
 		return nil, err
@@ -54,19 +50,19 @@ func (c *ICache) GetAllComputeConfigurations() ([]ComputeConfiguration, error) {
 	return append(durableConfigurations, ephemeralConfigurations...), nil
 }
 
-func (c *ICache) GetEphemeralComputeConfigurations() ([]ComputeConfiguration, error) {
-	ephemeralConfigsInterface, found := c.memCache.Get(CacheKeySpotVmConfigurations)
+func (c *ICache) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+	ephemeralConfigsInterface, found := c.memCache.Get(ultron.CacheKeySpotVmConfigurations)
 	if !found {
 		return nil, fmt.Errorf("failed to get spot configurations from cache")
 	}
 
 	ephemeralConfigurations := ephemeralConfigsInterface.([]emma.VmConfiguration)
-	var convertedConfigurations []ComputeConfiguration
+	var convertedConfigurations []ultron.ComputeConfiguration
 
 	for i := range ephemeralConfigurations {
-		convertedConfiguration := ComputeConfiguration{
+		convertedConfiguration := ultron.ComputeConfiguration{
 			VmConfiguration: ephemeralConfigurations[i],
-			ComputeType:     ComputeTypeEphemeral,
+			ComputeType:     ultron.ComputeTypeEphemeral,
 		}
 		convertedConfigurations = append(convertedConfigurations, convertedConfiguration)
 	}
@@ -74,19 +70,19 @@ func (c *ICache) GetEphemeralComputeConfigurations() ([]ComputeConfiguration, er
 	return convertedConfigurations, nil
 }
 
-func (c *ICache) GetDurableComputeConfigurations() ([]ComputeConfiguration, error) {
-	durableConfigsInterface, found := c.memCache.Get(CacheKeyDurableVmConfigurations)
+func (c *ICache) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+	durableConfigsInterface, found := c.memCache.Get(ultron.CacheKeyDurableVmConfigurations)
 	if !found {
 		return nil, fmt.Errorf("failed to get durable configurations from cache")
 	}
 
 	durableConfigurations := durableConfigsInterface.([]emma.VmConfiguration)
-	var convertedConfigurations []ComputeConfiguration
+	var convertedConfigurations []ultron.ComputeConfiguration
 
 	for i := range durableConfigurations {
-		convertedConfiguration := ComputeConfiguration{
+		convertedConfiguration := ultron.ComputeConfiguration{
 			VmConfiguration: durableConfigurations[i],
-			ComputeType:     ComputeTypeDurable,
+			ComputeType:     ultron.ComputeTypeDurable,
 		}
 		convertedConfigurations = append(convertedConfigurations, convertedConfiguration)
 	}
@@ -94,11 +90,11 @@ func (c *ICache) GetDurableComputeConfigurations() ([]ComputeConfiguration, erro
 	return convertedConfigurations, nil
 }
 
-func (c *ICache) GetWeightedNodes() ([]WeightedNode, error) {
-	weightedNodesInterface, found := c.memCache.Get(CacheKeyWeightedNodes)
+func (c *ICache) GetWeightedNodes() ([]ultron.WeightedNode, error) {
+	weightedNodesInterface, found := c.memCache.Get(ultron.CacheKeyWeightedNodes)
 	if !found {
 		return nil, fmt.Errorf("failed to get weighted nodes from cache")
 	}
 
-	return weightedNodesInterface.([]WeightedNode), nil
+	return weightedNodesInterface.([]ultron.WeightedNode), nil
 }

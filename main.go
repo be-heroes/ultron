@@ -11,7 +11,13 @@ import (
 	"os"
 	"strings"
 
-	ultron "ultron/ultron"
+	ultron "ultron/internal"
+	algorithm "ultron/internal/algorithm"
+	cache "ultron/internal/cache"
+	handlers "ultron/internal/handlers"
+	kubernetes "ultron/internal/kubernetes"
+	mapper "ultron/internal/mapper"
+	services "ultron/internal/services"
 
 	emma "github.com/emma-community/emma-go-sdk"
 )
@@ -34,13 +40,13 @@ func main() {
 	kubernetesConfigPath := os.Getenv(EnvironmentVariableKeyKubernetesConfig)
 	kubernetesMasterUrl := fmt.Sprintf("tcp://%s:%s", os.Getenv(EnvironmentVariableKeyKubernetesServiceHost), os.Getenv(EnvironmentVariableKeyKubernetesServicePort))
 	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv(EnvironmentVariableKeyEmmaClientId), ClientSecret: os.Getenv(EnvironmentVariableKeyEmmaClientSecret)}
-	mapper := ultron.NewIMapper()
-	algorithm := ultron.NewIAlgorithm()
-	cache := ultron.NewICache(nil)
-	certificateService := ultron.NewICertificateService()
-	computeService := ultron.NewIComputeService(algorithm, cache, mapper)
-	mutationHandler := ultron.NewIMutationHandler(computeService)
-	kubernetesClient := ultron.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
+	mapper := mapper.NewIMapper()
+	algorithm := algorithm.NewIAlgorithm()
+	cache := cache.NewICache(nil)
+	certificateService := services.NewICertificateService()
+	computeService := services.NewIComputeService(algorithm, cache, mapper)
+	mutationHandler := handlers.NewIMutationHandler(computeService)
+	kubernetesClient := kubernetes.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
 
 	log.Println("Initializing cache")
 

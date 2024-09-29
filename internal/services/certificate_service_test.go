@@ -1,4 +1,4 @@
-package ultron_test
+package services_test
 
 import (
 	"crypto/rand"
@@ -10,12 +10,12 @@ import (
 	"testing"
 	"time"
 
-	ultron "ultron/ultron"
+	services "ultron/internal/services"
 )
 
 func TestGenerateSelfSignedCert_Success(t *testing.T) {
 	// Arrange
-	certService := ultron.NewICertificateService()
+	certService := services.NewICertificateService()
 	organization := "TestOrg"
 	commonName := "test.com"
 	dnsNames := []string{"test.com", "www.test.com"}
@@ -39,7 +39,7 @@ func TestGenerateSelfSignedCert_Success(t *testing.T) {
 
 func TestGenerateSelfSignedCert_MissingOrgAndCommonName(t *testing.T) {
 	// Arrange
-	certService := ultron.NewICertificateService()
+	certService := services.NewICertificateService()
 	organization := ""
 	commonName := ""
 	dnsNames := []string{"test.com"}
@@ -56,7 +56,7 @@ func TestGenerateSelfSignedCert_MissingOrgAndCommonName(t *testing.T) {
 
 func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
 	// Arrange
-	certService := ultron.NewICertificateService()
+	certService := services.NewICertificateService()
 	organization := "TestOrg"
 	commonName := "test.com"
 	dnsNames := []string{}
@@ -77,7 +77,7 @@ func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
 
 func TestExportCACert_Success(t *testing.T) {
 	// Arrange
-	certService := ultron.NewICertificateService()
+	certService := services.NewICertificateService()
 
 	// Act & Assert
 	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
@@ -106,7 +106,7 @@ func TestExportCACert_Success(t *testing.T) {
 
 func TestExportCACert_NilCert(t *testing.T) {
 	// Arrange
-	certService := ultron.NewICertificateService()
+	certService := services.NewICertificateService()
 
 	// Act
 	err := certService.ExportCACert(nil, "dummy.pem")
@@ -119,7 +119,7 @@ func TestExportCACert_NilCert(t *testing.T) {
 
 func TestExportCACert_FailToWriteFile(t *testing.T) {
 	// Arrange
-	certService := ultron.NewICertificateService()
+	certService := services.NewICertificateService()
 
 	// Act
 	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
