@@ -47,7 +47,6 @@ func (ma *MockAlgorithm) Score(wNode ultron.WeightedNode, wPod ultron.WeightedPo
 type MockCache struct{}
 
 func (mc *MockCache) AddCacheItem(key string, value interface{}, time time.Duration) {
-	return
 }
 
 func (mc *MockCache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
@@ -151,6 +150,7 @@ func TestComputePodSpec_Success(t *testing.T) {
 }
 
 func TestComputePodSpec_NoWeightedNode(t *testing.T) {
+	// Arrange
 	mockCache := &MockCache{}
 	mockAlgorithm := &MockAlgorithm{}
 	mockMapper := &MockMapper{}
@@ -270,6 +270,7 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 }
 
 func TestMatchWeightedPodToComputeConfiguration_NoMatch(t *testing.T) {
+	// Arrange
 	mockCache := &MockCache{}
 	mockAlgorithm := &MockAlgorithm{}
 	mockMapper := &MockMapper{}
@@ -280,7 +281,10 @@ func TestMatchWeightedPodToComputeConfiguration_NoMatch(t *testing.T) {
 		RequestedCPU: 4,
 	}
 
+	// Act
 	computeConfig, err := service.MatchWeightedPodToComputeConfiguration(wPod)
+
+	// Assert
 	if err != nil {
 		t.Fatalf("Expected no error, but got: %v", err)
 	}
