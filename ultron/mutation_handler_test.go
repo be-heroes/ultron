@@ -3,7 +3,7 @@ package ultron_test
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,46 +15,10 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
-// Mock ComputeService
-type MockComputeService struct{}
-
-func (mcs *MockComputeService) ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
-	return &ultron.WeightedNode{
-		Selector: map[string]string{
-			"node-type": "mock-node",
-		},
-	}, nil
-}
-
-func (mcs *MockComputeService) CalculateWeightedNodeMedianPrice(node ultron.WeightedNode) (float64, error) {
-	return 0, nil
-}
-
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(configuration ultron.ComputeConfiguration, node ultron.WeightedNode) bool {
-	return true
-}
-
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedPodRequirements(configuration ultron.ComputeConfiguration, pod ultron.WeightedPod) bool {
-	return true
-}
-
-func (mcs *MockComputeService) MatchWeightedNodeToComputeConfiguration(node ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
-	return &ultron.ComputeConfiguration{}, nil
-}
-
-func (mcs *MockComputeService) MatchWeightedPodToComputeConfiguration(node ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
-	return &ultron.ComputeConfiguration{}, nil
-}
-
-func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod) (*ultron.WeightedNode, error) {
-	return nil, nil
-}
-
 func TestMutatePods_Success(t *testing.T) {
 	mockComputeService := &MockComputeService{}
 	handler := ultron.NewIMutationHandler(mockComputeService)
 
-	// Create a mock AdmissionReview request
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-pod",
@@ -80,7 +44,7 @@ func TestMutatePods_Success(t *testing.T) {
 	handler.MutatePods(w, req)
 
 	resp := w.Result()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("Expected status code 200, got %d", resp.StatusCode)
@@ -130,7 +94,7 @@ func TestHandleAdmissionReview_NonPodKind(t *testing.T) {
 	handler := ultron.NewIMutationHandler(mockComputeService)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
-		Kind: metav1.GroupVersionKind{Kind: "Service"}, // Non-pod kind
+		Kind: metav1.GroupVersionKind{Kind: "Service"},
 	}
 
 	admissionResponse, err := handler.HandleAdmissionReview(admissionRequest)

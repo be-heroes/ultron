@@ -12,6 +12,7 @@ import (
 
 type MutationHandler interface {
 	MutatePods(w http.ResponseWriter, r *http.Request)
+	HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error)
 }
 
 type IMutationHandler struct {

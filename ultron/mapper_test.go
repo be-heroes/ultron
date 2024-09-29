@@ -83,6 +83,7 @@ func TestMapPodToWeightedPod_MissingName(t *testing.T) {
 }
 
 func TestMapNodeToWeightedNode_Success(t *testing.T) {
+	// Arrange
 	mapper := ultron.NewIMapper()
 
 	node := &corev1.Node{
@@ -110,7 +111,10 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 		},
 	}
 
+	// Act
 	weightedNode, err := mapper.MapNodeToWeightedNode(node)
+
+	// Assert
 	if err != nil {
 		t.Fatalf("MapNodeToWeightedNode returned an error: %v", err)
 	}
@@ -136,6 +140,7 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 }
 
 func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
+	// Arrange
 	mapper := ultron.NewIMapper()
 
 	node := &corev1.Node{
@@ -145,7 +150,10 @@ func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 		Status: corev1.NodeStatus{},
 	}
 
+	// Act
 	_, err := mapper.MapNodeToWeightedNode(node)
+
+	// Assert
 	if err == nil {
 		t.Fatalf("Expected error for missing instance type, but got none")
 	}
@@ -157,6 +165,7 @@ func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 }
 
 func TestGetAnnotationOrDefault(t *testing.T) {
+	// Arrange
 	mapper := ultron.NewIMapper()
 	tests := []struct {
 		annotations   map[string]string
@@ -168,6 +177,7 @@ func TestGetAnnotationOrDefault(t *testing.T) {
 		{map[string]string{"key1": "value1"}, "key2", "default", "default"},
 	}
 
+	// Act & Assert
 	for _, test := range tests {
 		result := mapper.GetAnnotationOrDefault(test.annotations, test.key, test.defaultValue)
 		if result != test.expectedValue {
@@ -177,6 +187,7 @@ func TestGetAnnotationOrDefault(t *testing.T) {
 }
 
 func TestGetFloatAnnotationOrDefault(t *testing.T) {
+	// Arrange
 	mapper := ultron.NewIMapper()
 	tests := []struct {
 		annotations   map[string]string
@@ -189,6 +200,7 @@ func TestGetFloatAnnotationOrDefault(t *testing.T) {
 		{map[string]string{}, "key2", 1.23, 1.23},
 	}
 
+	// Act & Assert
 	for _, test := range tests {
 		result := mapper.GetFloatAnnotationOrDefault(test.annotations, test.key, test.defaultValue)
 		if result != test.expectedValue {
@@ -198,6 +210,7 @@ func TestGetFloatAnnotationOrDefault(t *testing.T) {
 }
 
 func TestGetPriorityFromAnnotation(t *testing.T) {
+	// Arrange
 	mapper := ultron.NewIMapper()
 	tests := []struct {
 		annotations   map[string]string
@@ -207,6 +220,7 @@ func TestGetPriorityFromAnnotation(t *testing.T) {
 		{map[string]string{ultron.AnnotationPriority: "PriorityLow"}, ultron.PriorityLow},
 	}
 
+	// Act & Assert
 	for _, test := range tests {
 		result := mapper.GetPriorityFromAnnotation(test.annotations)
 		if result != test.expectedValue {

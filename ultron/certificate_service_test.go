@@ -14,14 +14,17 @@ import (
 )
 
 func TestGenerateSelfSignedCert_Success(t *testing.T) {
+	// Arrange
 	certService := ultron.NewICertificateService()
-
 	organization := "TestOrg"
 	commonName := "test.com"
 	dnsNames := []string{"test.com", "www.test.com"}
 	ipAddresses := []net.IP{net.ParseIP("127.0.0.1")}
 
+	// Act
 	cert, err := certService.GenerateSelfSignedCert(organization, commonName, dnsNames, ipAddresses)
+
+	// Assert
 	if err != nil {
 		t.Fatalf("GenerateSelfSignedCert returned an error: %v", err)
 	}
@@ -35,28 +38,34 @@ func TestGenerateSelfSignedCert_Success(t *testing.T) {
 }
 
 func TestGenerateSelfSignedCert_MissingOrgAndCommonName(t *testing.T) {
+	// Arrange
 	certService := ultron.NewICertificateService()
-
 	organization := ""
 	commonName := ""
 	dnsNames := []string{"test.com"}
 	ipAddresses := []net.IP{net.ParseIP("127.0.0.1")}
 
+	// Act
 	_, err := certService.GenerateSelfSignedCert(organization, commonName, dnsNames, ipAddresses)
+
+	// Assert
 	if err == nil {
 		t.Fatal("Expected error for missing organization and common name, but got none")
 	}
 }
 
 func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
+	// Arrange
 	certService := ultron.NewICertificateService()
-
 	organization := "TestOrg"
 	commonName := "test.com"
 	dnsNames := []string{}
 	ipAddresses := []net.IP{}
 
+	// Act
 	cert, err := certService.GenerateSelfSignedCert(organization, commonName, dnsNames, ipAddresses)
+
+	// Assert
 	if err != nil {
 		t.Fatalf("GenerateSelfSignedCert returned an error: %v", err)
 	}
@@ -67,8 +76,10 @@ func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
 }
 
 func TestExportCACert_Success(t *testing.T) {
+	// Arrange
 	certService := ultron.NewICertificateService()
 
+	// Act & Assert
 	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
 	template := &x509.Certificate{
 		SerialNumber: big.NewInt(1),
@@ -80,6 +91,7 @@ func TestExportCACert_Success(t *testing.T) {
 	filePath := "test_ca_cert.pem"
 
 	err := certService.ExportCACert(caCertDER, filePath)
+
 	if err != nil {
 		t.Fatalf("ExportCACert returned an error: %v", err)
 	}
@@ -93,17 +105,23 @@ func TestExportCACert_Success(t *testing.T) {
 }
 
 func TestExportCACert_NilCert(t *testing.T) {
+	// Arrange
 	certService := ultron.NewICertificateService()
 
+	// Act
 	err := certService.ExportCACert(nil, "dummy.pem")
+
+	// Assert
 	if err == nil {
 		t.Fatal("Expected error for nil certificate, but got none")
 	}
 }
 
 func TestExportCACert_FailToWriteFile(t *testing.T) {
+	// Arrange
 	certService := ultron.NewICertificateService()
 
+	// Act
 	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
 	template := &x509.Certificate{
 		SerialNumber: big.NewInt(1),
@@ -115,6 +133,8 @@ func TestExportCACert_FailToWriteFile(t *testing.T) {
 	filePath := "/invalid_path/test_ca_cert.pem"
 
 	err := certService.ExportCACert(caCertDER, filePath)
+
+	// Assert
 	if err == nil {
 		t.Fatal("Expected error for invalid file path, but got none")
 	}

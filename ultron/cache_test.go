@@ -9,14 +9,20 @@ import (
 )
 
 func TestNewICache(t *testing.T) {
-	iCache := ultron.NewICache(nil)
+	// Arrange
+	var iCache *ultron.ICache = nil
 
+	// Act
+	iCache = ultron.NewICache(nil)
+
+	// Assert
 	if iCache == nil {
 		t.Errorf("NewICache should not return nil")
 	}
 }
 
 func TestGetEphemeralComputeConfigurations(t *testing.T) {
+	// Arrange
 	iCache := ultron.NewICache(nil)
 
 	vmConfigs := []emma.VmConfiguration{
@@ -24,9 +30,12 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
 	}
 
+	// Act
 	iCache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, vmConfigs, cache.DefaultExpiration)
 
 	computeConfigs, err := iCache.GetEphemeralComputeConfigurations()
+
+	// Assert
 	if err != nil {
 		t.Fatalf("GetEphemeralComputeConfigurations returned an error: %v", err)
 	}
@@ -46,15 +55,20 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 }
 
 func TestGetEphemeralComputeConfigurations_NotFound(t *testing.T) {
+	// Arrange
 	iCache := ultron.NewICache(nil)
 
+	// Act
 	_, err := iCache.GetEphemeralComputeConfigurations()
+
+	// Assert
 	if err == nil {
 		t.Errorf("Expected an error when spot configurations are not found in the cache")
 	}
 }
 
 func TestGetDurableComputeConfigurations(t *testing.T) {
+	// Arrange
 	iCache := ultron.NewICache(nil)
 
 	vmConfigs := []emma.VmConfiguration{
@@ -62,9 +76,12 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
 	}
 
+	// Act
 	iCache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, vmConfigs, cache.DefaultExpiration)
 
 	computeConfigs, err := iCache.GetDurableComputeConfigurations()
+
+	// Assert
 	if err != nil {
 		t.Fatalf("GetDurableComputeConfigurations returned an error: %v", err)
 	}
@@ -84,9 +101,13 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 }
 
 func TestGetDurableComputeConfigurations_NotFound(t *testing.T) {
+	// Arrange
 	iCache := ultron.NewICache(nil)
 
+	// Act
 	_, err := iCache.GetDurableComputeConfigurations()
+
+	// Assert
 	if err == nil {
 		t.Errorf("Expected an error when spot configurations are not found in the cache")
 	}
