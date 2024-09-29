@@ -1,4 +1,4 @@
-module emma.ms/ultron-webhookserver
+module emma.ms/ultron
 
 go 1.23.1
 

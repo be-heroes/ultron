@@ -71,7 +71,7 @@ jobs:
         if: steps.docker-check.outputs.run_docker == 'true'
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/my-go-app:${{ github.sha }} .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/my-go-app:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/my-go-app:latest
+          docker tag ${{ secrets.DOCKER_USERNAME }}/my-go-app:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ultron:latest
 
       - name: Push Docker image
         if: steps.docker-check.outputs.run_docker == 'true'

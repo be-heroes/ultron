@@ -11,7 +11,7 @@ import (
 	"os"
 	"strings"
 
-	ultron "emma.ms/ultron-webhookserver/ultron"
+	ultron "emma.ms/ultron/ultron"
 	emma "github.com/emma-community/emma-go-sdk"
 )
 
