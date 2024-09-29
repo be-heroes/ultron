@@ -48,12 +48,12 @@ jobs:
         id: docker-check
         run: |
           echo "run_docker: ${{ github.event.inputs.run_docker }}"
-          if [[ "${{ github.event.inputs.run_docker }}" == "false" ]]; then
+          if [[ "${{ github.event.inputs.run_docker }}" == "true" ]]; then
             echo "Skipping Docker build and push"
-            echo "::set-output name=run_docker::false"
+            echo "::set-output name=run_docker::true"
           else
             echo "Running Docker build and push"
-            echo "::set-output name=run_docker::true"
+            echo "::set-output name=run_docker::false"
           fi
 
       - name: Set up Docker Buildx
