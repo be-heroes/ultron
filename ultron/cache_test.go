@@ -53,3 +53,41 @@ func TestGetEphemeralComputeConfigurations_NotFound(t *testing.T) {
 		t.Errorf("Expected an error when spot configurations are not found in the cache")
 	}
 }
+
+func TestGetDurableComputeConfigurations(t *testing.T) {
+	iCache := ultron.NewICache(nil)
+
+	vmConfigs := []emma.VmConfiguration{
+		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+	}
+
+	iCache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, vmConfigs, cache.DefaultExpiration)
+
+	computeConfigs, err := iCache.GetDurableComputeConfigurations()
+	if err != nil {
+		t.Fatalf("GetDurableComputeConfigurations returned an error: %v", err)
+	}
+
+	if len(computeConfigs) != len(vmConfigs) {
+		t.Errorf("Expected %d compute configurations, got %d", len(vmConfigs), len(computeConfigs))
+	}
+
+	for i, config := range computeConfigs {
+		if config.ComputeType != ultron.ComputeTypeDurable {
+			t.Errorf("Expected ComputeTypeDurable, got %s", config.ComputeType)
+		}
+		if config.VmConfiguration.Id != vmConfigs[i].Id {
+			t.Errorf("Expected Id %d, got %d", vmConfigs[i].Id, config.VmConfiguration.Id)
+		}
+	}
+}
+
+func TestGetDurableComputeConfigurations_NotFound(t *testing.T) {
+	iCache := ultron.NewICache(nil)
+
+	_, err := iCache.GetDurableComputeConfigurations()
+	if err == nil {
+		t.Errorf("Expected an error when spot configurations are not found in the cache")
+	}
+}
