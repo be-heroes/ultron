@@ -46,40 +46,41 @@ func main() {
 	apiClient := emma.NewAPIClient(emma.NewConfiguration())
 	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(emmaApiCredentials).Execute()
 	if err != nil {
-		log.Fatalf("Failed to initialize cache with error: %v", err)
+		log.Fatalf("Failed to issue access token with error: %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		_, err := io.ReadAll(resp.Body)
 
-		log.Fatalf("Failed to initialize cache with error: %v", err)
+		log.Fatalf("Failed to read access token data with error: %v", err)
 	}
 
 	auth := context.WithValue(context.Background(), emma.ContextAccessToken, token.GetAccessToken())
 	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Execute()
 	if err != nil {
-		log.Fatalf("Failed to initialize cache with error: %v", err)
+		log.Fatalf("Failed to fetch durable compute configurations with error: %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		_, err := io.ReadAll(resp.Body)
 
-		log.Fatalf("Failed to initialize cache with error: %v", err)
+		log.Fatalf("Failed to read durable compute configurations data with error: %v", err)
 	}
 
 	ephemeralConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
 	if err != nil {
-		log.Fatalf("Failed to initialize cache with error: %v", err)
+		log.Fatalf("Failed to fetch ephemeral compute configurations with error: %v", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
 		_, err := io.ReadAll(resp.Body)
-		log.Fatalf("Failed to initialize cache with error: %v", err)
+
+		log.Fatalf("Failed to read ephemeral compute configurations data with error: %v", err)
 	}
 
 	wNodes, err := kubernetesClient.GetWeightedNodes()
 	if err != nil {
-		log.Fatalf("Failed to initialize cache with error: %v", err)
+		log.Fatalf("Failed to get weighted nodes with error: %v", err)
 	}
 
 	cache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, durableConfigs.Content, 0)
