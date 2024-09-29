@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net"
 	"net/http"
 	"os"
@@ -63,7 +64,7 @@ func main() {
 	}
 
 	auth := context.WithValue(context.Background(), emma.ContextAccessToken, token.GetAccessToken())
-	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Execute()
+	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Size(math.MaxInt32).Execute()
 	if err != nil {
 		log.Fatalf("Failed to fetch durable compute configurations with error: %v", err)
 	}
@@ -74,7 +75,7 @@ func main() {
 		log.Fatalf("Failed to read durable compute configurations data with error: %v", err)
 	}
 
-	ephemeralConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
+	ephemeralConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Size(math.MaxInt32).Execute()
 	if err != nil {
 		log.Fatalf("Failed to fetch ephemeral compute configurations with error: %v", err)
 	}
