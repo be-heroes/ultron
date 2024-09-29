@@ -57,10 +57,10 @@ func (m IMapper) MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 		totalMemoryLimit += memLimitFloat
 	}
 
-	requestedDiskType := getAnnotationOrDefault(pod.Annotations, AnnotationDiskType, DefaultDiskType)
-	requestedNetworkType := getAnnotationOrDefault(pod.Annotations, AnnotationNetworkType, DefaultNetworkType)
-	requestedStorageSize := getFloatAnnotationOrDefault(pod.Annotations, AnnotationStorageSize, DefaultStorageSizeGB)
-	priority := getPriorityFromAnnotation(pod.Annotations)
+	requestedDiskType := m.GetAnnotationOrDefault(pod.Annotations, AnnotationDiskType, DefaultDiskType)
+	requestedNetworkType := m.GetAnnotationOrDefault(pod.Annotations, AnnotationNetworkType, DefaultNetworkType)
+	requestedStorageSize := m.GetFloatAnnotationOrDefault(pod.Annotations, AnnotationStorageSize, DefaultStorageSizeGB)
+	priority := m.GetPriorityFromAnnotation(pod.Annotations)
 
 	return WeightedPod{
 		Selector:             map[string]string{MetadataName: pod.Name},
@@ -118,4 +118,35 @@ func (m IMapper) MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) 
 		InstanceType:     instanceType,
 		InterruptionRate: 0,
 	}, nil
+}
+
+func (m IMapper) GetAnnotationOrDefault(annotations map[string]string, key, defaultValue string) string {
+	if value, exists := annotations[key]; exists {
+		return value
+	}
+
+	return defaultValue
+}
+
+func (m IMapper) GetFloatAnnotationOrDefault(annotations map[string]string, key string, defaultValue float64) float64 {
+	if valueStr, exists := annotations[key]; exists {
+		if value, err := strconv.ParseFloat(valueStr, 64); err == nil {
+			return value
+		}
+	}
+
+	return defaultValue
+}
+
+func (m IMapper) GetPriorityFromAnnotation(annotations map[string]string) PriorityEnum {
+	if value, exists := annotations[AnnotationPriority]; exists {
+		switch value {
+		case "PriorityHigh":
+			return PriorityHigh
+		case "PriorityLow":
+			return PriorityLow
+		}
+	}
+
+	return DefaultPriority
 }

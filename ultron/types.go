@@ -18,6 +18,14 @@ const (
 	PriorityHigh PriorityEnum = true
 )
 
+func (p PriorityEnum) String() string {
+	if p {
+		return "PriorityHigh"
+	}
+
+	return "PriorityLow"
+}
+
 type WeightedNode struct {
 	AvailableCPU     float64
 	TotalCPU         float64
