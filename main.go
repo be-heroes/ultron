@@ -79,13 +79,14 @@ func main() {
 		log.Fatalf("Failed to read ephemeral compute configurations data with error: %v", err)
 	}
 
+	cache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, durableConfigs.Content, 0)
+	cache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, ephemeralConfigs.Content, 0)
+
 	wNodes, err := kubernetesClient.GetWeightedNodes()
 	if err != nil {
 		log.Fatalf("Failed to get weighted nodes with error: %v", err)
 	}
 
-	cache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, durableConfigs.Content, 0)
-	cache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, ephemeralConfigs.Content, 0)
 	cache.AddCacheItem(ultron.CacheKeyWeightedNodes, wNodes, 0)
 
 	log.Println("Initialized cache")

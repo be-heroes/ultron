@@ -91,13 +91,17 @@ func (m IMapper) MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) 
 	totalMemory := float64(memCapacity.Value()) / float64(bytesInGiB)
 	totalStorage := float64(storageCapacity.Value()) / float64(bytesInGiB)
 	hostname := node.Labels[LabelHostName]
+	instanceType := node.Labels[LabelInstanceType]
 
-	instanceType, ok := node.Labels[LabelInstanceType]
-	if !ok || instanceType == "" {
-		return WeightedNode{}, fmt.Errorf("missing required label: %s", LabelInstanceType)
+	if hostname == "" && instanceType == "" {
+		return WeightedNode{}, fmt.Errorf("missing required label: %s or %s", LabelHostName, LabelInstanceType)
 	}
 
-	selector := map[string]string{LabelInstanceType: instanceType}
+	selector := map[string]string{}
+
+	if instanceType != "" {
+		selector[LabelInstanceType] = instanceType
+	}
 
 	if hostname != "" {
 		selector[LabelHostName] = hostname
