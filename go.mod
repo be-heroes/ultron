@@ -1,4 +1,4 @@
-module emma.ms/ultron
+module ultron
 
 go 1.23.1
 

@@ -3,7 +3,8 @@ package ultron_test
 import (
 	"time"
 
-	ultron "emma.ms/ultron/ultron"
+	ultron "ultron/ultron"
+
 	emma "github.com/emma-community/emma-go-sdk"
 	corev1 "k8s.io/api/core/v1"
 )

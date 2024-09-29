@@ -3,7 +3,8 @@ package ultron_test
 import (
 	"testing"
 
-	ultron "emma.ms/ultron/ultron"
+	ultron "ultron/ultron"
+
 	emma "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
 )

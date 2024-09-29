@@ -3,7 +3,7 @@ package ultron_test
 import (
 	"testing"
 
-	ultron "emma.ms/ultron/ultron"
+	ultron "ultron/ultron"
 )
 
 func TestResourceFitScore(t *testing.T) {

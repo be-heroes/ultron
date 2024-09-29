@@ -8,7 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	ultron "emma.ms/ultron/ultron"
+	ultron "ultron/ultron"
+
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

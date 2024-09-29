@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	ultron "emma.ms/ultron/ultron"
+	ultron "ultron/ultron"
 )
 
 func TestGenerateSelfSignedCert_Success(t *testing.T) {

@@ -4,7 +4,8 @@ import (
 	"math"
 	"testing"
 
-	ultron "emma.ms/ultron/ultron"
+	ultron "ultron/ultron"
+
 	corev1 "k8s.io/api/core/v1"
 )
 
