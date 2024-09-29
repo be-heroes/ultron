@@ -31,10 +31,17 @@ func main() {
 	kubernetesConfigPath := os.Getenv(EnvironmentVariableKeyKubernetesConfig)
 	kubernetesMasterUrl := fmt.Sprintf("tcp://%s:%s", os.Getenv(EnvironmentVariableKeyKubernetesServiceHost), os.Getenv(EnvironmentVariableKeyKubernetesServicePort))
 	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv(EnvironmentVariableKeyEmmaClientId), ClientSecret: os.Getenv(EnvironmentVariableKeyEmmaClientSecret)}
+	mapper := ultron.NewIMapper()
+	algorithm := ultron.NewIAlgorithm()
+	cache := ultron.NewICache(nil)
+	certificateService := ultron.NewICertificateService()
+	computeService := ultron.NewIComputeService(algorithm, cache, mapper)
+	mutationHandler := ultron.NewIMutationHandler(computeService)
+	kubernetesClient := ultron.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
 
 	log.Println("Initializing cache")
 
-	err := ultron.InitializeCache(emmaApiCredentials, kubernetesMasterUrl, kubernetesConfigPath)
+	err := cache.Initialize(emmaApiCredentials, kubernetesClient)
 	if err != nil {
 		log.Fatalf("Failed to initialize cache with error: %v", err)
 	}
@@ -74,7 +81,7 @@ func main() {
 
 	log.Println("Generating self-signed certificate")
 
-	cert, err := ultron.GenerateSelfSignedCert(
+	cert, err := certificateService.GenerateSelfSignedCert(
 		certificateOrganization,
 		certificateCommonName,
 		strings.Split(certificateDnsNamesCSV, ","),
@@ -89,7 +96,7 @@ func main() {
 	if certificateExportPath != "" {
 		log.Println("Exporting CA certificate")
 
-		err = ultron.ExportCACert(cert.Certificate[0], certificateExportPath)
+		err = certificateService.ExportCACert(cert.Certificate[0], certificateExportPath)
 		if err != nil {
 			log.Fatalf("Failed to export CA certificate to file: %v", err)
 		}
@@ -102,7 +109,7 @@ func main() {
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		},
-		Handler: http.HandlerFunc(ultron.MutatePods),
+		Handler: http.HandlerFunc(mutationHandler.MutatePods),
 	}
 
 	log.Println("Initialized server")

@@ -10,7 +10,21 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-var MutatePods = func(w http.ResponseWriter, r *http.Request) {
+type MutationHandler interface {
+	MutatePods(w http.ResponseWriter, r *http.Request)
+}
+
+type IMutationHandler struct {
+	computeService ComputeService
+}
+
+func NewIMutationHandler(computeService ComputeService) *IMutationHandler {
+	return &IMutationHandler{
+		computeService: computeService,
+	}
+}
+
+func (mh IMutationHandler) MutatePods(w http.ResponseWriter, r *http.Request) {
 	var admissionReviewReq admissionv1.AdmissionReview
 	var admissionReviewResp admissionv1.AdmissionReview
 
@@ -29,7 +43,7 @@ var MutatePods = func(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	admissionResponse, err := handleAdmissionReview(admissionReviewReq.Request)
+	admissionResponse, err := mh.HandleAdmissionReview(admissionReviewReq.Request)
 	if err != nil {
 		log.Printf("Could not handle addmission review: %v", err)
 		http.Error(w, "could not handle addmission review", http.StatusInternalServerError)
@@ -59,7 +73,7 @@ var MutatePods = func(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func handleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
+func (mh IMutationHandler) HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 	if request.Kind.Kind != "Pod" {
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
@@ -73,7 +87,7 @@ func handleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.
 		}, err
 	}
 
-	wNode, err := ComputePodSpec(&pod)
+	wNode, err := mh.computeService.ComputePodSpec(&pod)
 	if err != nil {
 		return nil, err
 	}

@@ -7,7 +7,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-var MapPodToWeightedPod = func(pod *corev1.Pod) (WeightedPod, error) {
+type Mapper interface {
+	MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error)
+	MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error)
+}
+
+type IMapper struct{}
+
+func NewIMapper() *IMapper {
+	return &IMapper{}
+}
+
+func (m IMapper) MapPodToWeightedPod(pod *corev1.Pod) (WeightedPod, error) {
 	if pod.Name == "" {
 		return WeightedPod{}, fmt.Errorf("missing required field: %s", MetadataName)
 	}
@@ -64,7 +75,7 @@ var MapPodToWeightedPod = func(pod *corev1.Pod) (WeightedPod, error) {
 	}, nil
 }
 
-var MapNodeToWeightedNode = func(node *corev1.Node) (WeightedNode, error) {
+func (m IMapper) MapNodeToWeightedNode(node *corev1.Node) (WeightedNode, error) {
 	const bytesInGiB = 1024 * 1024 * 1024
 
 	cpuAllocatable := node.Status.Allocatable[corev1.ResourceCPU]

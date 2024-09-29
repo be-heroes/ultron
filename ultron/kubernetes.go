@@ -20,14 +20,34 @@ const (
 	MetadataName          = "metadata.name"
 )
 
-var GetWeightedNodes = func(kubernetesMasterUrl string, kubernetesConfigPath string) ([]WeightedNode, error) {
+type KubernetesClient interface {
+	GetWeightedNodes() ([]WeightedNode, error)
+}
+
+type IKubernetesClient struct {
+	mapper               Mapper
+	computeService       ComputeService
+	kubernetesMasterUrl  string
+	kubernetesConfigPath string
+}
+
+func NewIKubernetesClient(kubernetesMasterUrl string, kubernetesConfigPath string, mapper Mapper, computeService ComputeService) *IKubernetesClient {
+	return &IKubernetesClient{
+		kubernetesMasterUrl:  kubernetesMasterUrl,
+		kubernetesConfigPath: kubernetesConfigPath,
+		computeService:       computeService,
+		mapper:               mapper,
+	}
+}
+
+func (kc IKubernetesClient) GetWeightedNodes() ([]WeightedNode, error) {
 	var err error
 
-	if kubernetesMasterUrl == "tcp://:" {
-		kubernetesMasterUrl = ""
+	if kc.kubernetesMasterUrl == "tcp://:" {
+		kc.kubernetesMasterUrl = ""
 	}
 
-	config, err := clientcmd.BuildConfigFromFlags(kubernetesMasterUrl, kubernetesConfigPath)
+	config, err := clientcmd.BuildConfigFromFlags(kc.kubernetesMasterUrl, kc.kubernetesConfigPath)
 	if err != nil {
 		fmt.Println("Falling back to docker Kubernetes API at  https://kubernetes.docker.internal:6443")
 
@@ -51,12 +71,12 @@ var GetWeightedNodes = func(kubernetesMasterUrl string, kubernetesConfigPath str
 	}
 
 	for _, node := range nodes.Items {
-		wNode, err := MapNodeToWeightedNode(&node)
+		wNode, err := kc.mapper.MapNodeToWeightedNode(&node)
 		if err != nil {
 			return nil, err
 		}
 
-		computeConfiguration, err := MatchWeightedNodeToComputeConfiguration(wNode)
+		computeConfiguration, err := kc.computeService.MatchWeightedNodeToComputeConfiguration(wNode)
 		if err != nil {
 			return nil, err
 		}
@@ -65,7 +85,7 @@ var GetWeightedNodes = func(kubernetesMasterUrl string, kubernetesConfigPath str
 			wNode.Price = float64(*computeConfiguration.Cost.PricePerUnit)
 		}
 
-		medianPrice, err := CalculateWeightedNodeMedianPrice(wNode)
+		medianPrice, err := kc.computeService.CalculateWeightedNodeMedianPrice(wNode)
 		if err != nil {
 			return nil, err
 		}

@@ -19,7 +19,19 @@ const (
 	BlockTypeRsaPrivateKey = "RSA PRIVATE KEY"
 )
 
-var GenerateSelfSignedCert = func(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
+type CertificateService interface {
+	GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error)
+	ExportCACert(caCert []byte, filePath string) error
+}
+
+type ICertificateService struct {
+}
+
+func NewICertificateService() *ICertificateService {
+	return &ICertificateService{}
+}
+
+func (cs ICertificateService) GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
 	if organization == "" || commonName == "" {
 		return tls.Certificate{}, fmt.Errorf("organization and common name must be provided")
 	}
@@ -66,7 +78,7 @@ var GenerateSelfSignedCert = func(organization string, commonName string, dnsNam
 	return tlsCert, nil
 }
 
-var ExportCACert = func(caCert []byte, filePath string) error {
+func (cs ICertificateService) ExportCACert(caCert []byte, filePath string) error {
 	if caCert == nil {
 		return fmt.Errorf("CA certificate is nil")
 	}
