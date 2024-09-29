@@ -4,6 +4,14 @@ import (
 	"strconv"
 )
 
+func (p PriorityEnum) String() string {
+	if p {
+		return "PriorityHigh"
+	}
+
+	return "PriorityLow"
+}
+
 func getAnnotationOrDefault(annotations map[string]string, key, defaultValue string) string {
 	if value, exists := annotations[key]; exists {
 		return value
