@@ -13,7 +13,6 @@ import (
 func TestMapPodToWeightedPod_Success(t *testing.T) {
 	mapper := ultron.NewIMapper()
 
-	// Mock Pod object
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test-pod",
@@ -46,7 +45,6 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 		t.Fatalf("MapPodToWeightedPod returned an error: %v", err)
 	}
 
-	// Assertions
 	if weightedPod.RequestedCPU != 0.5 {
 		t.Errorf("Expected RequestedCPU to be 0.5, got %f", weightedPod.RequestedCPU)
 	}
@@ -67,7 +65,6 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 func TestMapPodToWeightedPod_MissingName(t *testing.T) {
 	mapper := ultron.NewIMapper()
 
-	// Mock Pod object without name
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{},
@@ -88,7 +85,6 @@ func TestMapPodToWeightedPod_MissingName(t *testing.T) {
 func TestMapNodeToWeightedNode_Success(t *testing.T) {
 	mapper := ultron.NewIMapper()
 
-	// Mock Node object
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -119,7 +115,6 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 		t.Fatalf("MapNodeToWeightedNode returned an error: %v", err)
 	}
 
-	// Assertions
 	if weightedNode.AvailableCPU != 2 {
 		t.Errorf("Expected AvailableCPU to be 2, got %f", weightedNode.AvailableCPU)
 	}
@@ -143,7 +138,6 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 	mapper := ultron.NewIMapper()
 
-	// Mock Node object without instance type
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{},
