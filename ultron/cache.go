@@ -1,10 +1,7 @@
 package ultron
 
 import (
-	"context"
 	"fmt"
-	"io"
-	"net/http"
 	"time"
 
 	emma "github.com/emma-community/emma-go-sdk"
@@ -18,7 +15,6 @@ const (
 )
 
 type Cache interface {
-	Initialize(credentials emma.Credentials, kubernetesClient *IKubernetesClient) error
 	AddCacheItem(key string, value interface{}, d time.Duration)
 	GetAllComputeConfigurations() ([]ComputeConfiguration, error)
 	GetEphemeralComputeConfigurations() ([]ComputeConfiguration, error)
@@ -38,50 +34,6 @@ func NewICache(innerCache *cache.Cache) *ICache {
 	return &ICache{
 		memCache: innerCache,
 	}
-}
-
-func (s *ICache) Initialize(credentials emma.Credentials, kubernetesClient *IKubernetesClient) error {
-	apiClient := emma.NewAPIClient(emma.NewConfiguration())
-	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(credentials).Execute()
-	if err != nil {
-		return err
-	}
-	if resp.StatusCode != http.StatusOK {
-		_, err := io.ReadAll(resp.Body)
-		return err
-	}
-
-	auth := context.WithValue(context.Background(), emma.ContextAccessToken, token.GetAccessToken())
-	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Execute()
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		_, err := io.ReadAll(resp.Body)
-		return err
-	}
-
-	ephemeralConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Execute()
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		_, err := io.ReadAll(resp.Body)
-		return err
-	}
-
-	wNodes, err := kubernetesClient.GetWeightedNodes()
-	if err != nil {
-		return err
-	}
-
-	s.memCache.Set(CacheKeyWeightedNodes, wNodes, cache.DefaultExpiration)
-	s.memCache.Set(CacheKeyDurableVmConfigurations, durableConfigs.Content, cache.DefaultExpiration)
-	s.memCache.Set(CacheKeySpotVmConfigurations, ephemeralConfigs.Content, cache.DefaultExpiration)
-
-	return nil
 }
 
 func (s *ICache) AddCacheItem(key string, value interface{}, d time.Duration) {
