@@ -5,26 +5,7 @@ import (
 )
 
 type ComputeType string
-
-const (
-	ComputeTypeDurable   ComputeType = "durable"
-	ComputeTypeEphemeral ComputeType = "ephemeral"
-)
-
 type PriorityEnum bool
-
-const (
-	PriorityLow  PriorityEnum = false
-	PriorityHigh PriorityEnum = true
-)
-
-func (p PriorityEnum) String() string {
-	if p {
-		return "PriorityHigh"
-	}
-
-	return "PriorityLow"
-}
 
 type WeightedNode struct {
 	AvailableCPU     float64

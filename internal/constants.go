@@ -10,6 +10,9 @@ const (
 	CacheKeyDurableVmConfigurations = "DURABLE_VMCONFIGURATION"
 	CacheKeySpotVmConfigurations    = "SPOT_VMCONFIGURATION"
 
+	ComputeTypeDurable   ComputeType = "durable"
+	ComputeTypeEphemeral ComputeType = "ephemeral"
+
 	DefaultDiskType              = "SSD"
 	DefaultNetworkType           = "isolated"
 	DefaultStorageSizeGB         = 10.0
@@ -21,4 +24,7 @@ const (
 	LabelInstanceType = "node.kubernetes.io/instance-type"
 
 	MetadataName = "metadata.name"
+
+	PriorityLow  PriorityEnum = false
+	PriorityHigh PriorityEnum = true
 )
