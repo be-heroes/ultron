@@ -1,0 +1,174 @@
+package ultron_test
+
+import (
+	"bytes"
+	"encoding/json"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
+	ultron "emma.ms/ultron/ultron"
+	admissionv1 "k8s.io/api/admission/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+)
+
+// Mock ComputeService
+type MockComputeService struct{}
+
+func (mcs *MockComputeService) ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
+	return &ultron.WeightedNode{
+		Selector: map[string]string{
+			"node-type": "mock-node",
+		},
+	}, nil
+}
+
+func (mcs *MockComputeService) CalculateWeightedNodeMedianPrice(node ultron.WeightedNode) (float64, error) {
+	return 0, nil
+}
+
+func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(configuration ultron.ComputeConfiguration, node ultron.WeightedNode) bool {
+	return true
+}
+
+func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedPodRequirements(configuration ultron.ComputeConfiguration, pod ultron.WeightedPod) bool {
+	return true
+}
+
+func (mcs *MockComputeService) MatchWeightedNodeToComputeConfiguration(node ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
+	return &ultron.ComputeConfiguration{}, nil
+}
+
+func (mcs *MockComputeService) MatchWeightedPodToComputeConfiguration(node ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
+	return &ultron.ComputeConfiguration{}, nil
+}
+
+func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod) (*ultron.WeightedNode, error) {
+	return nil, nil
+}
+
+func TestMutatePods_Success(t *testing.T) {
+	mockComputeService := &MockComputeService{}
+	handler := ultron.NewIMutationHandler(mockComputeService)
+
+	// Create a mock AdmissionReview request
+	pod := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-pod",
+		},
+		Spec: corev1.PodSpec{},
+	}
+	rawPod, _ := json.Marshal(pod)
+
+	admissionReviewReq := admissionv1.AdmissionReview{
+		Request: &admissionv1.AdmissionRequest{
+			UID:  "1234",
+			Kind: metav1.GroupVersionKind{Kind: "Pod"},
+			Object: runtime.RawExtension{
+				Raw: rawPod,
+			},
+		},
+	}
+
+	reqBody, _ := json.Marshal(admissionReviewReq)
+	req := httptest.NewRequest(http.MethodPost, "/mutate", bytes.NewBuffer(reqBody))
+	w := httptest.NewRecorder()
+
+	handler.MutatePods(w, req)
+
+	resp := w.Result()
+	body, _ := ioutil.ReadAll(resp.Body)
+
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Expected status code 200, got %d", resp.StatusCode)
+	}
+
+	var admissionReviewResp admissionv1.AdmissionReview
+	if err := json.Unmarshal(body, &admissionReviewResp); err != nil {
+		t.Fatalf("Expected valid AdmissionReview response, but got error: %v", err)
+	}
+
+	if admissionReviewResp.Response.UID != admissionReviewReq.Request.UID {
+		t.Errorf("Expected response UID to match request UID, got %s", admissionReviewResp.Response.UID)
+	}
+
+	if admissionReviewResp.Response.Allowed != true {
+		t.Errorf("Expected Allowed to be true, but got false")
+	}
+
+	patch := admissionReviewResp.Response.Patch
+	if patch == nil {
+		t.Fatalf("Expected non-nil patch, but got nil")
+	}
+
+	expectedPatch := `[{"op":"add","path":"/spec/nodeSelector","value":{"node-type":"mock-node"}}]`
+	if string(patch) != expectedPatch {
+		t.Errorf("Expected patch %s, but got %s", expectedPatch, string(patch))
+	}
+}
+
+func TestMutatePods_InvalidBody(t *testing.T) {
+	mockComputeService := &MockComputeService{}
+	handler := ultron.NewIMutationHandler(mockComputeService)
+
+	req := httptest.NewRequest(http.MethodPost, "/mutate", bytes.NewBuffer([]byte("invalid body")))
+	w := httptest.NewRecorder()
+
+	handler.MutatePods(w, req)
+
+	resp := w.Result()
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Expected status code 400, got %d", resp.StatusCode)
+	}
+}
+
+func TestHandleAdmissionReview_NonPodKind(t *testing.T) {
+	mockComputeService := &MockComputeService{}
+	handler := ultron.NewIMutationHandler(mockComputeService)
+
+	admissionRequest := &admissionv1.AdmissionRequest{
+		Kind: metav1.GroupVersionKind{Kind: "Service"}, // Non-pod kind
+	}
+
+	admissionResponse, err := handler.HandleAdmissionReview(admissionRequest)
+	if err != nil {
+		t.Fatalf("HandleAdmissionReview returned an error: %v", err)
+	}
+
+	if admissionResponse.Allowed != true {
+		t.Errorf("Expected Allowed to be true for non-pod kind, got false")
+	}
+}
+
+func TestHandleAdmissionReview_PodSpecFailure(t *testing.T) {
+	mockComputeService := &MockComputeService{}
+	handler := ultron.NewIMutationHandler(mockComputeService)
+
+	pod := corev1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test-pod",
+		},
+		Spec: corev1.PodSpec{},
+	}
+	rawPod, _ := json.Marshal(pod)
+
+	admissionRequest := &admissionv1.AdmissionRequest{
+		UID:  "1234",
+		Kind: metav1.GroupVersionKind{Kind: "Pod"},
+		Object: runtime.RawExtension{
+			Raw: rawPod,
+		},
+	}
+
+	admissionResponse, err := handler.HandleAdmissionReview(admissionRequest)
+	if err != nil {
+		t.Fatalf("HandleAdmissionReview returned an error: %v", err)
+	}
+
+	if admissionResponse.Allowed != true {
+		t.Errorf("Expected Allowed to be true, but got false")
+	}
+}
