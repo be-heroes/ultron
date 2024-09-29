@@ -23,6 +23,8 @@ type ComputeService interface {
 	MatchWeightedNodeToComputeConfiguration(wNode WeightedNode) (*ComputeConfiguration, error)
 	MatchWeightedPodToWeightedNode(wPod WeightedPod) (*WeightedNode, error)
 	CalculateWeightedNodeMedianPrice(wNode WeightedNode) (float64, error)
+	ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ComputeConfiguration, wNode WeightedNode) bool
+	ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ComputeConfiguration, wPod WeightedPod) bool
 }
 
 type IComputeService struct {
