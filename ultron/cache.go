@@ -36,17 +36,17 @@ func NewICache(innerCache *cache.Cache) *ICache {
 	}
 }
 
-func (s *ICache) AddCacheItem(key string, value interface{}, d time.Duration) {
-	s.memCache.Set(key, value, cache.DefaultExpiration)
+func (c *ICache) AddCacheItem(key string, value interface{}, d time.Duration) {
+	c.memCache.Set(key, value, cache.DefaultExpiration)
 }
 
-func (s *ICache) GetAllComputeConfigurations() ([]ComputeConfiguration, error) {
-	durableConfigurations, err := s.GetDurableComputeConfigurations()
+func (c *ICache) GetAllComputeConfigurations() ([]ComputeConfiguration, error) {
+	durableConfigurations, err := c.GetDurableComputeConfigurations()
 	if err != nil {
 		return nil, err
 	}
 
-	ephemeralConfigurations, err := s.GetEphemeralComputeConfigurations()
+	ephemeralConfigurations, err := c.GetEphemeralComputeConfigurations()
 	if err != nil {
 		return nil, err
 	}
@@ -54,8 +54,8 @@ func (s *ICache) GetAllComputeConfigurations() ([]ComputeConfiguration, error) {
 	return append(durableConfigurations, ephemeralConfigurations...), nil
 }
 
-func (s *ICache) GetEphemeralComputeConfigurations() ([]ComputeConfiguration, error) {
-	ephemeralConfigsInterface, found := s.memCache.Get(CacheKeySpotVmConfigurations)
+func (c *ICache) GetEphemeralComputeConfigurations() ([]ComputeConfiguration, error) {
+	ephemeralConfigsInterface, found := c.memCache.Get(CacheKeySpotVmConfigurations)
 	if !found {
 		return nil, fmt.Errorf("failed to get spot configurations from cache")
 	}
@@ -74,8 +74,8 @@ func (s *ICache) GetEphemeralComputeConfigurations() ([]ComputeConfiguration, er
 	return convertedConfigurations, nil
 }
 
-func (s *ICache) GetDurableComputeConfigurations() ([]ComputeConfiguration, error) {
-	durableConfigsInterface, found := s.memCache.Get(CacheKeyDurableVmConfigurations)
+func (c *ICache) GetDurableComputeConfigurations() ([]ComputeConfiguration, error) {
+	durableConfigsInterface, found := c.memCache.Get(CacheKeyDurableVmConfigurations)
 	if !found {
 		return nil, fmt.Errorf("failed to get durable configurations from cache")
 	}
@@ -94,8 +94,8 @@ func (s *ICache) GetDurableComputeConfigurations() ([]ComputeConfiguration, erro
 	return convertedConfigurations, nil
 }
 
-func (s *ICache) GetWeightedNodes() ([]WeightedNode, error) {
-	weightedNodesInterface, found := s.memCache.Get(CacheKeyWeightedNodes)
+func (c *ICache) GetWeightedNodes() ([]WeightedNode, error) {
+	weightedNodesInterface, found := c.memCache.Get(CacheKeyWeightedNodes)
 	if !found {
 		return nil, fmt.Errorf("failed to get weighted nodes from cache")
 	}
