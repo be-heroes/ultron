@@ -111,12 +111,12 @@ func main() {
 
 	certificateCommonName := os.Getenv(EnvironmentVariableKeyServerCertificateCommonName)
 	if certificateCommonName == "" {
-		certificateCommonName = "emma-ultron-webhookserver-service.default.svc"
+		certificateCommonName = "ultron-webhookserver-service.default.svc"
 	}
 
 	certificateDnsNamesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateDnsNames)
 	if certificateDnsNamesCSV == "" {
-		certificateDnsNamesCSV = "emma-ultron-webhookserver-service.default.svc,emma-ultron-webhookserver-service,localhost"
+		certificateDnsNamesCSV = "ultron-webhookserver-service.default.svc,ultron-webhookserver-service,localhost"
 	}
 
 	certificateIpAddressesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateIpAddresses)

@@ -70,11 +70,11 @@ jobs:
       - name: Build Docker image
         if: steps.docker-check.outputs.run_docker == 'true'
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/emma-ultron:${{ github.sha }} .
-          docker tag ${{ secrets.DOCKER_USERNAME }}/emma-ultron:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/emma-ultron:latest
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/ultron:${{ github.sha }} .
+          docker tag ${{ secrets.DOCKER_USERNAME }}/ultron:${{ github.sha }} ${{ secrets.DOCKER_USERNAME }}/ultron:latest
 
       - name: Push Docker image
         if: steps.docker-check.outputs.run_docker == 'true'
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/emma-ultron:${{ github.sha }}
-          docker push ${{ secrets.DOCKER_USERNAME }}/emma-ultron:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/ultron:${{ github.sha }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/ultron:latest

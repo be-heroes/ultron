@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o emma-ultron .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o ultron .
 
 FROM alpine:latest
 
@@ -16,8 +16,8 @@ RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
 
-COPY --from=builder /app/emma-ultron .
+COPY --from=builder /app/ultron .
 
 EXPOSE 8443
 
-ENTRYPOINT ["./emma-ultron"]
+ENTRYPOINT ["./ultron"]
