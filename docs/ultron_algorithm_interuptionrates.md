@@ -30,7 +30,6 @@ Each cloud provider handles Spot or Preemptible instances differently, and they 
 
 - Official Data Sources: Azure also publishes data and tips for managing Spot VMs based on historical trends in different regions.
 
-
 ## Calculate/Estimate Interruption Rates
 
 To calculate or estimate interruption rates for Spot instances, you would:
