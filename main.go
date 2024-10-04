@@ -29,12 +29,12 @@ const (
 	EnvironmentVariableKeyKubernetesServicePort         = "KUBERNETES_SERVICE_PORT"
 	EnvironmentVariableKeyEmmaClientId                  = "EMMA_CLIENT_ID"
 	EnvironmentVariableKeyEmmaClientSecret              = "EMMA_CLIENT_SECRET"
-	EnvironmentVariableKeyServerAddress                 = "EMMA_ULTRON_SERVER_ADDRESS"
-	EnvironmentVariableKeyServerCertificateOrganization = "EMMA_ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
-	EnvironmentVariableKeyServerCertificateCommonName   = "EMMA_ULTRON_SERVER_CERTIFICATE_COMMON_NAME"
-	EnvironmentVariableKeyServerCertificateDnsNames     = "EMMA_ULTRON_SERVER_CERTIFICATE_DNS_NAMES"
-	EnvironmentVariableKeyServerCertificateIpAddresses  = "EMMA_ULTRON_SERVER_CERTIFICATE_IP_ADDRESSES"
-	EnvironmentVariableKeyServerCertificateExportPath   = "EMMA_ULTRON_SERVER_CERTIFICATE_EXPORT_PATH"
+	EnvironmentVariableKeyServerAddress                 = "ULTRON_SERVER_ADDRESS"
+	EnvironmentVariableKeyServerCertificateOrganization = "ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
+	EnvironmentVariableKeyServerCertificateCommonName   = "ULTRON_SERVER_CERTIFICATE_COMMON_NAME"
+	EnvironmentVariableKeyServerCertificateDnsNames     = "ULTRON_SERVER_CERTIFICATE_DNS_NAMES"
+	EnvironmentVariableKeyServerCertificateIpAddresses  = "ULTRON_SERVER_CERTIFICATE_IP_ADDRESSES"
+	EnvironmentVariableKeyServerCertificateExportPath   = "ULTRON_SERVER_CERTIFICATE_EXPORT_PATH"
 )
 
 func main() {
