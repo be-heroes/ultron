@@ -1,6 +1,6 @@
 # Project Ultron
 
-Project Ultron is an open-source initiative from the be-heroes aimed at creating an emma operator designed to provide APIs for auto-labeling pods provisioned via cluster scaling tools such as karpenter and cluster autoscaler in order to support "multi-cloud-node-provider" workload placement in a single cluster. The goal of this project is to automate the process of routing workloads in a Kubernetes cluster containing worker nodes from various node providers such as AWS, Azure, GCP, GCore & Digital Ocean, by dynamically applying labels to pods through examining available meta data from emmas external API, workload meta data such as resource requirements or other user-defined criteria (e.g labels / annotations) and the operators own configrations (rules / templates).
+Project Ultron is an open-source initiative from the be-heroes aimed at creating a solution for auto-labeling pods provisioned via cluster scaling tools such as karpenter and cluster autoscaler in order to support "multi-cloud-node-provider" workload placement in a single cluster. The goal of this project is to automate the process of routing workloads in a Kubernetes cluster containing worker nodes from various node providers such as AWS, Azure, GCP, GCore & Digital Ocean, by dynamically applying labels to pods through examining available meta data from emmas external API, workload meta data such as resource requirements or other user-defined criteria (e.g labels / annotations) and the operators own configrations (rules / templates).
 
 ## Key components
 
