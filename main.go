@@ -43,7 +43,7 @@ func main() {
 	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv(EnvironmentVariableKeyEmmaClientId), ClientSecret: os.Getenv(EnvironmentVariableKeyEmmaClientSecret)}
 	mapper := mapper.NewIMapper()
 	algorithm := algorithm.NewIAlgorithm()
-	cache := cache.NewICache(nil)
+	cache := cache.NewICache(nil, nil)
 	certificateService := services.NewICertificateService()
 	computeService := services.NewIComputeService(algorithm, cache, mapper)
 	mutationHandler := handlers.NewIMutationHandler(computeService)

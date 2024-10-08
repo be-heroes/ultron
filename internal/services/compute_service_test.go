@@ -83,7 +83,12 @@ func (ma *MockAlgorithm) Score(wNode ultron.WeightedNode, wPod ultron.WeightedPo
 
 type MockCache struct{}
 
-func (mc *MockCache) AddCacheItem(key string, value interface{}, time time.Duration) {
+func (mc *MockCache) AddCacheItem(key string, value interface{}, time time.Duration) error {
+	return nil
+}
+
+func (mc *MockCache) GetCacheItem(key string) (interface{}, error) {
+	return nil, nil
 }
 
 func (mc *MockCache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
