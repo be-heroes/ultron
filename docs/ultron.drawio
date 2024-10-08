@@ -1,6 +1,6 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36" version="24.7.17" pages="2">
   <diagram id="_1gbnp5x9riskDkCixey" name="Conceptual Architecture">
-    <mxGraphModel dx="2954" dy="1098" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
+    <mxGraphModel dx="965" dy="869" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="827" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -44,7 +44,7 @@
         <mxCell id="GJtK7p2Xejx93kHWHDXP-34" value="&lt;b&gt;AdmissionRequest&lt;/b&gt;" style="aspect=fixed;sketch=0;html=1;dashed=0;whitespace=wrap;verticalLabelPosition=bottom;verticalAlign=top;fillColor=#2875E2;strokeColor=#ffffff;points=[[0.005,0.63,0],[0.1,0.2,0],[0.9,0.2,0],[0.5,0,0],[0.995,0.63,0],[0.72,0.99,0],[0.5,1,0],[0.28,0.99,0]];shape=mxgraph.kubernetes.icon2;kubernetesLabel=1;prIcon=pod" parent="1" vertex="1">
           <mxGeometry x="939.0699999999999" y="525" width="62.5" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="GJtK7p2Xejx93kHWHDXP-35" value="&lt;b&gt;Ultron Cache Service&lt;/b&gt;" style="aspect=fixed;html=1;perimeter=none;align=center;shadow=0;dashed=0;image;fontSize=12;image=img/lib/mscae/Stream_Analytics.svg;labelBackgroundColor=#ffffff;fillColor=#4D9900;" parent="1" vertex="1">
+        <mxCell id="GJtK7p2Xejx93kHWHDXP-35" value="&lt;b&gt;Ultron Attendant Service&lt;/b&gt;" style="aspect=fixed;html=1;perimeter=none;align=center;shadow=0;dashed=0;image;fontSize=12;image=img/lib/mscae/Stream_Analytics.svg;labelBackgroundColor=#ffffff;fillColor=#4D9900;" parent="1" vertex="1">
           <mxGeometry x="310.0000000000001" y="402.5" width="65" height="51" as="geometry" />
         </mxCell>
         <mxCell id="n_pagypsg9AMpxETx4sQ-1" style="edgeStyle=elbowEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;elbow=vertical;html=1;strokeColor=#808080;entryX=0.5;entryY=0;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0;exitY=0;exitDx=0;exitDy=0;" parent="1" target="GJtK7p2Xejx93kHWHDXP-2" edge="1">
@@ -201,7 +201,7 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="5KT7fAPuWfYC7QZ_zdUR-1" value="addPodSpec" style="html=1;verticalAlign=bottom;endArrow=block;labelBackgroundColor=none;fontFamily=Verdana;fontSize=11;elbow=vertical;edgeStyle=orthogonalEdgeStyle;curved=1;" parent="1" edge="1">
+        <mxCell id="5KT7fAPuWfYC7QZ_zdUR-1" value="registerPodSpec" style="html=1;verticalAlign=bottom;endArrow=block;labelBackgroundColor=none;fontFamily=Verdana;fontSize=11;elbow=vertical;edgeStyle=orthogonalEdgeStyle;curved=1;" parent="1" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="759.9985714285714" y="526" as="sourcePoint" />
             <mxPoint x="765.0699999999999" y="564" as="targetPoint" />
@@ -278,7 +278,7 @@
         <mxCell id="7baba1c4bc27f4b0-19" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="7baba1c4bc27f4b0-4" vertex="1">
           <mxGeometry x="45" y="71" width="10" height="22" as="geometry" />
         </mxCell>
-        <mxCell id="7baba1c4bc27f4b0-5" value="Ultron Chronicler" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+        <mxCell id="7baba1c4bc27f4b0-5" value="Jarvis" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
           <mxGeometry x="570" y="154" width="100" height="580" as="geometry" />
         </mxCell>
         <mxCell id="LFfvi1dinfQVA_8fY7Rs-6" value="optimizePodSpec" style="html=1;verticalAlign=bottom;endArrow=block;labelBackgroundColor=none;fontFamily=Verdana;fontSize=11;elbow=vertical;edgeStyle=orthogonalEdgeStyle;curved=1;" parent="7baba1c4bc27f4b0-5" edge="1">
@@ -309,13 +309,13 @@
             <mxPoint x="-84.0014285714287" y="340.28" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="7baba1c4bc27f4b0-6" value="Ultron Observer" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
+        <mxCell id="7baba1c4bc27f4b0-6" value="Ultron.Observer" style="shape=umlLifeline;perimeter=lifelinePerimeter;whiteSpace=wrap;html=1;container=1;collapsible=0;recursiveResize=0;outlineConnect=0;rounded=1;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="1" vertex="1">
           <mxGeometry x="710" y="154" width="100" height="580" as="geometry" />
         </mxCell>
         <mxCell id="LFfvi1dinfQVA_8fY7Rs-19" value="" style="html=1;points=[];perimeter=orthogonalPerimeter;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12;align=center;" parent="7baba1c4bc27f4b0-6" vertex="1">
           <mxGeometry x="45" y="365" width="10" height="55" as="geometry" />
         </mxCell>
-        <mxCell id="LFfvi1dinfQVA_8fY7Rs-20" value="observe" style="html=1;verticalAlign=bottom;endArrow=block;labelBackgroundColor=none;fontFamily=Verdana;fontSize=11;edgeStyle=elbowEdgeStyle;elbow=horizontal;entryX=0.05;entryY=0.009;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.8;exitY=0.497;exitDx=0;exitDy=0;exitPerimeter=0;" parent="7baba1c4bc27f4b0-6" source="LFfvi1dinfQVA_8fY7Rs-14" edge="1">
+        <mxCell id="LFfvi1dinfQVA_8fY7Rs-20" value="monitorPodSpec" style="html=1;verticalAlign=bottom;endArrow=block;labelBackgroundColor=none;fontFamily=Verdana;fontSize=11;edgeStyle=elbowEdgeStyle;elbow=horizontal;entryX=0.05;entryY=0.009;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.8;exitY=0.497;exitDx=0;exitDy=0;exitPerimeter=0;" parent="7baba1c4bc27f4b0-6" source="LFfvi1dinfQVA_8fY7Rs-14" edge="1">
           <mxGeometry relative="1" as="geometry">
             <mxPoint x="-84.45000000000005" y="365.30952380952374" as="sourcePoint" />
             <mxPoint x="45" y="365" as="targetPoint" />
@@ -359,10 +359,10 @@
         <mxCell id="7baba1c4bc27f4b0-43" value="Ultron mediates between web hooks / external APIs" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=-6;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="430" y="40" width="100" height="99" as="geometry" />
         </mxCell>
-        <mxCell id="7baba1c4bc27f4b0-44" value="Ultron Chronicler trains LLM with external / cluster data" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=-6;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
+        <mxCell id="7baba1c4bc27f4b0-44" value="Jarvis trains LLM with external / cluster data" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=-6;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="570" y="40" width="100" height="99" as="geometry" />
         </mxCell>
-        <mxCell id="7baba1c4bc27f4b0-45" value="Ultron Objser monitors workloads / nodes to gather metrics for Ultron" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=-6;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
+        <mxCell id="7baba1c4bc27f4b0-45" value="Ultron Observer service monitors cluster resources and ships telemetry to Jarvis" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=-6;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">
           <mxGeometry x="710" y="40" width="100" height="99" as="geometry" />
         </mxCell>
         <mxCell id="7baba1c4bc27f4b0-46" value="k8s API server handles PodSpec" style="shape=note;whiteSpace=wrap;html=1;size=14;verticalAlign=top;align=left;spacingTop=-6;rounded=0;shadow=0;comic=0;labelBackgroundColor=none;strokeWidth=1;fontFamily=Verdana;fontSize=12" parent="1" vertex="1">

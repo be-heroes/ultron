@@ -48,6 +48,7 @@ func main() {
 	mutationHandler := handlers.NewIMutationHandler(computeService)
 	kubernetesClient := kubernetes.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
 
+	// TODO: Move cache initialization to ultron-attendant
 	log.Println("Initializing cache")
 
 	apiClient := emma.NewAPIClient(emma.NewConfiguration())
@@ -110,12 +111,12 @@ func main() {
 
 	certificateCommonName := os.Getenv(EnvironmentVariableKeyServerCertificateCommonName)
 	if certificateCommonName == "" {
-		certificateCommonName = "ultron-webhookserver-service.default.svc"
+		certificateCommonName = "ultron-service.default.svc"
 	}
 
 	certificateDnsNamesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateDnsNames)
 	if certificateDnsNamesCSV == "" {
-		certificateDnsNamesCSV = "ultron-webhookserver-service.default.svc,ultron-webhookserver-service,localhost"
+		certificateDnsNamesCSV = "ultron-service.default.svc,ultron-service,localhost"
 	}
 
 	certificateIpAddressesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateIpAddresses)
