@@ -9,10 +9,9 @@ import (
 	"strings"
 
 	handlers "github.com/be-heroes/ultron/internal/handlers"
-	internalServices "github.com/be-heroes/ultron/internal/services"
 	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
 	mapper "github.com/be-heroes/ultron/pkg/mapper"
-	externalServices "github.com/be-heroes/ultron/pkg/services"
+	services "github.com/be-heroes/ultron/pkg/services"
 )
 
 const (
@@ -30,9 +29,9 @@ const (
 func main() {
 	mapper := mapper.NewIMapper()
 	algorithm := algorithm.NewIAlgorithm()
-	cacheService := externalServices.NewICacheService(nil, nil)
-	certificateService := internalServices.NewICertificateService()
-	computeService := externalServices.NewIComputeService(algorithm, cacheService, mapper)
+	cacheService := services.NewICacheService(nil, nil)
+	certificateService := services.NewICertificateService()
+	computeService := services.NewIComputeService(algorithm, cacheService, mapper)
 	mutationHandler := handlers.NewIMutationHandler(computeService)
 	validationHandler := handlers.NewIValidationHandler(computeService)
 

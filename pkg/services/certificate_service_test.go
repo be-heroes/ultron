@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	services "github.com/be-heroes/ultron/internal/services"
+	services "github.com/be-heroes/ultron/pkg/services"
 )
 
 func TestGenerateSelfSignedCert_Success(t *testing.T) {
