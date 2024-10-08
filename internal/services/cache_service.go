@@ -21,6 +21,8 @@ type CacheService interface {
 	GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error)
 	GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error)
 	GetWeightedNodes() ([]ultron.WeightedNode, error)
+	GetWeightedInteruptionRates() ([]ultron.WeightedInteruptionRate, error)
+	GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error)
 }
 
 type ICacheService struct {
@@ -150,4 +152,22 @@ func (c *ICacheService) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 	}
 
 	return weightedNodesInterface.([]ultron.WeightedNode), nil
+}
+
+func (c *ICacheService) GetWeightedInteruptionRates() ([]ultron.WeightedInteruptionRate, error) {
+	weightedInteruptionRatesInterface, err := c.GetCacheItem(ultron.CacheKeySpotVmConfigurationInteruptionRates)
+	if err != nil {
+		return nil, err
+	}
+
+	return weightedInteruptionRatesInterface.([]ultron.WeightedInteruptionRate), nil
+}
+
+func (c *ICacheService) GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error) {
+	weightedLatencyRatesInterface, err := c.GetCacheItem(ultron.CacheKeyDurableVmConfigurationLatencyRates)
+	if err != nil {
+		return nil, err
+	}
+
+	return weightedLatencyRatesInterface.([]ultron.WeightedLatencyRate), nil
 }

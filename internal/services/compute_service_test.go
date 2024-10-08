@@ -131,6 +131,28 @@ func (mc *MockCache) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 	}, nil
 }
 
+func (mc *MockCache) GetWeightedInteruptionRates() ([]ultron.WeightedInteruptionRate, error) {
+	return []ultron.WeightedInteruptionRate{
+		{
+			Selector: map[string]string{
+				"node-type": "mock-node",
+			},
+			Value: 0.1,
+		},
+	}, nil
+}
+
+func (mc *MockCache) GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error) {
+	return []ultron.WeightedLatencyRate{
+		{
+			Selector: map[string]string{
+				"node-type": "mock-node",
+			},
+			Value: 0.1,
+		},
+	}, nil
+}
+
 type MockMapper struct{}
 
 func (mm *MockMapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error) {

@@ -8,6 +8,7 @@ type ComputeType string
 type PriorityEnum bool
 
 type WeightedNode struct {
+	Selector         map[string]string
 	AvailableCPU     float64
 	TotalCPU         float64
 	AvailableMemory  float64
@@ -21,10 +22,10 @@ type WeightedNode struct {
 	InstanceType     string
 	InterruptionRate WeightedInteruptionRate
 	LatencyRate      WeightedLatencyRate
-	Selector         map[string]string
 }
 
 type WeightedPod struct {
+	Selector             map[string]string
 	RequestedCPU         float64
 	RequestedMemory      float64
 	RequestedStorage     float64
@@ -33,15 +34,16 @@ type WeightedPod struct {
 	LimitCPU             float64
 	LimitMemory          float64
 	Priority             PriorityEnum
-	Selector             map[string]string
 }
 
 type WeightedInteruptionRate struct {
-	Value float64
+	Selector map[string]string
+	Value    float64
 }
 
 type WeightedLatencyRate struct {
-	Value float64
+	Selector map[string]string
+	Value    float64
 }
 
 type ComputeConfiguration struct {

@@ -232,10 +232,32 @@ func (cs IComputeService) ComputeConfigurationMatchesWeightedPodRequirements(com
 	return true
 }
 
-func (cs IComputeService) ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedInteruptionRate, error) {
-	return &ultron.WeightedInteruptionRate{}, nil // TODO: Implement support for fetching interuption rate based on node type in compute service
+func (cs IComputeService) ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (match *ultron.WeightedInteruptionRate, err error) {
+	rates, err := cs.cacheService.GetWeightedInteruptionRates()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rate := range rates {
+		if rate.Selector[ultron.LabelInstanceType] == wNode.InstanceType {
+			match = &rate
+			break
+		}
+	}
+	return match, nil
 }
 
-func (cs IComputeService) ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedLatencyRate, error) {
-	return &ultron.WeightedLatencyRate{}, nil // TODO: Implement support for fetching latency rate based on node type in compute service
+func (cs IComputeService) ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (match *ultron.WeightedLatencyRate, err error) {
+	rates, err := cs.cacheService.GetWeightedLatencyRates()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, rate := range rates {
+		if rate.Selector[ultron.LabelInstanceType] == wNode.InstanceType {
+			match = &rate
+			break
+		}
+	}
+	return match, nil
 }
