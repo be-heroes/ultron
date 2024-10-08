@@ -7,7 +7,6 @@ import (
 
 	ultron "ultron/internal"
 	algorithm "ultron/internal/algorithm"
-	cache "ultron/internal/cache"
 	mapper "ultron/internal/mapper"
 
 	corev1 "k8s.io/api/core/v1"
@@ -24,16 +23,16 @@ type ComputeService interface {
 }
 
 type IComputeService struct {
-	algorithm algorithm.Algorithm
-	cache     cache.Cache
-	mapper    mapper.Mapper
+	algorithm    algorithm.Algorithm
+	cacheService CacheService
+	mapper       mapper.Mapper
 }
 
-func NewIComputeService(algorithm algorithm.Algorithm, cache cache.Cache, mapper mapper.Mapper) *IComputeService {
+func NewIComputeService(algorithm algorithm.Algorithm, cacheService CacheService, mapper mapper.Mapper) *IComputeService {
 	return &IComputeService{
-		algorithm: algorithm,
-		cache:     cache,
-		mapper:    mapper,
+		algorithm:    algorithm,
+		cacheService: cacheService,
+		mapper:       mapper,
 	}
 }
 
@@ -83,7 +82,7 @@ func (cs IComputeService) ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode,
 
 func (cs IComputeService) MatchWeightedPodToComputeConfiguration(wPod ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
 	var suitableConfigs []ultron.ComputeConfiguration
-	computeConfigurations, err := cs.cache.GetAllComputeConfigurations()
+	computeConfigurations, err := cs.cacheService.GetAllComputeConfigurations()
 	if err != nil {
 		return nil, err
 	}
@@ -107,7 +106,7 @@ func (cs IComputeService) MatchWeightedPodToComputeConfiguration(wPod ultron.Wei
 
 func (cs IComputeService) MatchWeightedNodeToComputeConfiguration(wNode ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
 	var suitableConfigs []ultron.ComputeConfiguration
-	computeConfigurations, err := cs.cache.GetAllComputeConfigurations()
+	computeConfigurations, err := cs.cacheService.GetAllComputeConfigurations()
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +129,7 @@ func (cs IComputeService) MatchWeightedNodeToComputeConfiguration(wNode ultron.W
 }
 
 func (cs IComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod) (*ultron.WeightedNode, error) {
-	wNodes, err := cs.cache.GetWeightedNodes()
+	wNodes, err := cs.cacheService.GetWeightedNodes()
 	if err != nil {
 		return nil, err
 	}
@@ -157,7 +156,7 @@ func (cs IComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod)
 func (cs IComputeService) CalculateWeightedNodeMedianPrice(wNode ultron.WeightedNode) (float64, error) {
 	var totalCost float64
 	var matchCount int32
-	computeConfigurations, err := cs.cache.GetAllComputeConfigurations()
+	computeConfigurations, err := cs.cacheService.GetAllComputeConfigurations()
 	if err != nil {
 		return 0, err
 	}

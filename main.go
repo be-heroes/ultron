@@ -14,7 +14,6 @@ import (
 
 	ultron "ultron/internal"
 	algorithm "ultron/internal/algorithm"
-	cache "ultron/internal/cache"
 	handlers "ultron/internal/handlers"
 	kubernetes "ultron/internal/kubernetes"
 	mapper "ultron/internal/mapper"
@@ -43,9 +42,9 @@ func main() {
 	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv(EnvironmentVariableKeyEmmaClientId), ClientSecret: os.Getenv(EnvironmentVariableKeyEmmaClientSecret)}
 	mapper := mapper.NewIMapper()
 	algorithm := algorithm.NewIAlgorithm()
-	cache := cache.NewICache(nil, nil)
+	cacheService := services.NewICacheService(nil, nil)
 	certificateService := services.NewICertificateService()
-	computeService := services.NewIComputeService(algorithm, cache, mapper)
+	computeService := services.NewIComputeService(algorithm, cacheService, mapper)
 	mutationHandler := handlers.NewIMutationHandler(computeService)
 	kubernetesClient := kubernetes.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
 
@@ -86,15 +85,15 @@ func main() {
 		log.Fatalf("Failed to read ephemeral compute configurations data with error: %v", err)
 	}
 
-	cache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, durableConfigs.Content, 0)
-	cache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, ephemeralConfigs.Content, 0)
+	cacheService.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, durableConfigs.Content, 0)
+	cacheService.AddCacheItem(ultron.CacheKeySpotVmConfigurations, ephemeralConfigs.Content, 0)
 
 	wNodes, err := kubernetesClient.GetWeightedNodes()
 	if err != nil {
 		log.Fatalf("Failed to get weighted nodes with error: %v", err)
 	}
 
-	cache.AddCacheItem(ultron.CacheKeyWeightedNodes, wNodes, 0)
+	cacheService.AddCacheItem(ultron.CacheKeyWeightedNodes, wNodes, 0)
 
 	log.Println("Initialized cache")
 	log.Println("Initializing server")

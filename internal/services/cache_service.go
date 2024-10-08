@@ -1,4 +1,4 @@
-package cache
+package services
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type Cache interface {
+type CacheService interface {
 	AddCacheItem(key string, value interface{}, d time.Duration) error
 	GetCacheItem(key string) (interface{}, error)
 	GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error)
@@ -23,23 +23,23 @@ type Cache interface {
 	GetWeightedNodes() ([]ultron.WeightedNode, error)
 }
 
-type ICache struct {
+type ICacheService struct {
 	memCache    *cache.Cache
 	redisClient *redis.Client
 }
 
-func NewICache(innerCache *cache.Cache, redisClient *redis.Client) *ICache {
+func NewICacheService(innerCache *cache.Cache, redisClient *redis.Client) *ICacheService {
 	if innerCache == nil && redisClient == nil {
 		innerCache = cache.New(cache.NoExpiration, cache.NoExpiration)
 	}
 
-	return &ICache{
+	return &ICacheService{
 		memCache:    innerCache,
 		redisClient: redisClient,
 	}
 }
 
-func (c *ICache) AddCacheItem(key string, value interface{}, d time.Duration) error {
+func (c *ICacheService) AddCacheItem(key string, value interface{}, d time.Duration) error {
 
 	if c.memCache != nil {
 		c.memCache.Set(key, value, cache.DefaultExpiration)
@@ -59,7 +59,7 @@ func (c *ICache) AddCacheItem(key string, value interface{}, d time.Duration) er
 	return nil
 }
 
-func (c *ICache) GetCacheItem(key string) (interface{}, error) {
+func (c *ICacheService) GetCacheItem(key string) (interface{}, error) {
 	var data []byte
 	var err error
 	var found bool
@@ -89,7 +89,7 @@ func (c *ICache) GetCacheItem(key string) (interface{}, error) {
 	return returnValue, nil
 }
 
-func (c *ICache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+func (c *ICacheService) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
 	durableConfigurations, err := c.GetDurableComputeConfigurations()
 	if err != nil {
 		return nil, err
@@ -103,7 +103,7 @@ func (c *ICache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, e
 	return append(durableConfigurations, ephemeralConfigurations...), nil
 }
 
-func (c *ICache) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+func (c *ICacheService) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
 	ephemeralConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeySpotVmConfigurations)
 	if err != nil {
 		return nil, err
@@ -123,7 +123,7 @@ func (c *ICache) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfigurat
 	return convertedConfigurations, nil
 }
 
-func (c *ICache) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+func (c *ICacheService) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
 	durableConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeyDurableVmConfigurations)
 	if err != nil {
 		return nil, err
@@ -143,7 +143,7 @@ func (c *ICache) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguratio
 	return convertedConfigurations, nil
 }
 
-func (c *ICache) GetWeightedNodes() ([]ultron.WeightedNode, error) {
+func (c *ICacheService) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 	weightedNodesInterface, err := c.GetCacheItem(ultron.CacheKeyWeightedNodes)
 	if err != nil {
 		return nil, err
