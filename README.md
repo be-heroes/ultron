@@ -1,6 +1,6 @@
-# ultron
+# Ultron
 
-The ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation, and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the cluster.
+The ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, its a webhook server responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation, and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the cluster.
 
 The labels applied by the ultron can include a wide range of information:
 
@@ -72,6 +72,6 @@ docker run -e EMMA_CLIENT_ID=your_client_id -e EMMA_CLIENT_SECRET=your_client_se
 
 ## Additional links
 
-- [Project Ultron => Abstract](https://github.com/be-heroesy/ultron-operator/blob/main/docs/ultron_abstract.md)
-- [Project Ultron => Algorithm](https://github.com/be-heroes/ultron-operator/blob/main/docs/ultron_algorithm.md)
-- [Project Ultron => WebHookServer Sequence Diagram](https://github.com/be-heroes/ultron-operator/blob/main/docs/ultron.png)
+- [Project Ultron => Abstract](https://github.com/be-heroes/ultron/blob/main/docs/ultron_abstract.md)
+- [Project Ultron => Algorithm](https://github.com/be-heroes/ultron/blob/main/docs/ultron_algorithm.md)
+- [Project Ultron => WebHookServer Sequence Diagram](https://github.com/be-heroes/ultron/blob/main/docs/ultron.png)
