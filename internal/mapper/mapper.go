@@ -122,7 +122,7 @@ func (m IMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, 
 		Price:            0,
 		MedianPrice:      0,
 		InstanceType:     instanceType,
-		InterruptionRate: 0,
+		InterruptionRate: ultron.WeightedInteruptionRate{Value: 0},
 	}, nil
 }
 

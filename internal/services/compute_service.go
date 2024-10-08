@@ -20,8 +20,8 @@ type ComputeService interface {
 	CalculateWeightedNodeMedianPrice(wNode ultron.WeightedNode) (float64, error)
 	ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ultron.ComputeConfiguration, wNode ultron.WeightedNode) bool
 	ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ultron.ComputeConfiguration, wPod ultron.WeightedPod) bool
-	ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
-	ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
+	ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedInteruptionRate, error)
+	ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedLatencyRate, error)
 }
 
 type IComputeService struct {
@@ -86,8 +86,8 @@ func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			return nil, err
 		}
 
-		wNode.InterruptionRate = interuptionRate
-		wNode.LatencyRate = latencyRate
+		wNode.InterruptionRate = *interuptionRate
+		wNode.LatencyRate = *latencyRate
 	}
 
 	return wNode, nil
@@ -232,10 +232,10 @@ func (cs IComputeService) ComputeConfigurationMatchesWeightedPodRequirements(com
 	return true
 }
 
-func (cs IComputeService) ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
-	return 0, nil // TODO: Implement support for fetching interuption rate based on node type in compute service
+func (cs IComputeService) ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedInteruptionRate, error) {
+	return &ultron.WeightedInteruptionRate{}, nil // TODO: Implement support for fetching interuption rate based on node type in compute service
 }
 
-func (cs IComputeService) ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
-	return 0, nil // TODO: Implement support for fetching latency rate based on node type in compute service
+func (cs IComputeService) ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedLatencyRate, error) {
+	return &ultron.WeightedLatencyRate{}, nil // TODO: Implement support for fetching latency rate based on node type in compute service
 }

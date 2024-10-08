@@ -91,14 +91,14 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 			return nil, err
 		}
 
-		wNode.InterruptionRate = interuptionRate
+		wNode.InterruptionRate = *interuptionRate
 
 		latencyRate, err := kc.computeService.ComputeLatencyRateForWeightedNode(wNode)
 		if err != nil {
 			return nil, err
 		}
 
-		wNode.LatencyRate = latencyRate
+		wNode.LatencyRate = *latencyRate
 
 		wNodes = append(wNodes, wNode)
 	}

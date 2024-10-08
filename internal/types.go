@@ -19,8 +19,8 @@ type WeightedNode struct {
 	Price            float64
 	MedianPrice      float64
 	InstanceType     string
-	InterruptionRate float64
-	LatencyRate      float64
+	InterruptionRate WeightedInteruptionRate
+	LatencyRate      WeightedLatencyRate
 	Selector         map[string]string
 }
 
@@ -34,6 +34,14 @@ type WeightedPod struct {
 	LimitMemory          float64
 	Priority             PriorityEnum
 	Selector             map[string]string
+}
+
+type WeightedInteruptionRate struct {
+	Value float64
+}
+
+type WeightedLatencyRate struct {
+	Value float64
 }
 
 type ComputeConfiguration struct {

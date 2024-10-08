@@ -127,12 +127,12 @@ func TestNodeScore(t *testing.T) {
 	node := ultron.WeightedNode{
 		Price:            10.0,
 		MedianPrice:      8.0,
-		InterruptionRate: 0.1,
+		InterruptionRate: ultron.WeightedInteruptionRate{Value: 0.1},
 	}
 
 	// Act
 	score1 := alg.NodeScore(node)
-	expected1 := node.InterruptionRate * (node.Price / node.MedianPrice)
+	expected1 := node.InterruptionRate.Value * (node.Price / node.MedianPrice)
 
 	node.Price = 0
 	score2 := alg.NodeScore(node)
@@ -187,7 +187,7 @@ func TestTotalScore(t *testing.T) {
 		NetworkType:      "10G",
 		Price:            10.0,
 		MedianPrice:      8.0,
-		InterruptionRate: 0.1,
+		InterruptionRate: ultron.WeightedInteruptionRate{Value: 0.1},
 	}
 
 	pod := ultron.WeightedPod{
