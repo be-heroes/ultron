@@ -63,6 +63,16 @@ func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			instanceType = ultron.DefaultEphemeralInstanceType
 		}
 
+		interuptionRate, err := cs.GetInteruptionRateForWeightedNode(*wNode)
+		if err != nil {
+			return nil, err
+		}
+
+		latencyRate, err := cs.GetLatencyRateForWeightedNode(*wNode)
+		if err != nil {
+			return nil, err
+		}
+
 		wNode = &ultron.WeightedNode{
 			Selector:         map[string]string{ultron.LabelInstanceType: instanceType},
 			AvailableCPU:     float64(*computeConfiguration.VCpu),
@@ -74,8 +84,8 @@ func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			NetworkType:      wPod.RequestedNetworkType,
 			Price:            float64(*computeConfiguration.Cost.PricePerUnit),
 			InstanceType:     instanceType,
-			InterruptionRate: 0, // TODO: Implement support for fetching interuption rates based on node type in compute service
-			LatencyRate:      0, // TODO: Implement support for fetching latency rates based on node type in compute service
+			InterruptionRate: interuptionRate,
+			LatencyRate:      latencyRate,
 		}
 	}
 

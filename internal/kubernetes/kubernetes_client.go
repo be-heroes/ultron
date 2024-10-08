@@ -85,8 +85,20 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 		}
 
 		wNode.MedianPrice = medianPrice
-		// TODO: Implement support for fetching interuption rates based on node type in compute service
-		// wNode.InterruptionRate = vmConfiguration.InterruptionRate
+
+		interuptionRate, err := kc.computeService.GetInteruptionRateForWeightedNode(wNode)
+		if err != nil {
+			return nil, err
+		}
+
+		wNode.InterruptionRate = interuptionRate
+
+		latencyRate, err := kc.computeService.GetLatencyRateForWeightedNode(wNode)
+		if err != nil {
+			return nil, err
+		}
+
+		wNode.LatencyRate = latencyRate
 
 		wNodes = append(wNodes, wNode)
 	}
