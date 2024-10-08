@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 const (
 	AnnotationDiskType    = "ultron.io/disk-type"

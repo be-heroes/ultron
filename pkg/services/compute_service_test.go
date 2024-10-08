@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	ultron "ultron/internal"
-	services "ultron/internal/services"
+	ultron "ultron/pkg"
+	services "ultron/pkg/services"
 
 	emma "github.com/emma-community/emma-go-sdk"
 

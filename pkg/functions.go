@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 func (p PriorityEnum) String() string {
 	if p {

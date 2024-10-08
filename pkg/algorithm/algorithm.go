@@ -1,7 +1,7 @@
 package algorithm
 
 import (
-	ultron "ultron/internal"
+	ultron "ultron/pkg"
 )
 
 const (

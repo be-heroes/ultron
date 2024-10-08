@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	services "ultron/internal/services"
+	services "ultron/pkg/services"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"

@@ -1,4 +1,4 @@
-package internal
+package pkg
 
 import (
 	emma "github.com/emma-community/emma-go-sdk"

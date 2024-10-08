@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	ultron "ultron/internal"
 	handlers "ultron/internal/handlers"
+	ultron "ultron/pkg"
 
 	emma "github.com/emma-community/emma-go-sdk"
 	admissionv1 "k8s.io/api/admission/v1"

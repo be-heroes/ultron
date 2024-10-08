@@ -1,33 +1,24 @@
 package main
 
 import (
-	"context"
 	"crypto/tls"
-	"fmt"
-	"io"
 	"log"
-	"math"
 	"net"
 	"net/http"
 	"os"
 	"strings"
 
-	ultron "ultron/internal"
-	algorithm "ultron/internal/algorithm"
 	handlers "ultron/internal/handlers"
-	kubernetes "ultron/internal/kubernetes"
-	mapper "ultron/internal/mapper"
-	services "ultron/internal/services"
-
-	emma "github.com/emma-community/emma-go-sdk"
+	internalServices "ultron/internal/services"
+	algorithm "ultron/pkg/algorithm"
+	mapper "ultron/pkg/mapper"
+	externalServices "ultron/pkg/services"
 )
 
 const (
 	EnvironmentVariableKeyKubernetesConfig              = "KUBECONFIG"
 	EnvironmentVariableKeyKubernetesServiceHost         = "KUBERNETES_SERVICE_HOST"
 	EnvironmentVariableKeyKubernetesServicePort         = "KUBERNETES_SERVICE_PORT"
-	EnvironmentVariableKeyEmmaClientId                  = "EMMA_CLIENT_ID"
-	EnvironmentVariableKeyEmmaClientSecret              = "EMMA_CLIENT_SECRET"
 	EnvironmentVariableKeyServerAddress                 = "ULTRON_SERVER_ADDRESS"
 	EnvironmentVariableKeyServerCertificateOrganization = "ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
 	EnvironmentVariableKeyServerCertificateCommonName   = "ULTRON_SERVER_CERTIFICATE_COMMON_NAME"
@@ -37,67 +28,14 @@ const (
 )
 
 func main() {
-	kubernetesConfigPath := os.Getenv(EnvironmentVariableKeyKubernetesConfig)
-	kubernetesMasterUrl := fmt.Sprintf("tcp://%s:%s", os.Getenv(EnvironmentVariableKeyKubernetesServiceHost), os.Getenv(EnvironmentVariableKeyKubernetesServicePort))
-	emmaApiCredentials := emma.Credentials{ClientId: os.Getenv(EnvironmentVariableKeyEmmaClientId), ClientSecret: os.Getenv(EnvironmentVariableKeyEmmaClientSecret)}
 	mapper := mapper.NewIMapper()
 	algorithm := algorithm.NewIAlgorithm()
-	cacheService := services.NewICacheService(nil, nil)
-	certificateService := services.NewICertificateService()
-	computeService := services.NewIComputeService(algorithm, cacheService, mapper)
+	cacheService := externalServices.NewICacheService(nil, nil)
+	certificateService := internalServices.NewICertificateService()
+	computeService := externalServices.NewIComputeService(algorithm, cacheService, mapper)
 	mutationHandler := handlers.NewIMutationHandler(computeService)
 	validationHandler := handlers.NewIValidationHandler(computeService)
-	kubernetesClient := kubernetes.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
 
-	// TODO: Move cache initialization logic and env vars to ultron-attendant
-	log.Println("Initializing cache")
-
-	apiClient := emma.NewAPIClient(emma.NewConfiguration())
-	token, resp, err := apiClient.AuthenticationAPI.IssueToken(context.Background()).Credentials(emmaApiCredentials).Execute()
-	if err != nil {
-		log.Fatalf("Failed to issue access token with error: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		_, err := io.ReadAll(resp.Body)
-
-		log.Fatalf("Failed to read access token data with error: %v", err)
-	}
-
-	auth := context.WithValue(context.Background(), emma.ContextAccessToken, token.GetAccessToken())
-	durableConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetVmConfigs(auth).Size(math.MaxInt32).Execute()
-	if err != nil {
-		log.Fatalf("Failed to fetch durable compute configurations with error: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		_, err := io.ReadAll(resp.Body)
-
-		log.Fatalf("Failed to read durable compute configurations data with error: %v", err)
-	}
-
-	ephemeralConfigs, resp, err := apiClient.ComputeInstancesConfigurationsAPI.GetSpotConfigs(auth).Size(math.MaxInt32).Execute()
-	if err != nil {
-		log.Fatalf("Failed to fetch ephemeral compute configurations with error: %v", err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		_, err := io.ReadAll(resp.Body)
-
-		log.Fatalf("Failed to read ephemeral compute configurations data with error: %v", err)
-	}
-
-	cacheService.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, durableConfigs.Content, 0)
-	cacheService.AddCacheItem(ultron.CacheKeySpotVmConfigurations, ephemeralConfigs.Content, 0)
-
-	wNodes, err := kubernetesClient.GetWeightedNodes()
-	if err != nil {
-		log.Fatalf("Failed to get weighted nodes with error: %v", err)
-	}
-
-	cacheService.AddCacheItem(ultron.CacheKeyWeightedNodes, wNodes, 0)
-
-	log.Println("Initialized cache")
 	log.Println("Initializing server")
 
 	serverAddress := os.Getenv(EnvironmentVariableKeyServerAddress)
@@ -107,7 +45,7 @@ func main() {
 
 	certificateOrganization := os.Getenv(EnvironmentVariableKeyServerCertificateOrganization)
 	if certificateOrganization == "" {
-		certificateOrganization = "emma"
+		certificateOrganization = "be-heroes"
 	}
 
 	certificateCommonName := os.Getenv(EnvironmentVariableKeyServerCertificateCommonName)

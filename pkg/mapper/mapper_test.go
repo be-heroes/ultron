@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	ultron "ultron/internal"
-	mapper "ultron/internal/mapper"
+	ultron "ultron/pkg"
+	mapper "ultron/pkg/mapper"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
