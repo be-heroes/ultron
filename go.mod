@@ -1,4 +1,4 @@
-module ultron
+module github.com/be-heroes/ultron
 
 go 1.23.1
 

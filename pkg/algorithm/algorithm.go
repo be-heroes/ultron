@@ -1,7 +1,7 @@
 package algorithm
 
 import (
-	ultron "ultron/pkg"
+	ultron "github.com/be-heroes/ultron/pkg"
 )
 
 const (

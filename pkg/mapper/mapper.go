@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	ultron "ultron/pkg"
+	ultron "github.com/be-heroes/ultron/pkg"
 
 	corev1 "k8s.io/api/core/v1"
 )

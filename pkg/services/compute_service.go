@@ -5,9 +5,9 @@ import (
 	"slices"
 	"sort"
 
-	ultron "ultron/pkg"
-	algorithm "ultron/pkg/algorithm"
-	mapper "ultron/pkg/mapper"
+	ultron "github.com/be-heroes/ultron/pkg"
+	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
+	mapper "github.com/be-heroes/ultron/pkg/mapper"
 
 	corev1 "k8s.io/api/core/v1"
 )

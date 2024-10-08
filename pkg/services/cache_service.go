@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	ultron "ultron/pkg"
+	ultron "github.com/be-heroes/ultron/pkg"
 
 	emma "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"

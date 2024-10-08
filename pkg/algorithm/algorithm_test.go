@@ -3,8 +3,8 @@ package algorithm_test
 import (
 	"testing"
 
-	ultron "ultron/pkg"
-	algorithm "ultron/pkg/algorithm"
+	ultron "github.com/be-heroes/ultron/pkg"
+	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
 )
 
 func TestResourceScore(t *testing.T) {

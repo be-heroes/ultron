@@ -8,11 +8,11 @@ import (
 	"os"
 	"strings"
 
-	handlers "ultron/internal/handlers"
-	internalServices "ultron/internal/services"
-	algorithm "ultron/pkg/algorithm"
-	mapper "ultron/pkg/mapper"
-	externalServices "ultron/pkg/services"
+	handlers "github.com/be-heroes/ultron/internal/handlers"
+	internalServices "github.com/be-heroes/ultron/internal/services"
+	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
+	mapper "github.com/be-heroes/ultron/pkg/mapper"
+	externalServices "github.com/be-heroes/ultron/pkg/services"
 )
 
 const (

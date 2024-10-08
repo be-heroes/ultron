@@ -8,7 +8,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	handlers "ultron/internal/handlers"
+	handlers "github.com/be-heroes/ultron/internal/handlers"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
