@@ -128,7 +128,7 @@
         <mxCell id="GJtK7p2Xejx93kHWHDXP-15" value="&lt;b&gt;OTLP Kafka Receiver&lt;/b&gt;" style="verticalLabelPosition=bottom;sketch=0;html=1;fillColor=#A153A0;strokeColor=#ffffff;verticalAlign=top;align=center;points=[[0,0.5,0],[0.125,0.25,0],[0.25,0,0],[0.5,0,0],[0.75,0,0],[0.875,0.25,0],[1,0.5,0],[0.875,0.75,0],[0.75,1,0],[0.5,1,0],[0.125,0.75,0]];pointerEvents=1;shape=mxgraph.cisco_safe.compositeIcon;bgIcon=mxgraph.cisco_safe.design.blank_device;resIcon=mxgraph.cisco_safe.design.log_collector_2;spacingTop=-75;" parent="GJtK7p2Xejx93kHWHDXP-11" vertex="1">
           <mxGeometry x="59.5" y="39" width="55.5" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="GJtK7p2Xejx93kHWHDXP-16" value="&lt;b&gt;Jarvis Model Database&lt;/b&gt;" style="aspect=fixed;html=1;perimeter=none;align=center;shadow=0;dashed=0;image;fontSize=12;image=img/lib/mscae/SQL_Database_generic.svg;labelBackgroundColor=#ffffff;fillColor=#4D9900;spacingTop=-75;spacingBottom=0;" parent="GJtK7p2Xejx93kHWHDXP-11" vertex="1">
+        <mxCell id="GJtK7p2Xejx93kHWHDXP-16" value="&lt;b&gt;Jarvis Model&lt;/b&gt;" style="aspect=fixed;html=1;perimeter=none;align=center;shadow=0;dashed=0;image;fontSize=12;image=img/lib/mscae/SQL_Database_generic.svg;labelBackgroundColor=#ffffff;fillColor=#4D9900;spacingTop=-75;spacingBottom=0;" parent="GJtK7p2Xejx93kHWHDXP-11" vertex="1">
           <mxGeometry x="682.2499999999998" y="40" width="37.5" height="50" as="geometry" />
         </mxCell>
         <object placeholders="1" c4Name="" c4Type="ContainerScopeBoundary" c4Application="jarvis" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;&lt;div style=&quot;text-align: left&quot;&gt;%c4Application%&lt;/div&gt;&lt;/b&gt;&lt;/font&gt;" id="GJtK7p2Xejx93kHWHDXP-17">
