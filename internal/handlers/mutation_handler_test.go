@@ -57,11 +57,11 @@ func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.Weighte
 	return nil, nil
 }
 
-func (cs MockComputeService) GetInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
+func (cs MockComputeService) ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
 	return 0, nil
 }
 
-func (cs MockComputeService) GetLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
+func (cs MockComputeService) ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
 	return 0, nil
 }
 

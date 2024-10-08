@@ -86,14 +86,14 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 
 		wNode.MedianPrice = medianPrice
 
-		interuptionRate, err := kc.computeService.GetInteruptionRateForWeightedNode(wNode)
+		interuptionRate, err := kc.computeService.ComputeInteruptionRateForWeightedNode(wNode)
 		if err != nil {
 			return nil, err
 		}
 
 		wNode.InterruptionRate = interuptionRate
 
-		latencyRate, err := kc.computeService.GetLatencyRateForWeightedNode(wNode)
+		latencyRate, err := kc.computeService.ComputeLatencyRateForWeightedNode(wNode)
 		if err != nil {
 			return nil, err
 		}

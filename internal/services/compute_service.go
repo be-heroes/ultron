@@ -20,8 +20,8 @@ type ComputeService interface {
 	CalculateWeightedNodeMedianPrice(wNode ultron.WeightedNode) (float64, error)
 	ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ultron.ComputeConfiguration, wNode ultron.WeightedNode) bool
 	ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ultron.ComputeConfiguration, wPod ultron.WeightedPod) bool
-	GetInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
-	GetLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
+	ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
+	ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
 }
 
 type IComputeService struct {
@@ -63,12 +63,12 @@ func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			instanceType = ultron.DefaultEphemeralInstanceType
 		}
 
-		interuptionRate, err := cs.GetInteruptionRateForWeightedNode(*wNode)
+		interuptionRate, err := cs.ComputeInteruptionRateForWeightedNode(*wNode)
 		if err != nil {
 			return nil, err
 		}
 
-		latencyRate, err := cs.GetLatencyRateForWeightedNode(*wNode)
+		latencyRate, err := cs.ComputeLatencyRateForWeightedNode(*wNode)
 		if err != nil {
 			return nil, err
 		}
@@ -231,10 +231,10 @@ func (cs IComputeService) ComputeConfigurationMatchesWeightedPodRequirements(com
 	return true
 }
 
-func (cs IComputeService) GetInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
+func (cs IComputeService) ComputeInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
 	return 0, nil // TODO: Implement support for fetching interuption rate based on node type in compute service
 }
 
-func (cs IComputeService) GetLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
+func (cs IComputeService) ComputeLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
 	return 0, nil // TODO: Implement support for fetching latency rate based on node type in compute service
 }
