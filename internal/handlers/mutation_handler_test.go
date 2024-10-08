@@ -236,7 +236,7 @@ func TestMutatePods_InvalidBody(t *testing.T) {
 	}
 }
 
-func TestHandleAdmissionReview_NonPodKind(t *testing.T) {
+func TestMutationHandleAdmissionReview_NonPodKind(t *testing.T) {
 	mockComputeService := &MockComputeService{}
 	handler := handlers.NewIMutationHandler(mockComputeService)
 
@@ -254,7 +254,7 @@ func TestHandleAdmissionReview_NonPodKind(t *testing.T) {
 	}
 }
 
-func TestHandleAdmissionReview_PodSpecFailure(t *testing.T) {
+func TestMutationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
 	mockComputeService := &MockComputeService{}
 	handler := handlers.NewIMutationHandler(mockComputeService)
 
