@@ -6,11 +6,11 @@ const (
 	AnnotationStorageSize = "ultron.io/storage-size"
 	AnnotationPriority    = "ultron.io/priority"
 
-	CacheKeyWeightedNodes                       = "WEIGHTED_NODES"
-	CacheKeyDurableVmConfigurations             = "DURABLE_VMCONFIGURATION"
-	CacheKeyDurableVmConfigurationLatencyRates  = "DURABLE_VMCONFIGURATION_LATENCY_RATES"
-	CacheKeySpotVmConfigurations                = "SPOT_VMCONFIGURATION"
-	CacheKeySpotVmConfigurationInteruptionRates = "SPOT_VMCONFIGURATION_INTERUPTION_RATES"
+	CacheKeyWeightedNodes                       = "ULTRON_WEIGHTED_NODES"
+	CacheKeyDurableVmConfigurations             = "ULTRON_DURABLE_VMCONFIGURATION"
+	CacheKeyDurableVmConfigurationLatencyRates  = "ULTRON_DURABLE_VMCONFIGURATION_LATENCY_RATES"
+	CacheKeySpotVmConfigurations                = "ULTRON_SPOT_VMCONFIGURATION"
+	CacheKeySpotVmConfigurationInteruptionRates = "ULTRON_SPOT_VMCONFIGURATION_INTERUPTION_RATES"
 
 	ComputeTypeDurable   ComputeType = "durable"
 	ComputeTypeEphemeral ComputeType = "ephemeral"
