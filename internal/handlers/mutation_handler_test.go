@@ -59,15 +59,15 @@ func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.Weighte
 
 type MockAlgorithm struct{}
 
-func (ma *MockAlgorithm) DiskTypeScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) StorageScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) NetworkTypeScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) NetworkScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) NodeStabilityScore(wNode ultron.WeightedNode) float64 {
+func (ma *MockAlgorithm) NodeScore(wNode ultron.WeightedNode) float64 {
 	return 0
 }
 
@@ -75,21 +75,26 @@ func (ma *MockAlgorithm) PriceScore(wNode ultron.WeightedNode) float64 {
 	return 0.2
 }
 
-func (ma *MockAlgorithm) ResourceFitScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) ResourceScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 
-func (ma *MockAlgorithm) WorkloadPriorityScore(wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) PodScore(wPod ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) Score(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) TotalScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 
 type MockCache struct{}
 
-func (mc *MockCache) AddCacheItem(key string, value interface{}, time time.Duration) {
+func (mc *MockCache) AddCacheItem(key string, value interface{}, time time.Duration) error {
+	return nil
+}
+
+func (mc *MockCache) GetCacheItem(key string) (interface{}, error) {
+	return nil, nil
 }
 
 func (mc *MockCache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
@@ -183,7 +188,7 @@ func TestMutatePods_Success(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/mutate", bytes.NewBuffer(reqBody))
 	w := httptest.NewRecorder()
 
-	handler.MutatePods(w, req)
+	handler.MutatePodSpec(w, req)
 
 	resp := w.Result()
 	body, _ := io.ReadAll(resp.Body)
@@ -223,7 +228,7 @@ func TestMutatePods_InvalidBody(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/mutate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
 
-	handler.MutatePods(w, req)
+	handler.MutatePodSpec(w, req)
 
 	resp := w.Result()
 	if resp.StatusCode != http.StatusBadRequest {

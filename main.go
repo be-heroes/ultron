@@ -46,6 +46,7 @@ func main() {
 	certificateService := services.NewICertificateService()
 	computeService := services.NewIComputeService(algorithm, cacheService, mapper)
 	mutationHandler := handlers.NewIMutationHandler(computeService)
+	validationHandler := handlers.NewIValidationHandler(computeService)
 	kubernetesClient := kubernetes.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
 
 	// TODO: Move cache initialization to ultron-attendant
@@ -154,12 +155,18 @@ func main() {
 		log.Println("Exported CA certificate")
 	}
 
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/mutate", mutationHandler.MutatePodSpec)
+	mux.HandleFunc("/validate", validationHandler.ValidatePodSpec)
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
+
 	server := &http.Server{
 		Addr: serverAddress,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		},
-		Handler: http.HandlerFunc(mutationHandler.MutatePods),
+		Handler: mux,
 	}
 
 	log.Println("Initialized server")
