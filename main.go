@@ -6,16 +6,21 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	handlers "github.com/be-heroes/ultron/internal/handlers"
 	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
 	mapper "github.com/be-heroes/ultron/pkg/mapper"
 	services "github.com/be-heroes/ultron/pkg/services"
+	"github.com/redis/go-redis/v9"
 )
 
 const (
 	EnvironmentVariableKeyServerAddress                 = "ULTRON_SERVER_ADDRESS"
+	EnvironmentVariableKeyRedisServerAddress            = "ULTRON_REDIS_SERVER_ADDRESS"
+	EnvironmentVariableKeyRedisServerPassword           = "ULTRON_REDIS_SERVER_PASSWORD"
+	EnvironmentVariableKeyRedisServerDatabase           = "ULTRON_REDIS_SERVER_DATABASE"
 	EnvironmentVariableKeyServerCertificateOrganization = "ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
 	EnvironmentVariableKeyServerCertificateCommonName   = "ULTRON_SERVER_CERTIFICATE_COMMON_NAME"
 	EnvironmentVariableKeyServerCertificateDnsNames     = "ULTRON_SERVER_CERTIFICATE_DNS_NAMES"
@@ -24,10 +29,26 @@ const (
 )
 
 func main() {
+	var redisClient *redis.Client
+
+	redisServerAddress := os.Getenv(EnvironmentVariableKeyRedisServerAddress)
+	redisServerDatabase := os.Getenv(EnvironmentVariableKeyRedisServerDatabase)
+	redisServerDatabaseInt, err := strconv.Atoi(redisServerDatabase)
+	if err != nil {
+		redisServerDatabaseInt = 0
+	}
+
+	if redisServerAddress != "" {
+		redisClient = redis.NewClient(&redis.Options{
+			Addr:     redisServerAddress,
+			Password: os.Getenv(EnvironmentVariableKeyRedisServerPassword),
+			DB:       redisServerDatabaseInt,
+		})
+	}
+
 	mapper := mapper.NewIMapper()
 	algorithm := algorithm.NewIAlgorithm()
-	// TODO: Initialize redisClient and pass to cacheService
-	cacheService := services.NewICacheService(nil, nil)
+	cacheService := services.NewICacheService(nil, redisClient)
 	certificateService := services.NewICertificateService()
 	computeService := services.NewIComputeService(algorithm, cacheService, mapper)
 	mutationHandler := handlers.NewIMutationHandler(computeService)
