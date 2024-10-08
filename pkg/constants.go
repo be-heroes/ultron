@@ -1,6 +1,16 @@
 package pkg
 
 const (
+	EnvServerAddress                 = "ULTRON_SERVER_ADDRESS"
+	EnvServerCertificateOrganization = "ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
+	EnvServerCertificateCommonName   = "ULTRON_SERVER_CERTIFICATE_COMMON_NAME"
+	EnvServerCertificateDnsNames     = "ULTRON_SERVER_CERTIFICATE_DNS_NAMES"
+	EnvServerCertificateIpAddresses  = "ULTRON_SERVER_CERTIFICATE_IP_ADDRESSES"
+	EnvServerCertificateExportPath   = "ULTRON_SERVER_CERTIFICATE_EXPORT_PATH"
+	EnvRedisServerAddress            = "ULTRON_REDIS_SERVER_ADDRESS"
+	EnvRedisServerPassword           = "ULTRON_REDIS_SERVER_PASSWORD"
+	EnvRedisServerDatabase           = "ULTRON_REDIS_SERVER_DATABASE"
+
 	AnnotationDiskType    = "ultron.io/disk-type"
 	AnnotationNetworkType = "ultron.io/network-type"
 	AnnotationStorageSize = "ultron.io/storage-size"

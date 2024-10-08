@@ -10,29 +10,18 @@ import (
 	"strings"
 
 	handlers "github.com/be-heroes/ultron/internal/handlers"
+	ultron "github.com/be-heroes/ultron/pkg"
 	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
 	mapper "github.com/be-heroes/ultron/pkg/mapper"
 	services "github.com/be-heroes/ultron/pkg/services"
 	"github.com/redis/go-redis/v9"
 )
 
-const (
-	EnvironmentVariableKeyServerAddress                 = "ULTRON_SERVER_ADDRESS"
-	EnvironmentVariableKeyRedisServerAddress            = "ULTRON_REDIS_SERVER_ADDRESS"
-	EnvironmentVariableKeyRedisServerPassword           = "ULTRON_REDIS_SERVER_PASSWORD"
-	EnvironmentVariableKeyRedisServerDatabase           = "ULTRON_REDIS_SERVER_DATABASE"
-	EnvironmentVariableKeyServerCertificateOrganization = "ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
-	EnvironmentVariableKeyServerCertificateCommonName   = "ULTRON_SERVER_CERTIFICATE_COMMON_NAME"
-	EnvironmentVariableKeyServerCertificateDnsNames     = "ULTRON_SERVER_CERTIFICATE_DNS_NAMES"
-	EnvironmentVariableKeyServerCertificateIpAddresses  = "ULTRON_SERVER_CERTIFICATE_IP_ADDRESSES"
-	EnvironmentVariableKeyServerCertificateExportPath   = "ULTRON_SERVER_CERTIFICATE_EXPORT_PATH"
-)
-
 func main() {
 	var redisClient *redis.Client
 
-	redisServerAddress := os.Getenv(EnvironmentVariableKeyRedisServerAddress)
-	redisServerDatabase := os.Getenv(EnvironmentVariableKeyRedisServerDatabase)
+	redisServerAddress := os.Getenv(ultron.EnvRedisServerAddress)
+	redisServerDatabase := os.Getenv(ultron.EnvRedisServerDatabase)
 	redisServerDatabaseInt, err := strconv.Atoi(redisServerDatabase)
 	if err != nil {
 		redisServerDatabaseInt = 0
@@ -41,7 +30,7 @@ func main() {
 	if redisServerAddress != "" {
 		redisClient = redis.NewClient(&redis.Options{
 			Addr:     redisServerAddress,
-			Password: os.Getenv(EnvironmentVariableKeyRedisServerPassword),
+			Password: os.Getenv(ultron.EnvRedisServerPassword),
 			DB:       redisServerDatabaseInt,
 		})
 	}
@@ -56,27 +45,27 @@ func main() {
 
 	log.Println("Initializing server")
 
-	serverAddress := os.Getenv(EnvironmentVariableKeyServerAddress)
+	serverAddress := os.Getenv(ultron.EnvServerAddress)
 	if serverAddress == "" {
 		serverAddress = ":8443"
 	}
 
-	certificateOrganization := os.Getenv(EnvironmentVariableKeyServerCertificateOrganization)
+	certificateOrganization := os.Getenv(ultron.EnvServerCertificateOrganization)
 	if certificateOrganization == "" {
 		certificateOrganization = "be-heroes"
 	}
 
-	certificateCommonName := os.Getenv(EnvironmentVariableKeyServerCertificateCommonName)
+	certificateCommonName := os.Getenv(ultron.EnvServerCertificateCommonName)
 	if certificateCommonName == "" {
 		certificateCommonName = "ultron-service.default.svc"
 	}
 
-	certificateDnsNamesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateDnsNames)
+	certificateDnsNamesCSV := os.Getenv(ultron.EnvServerCertificateDnsNames)
 	if certificateDnsNamesCSV == "" {
 		certificateDnsNamesCSV = "ultron-service.default.svc,ultron-service,localhost"
 	}
 
-	certificateIpAddressesCSV := os.Getenv(EnvironmentVariableKeyServerCertificateIpAddresses)
+	certificateIpAddressesCSV := os.Getenv(ultron.EnvServerCertificateIpAddresses)
 	if certificateIpAddressesCSV == "" {
 		certificateIpAddressesCSV = "127.0.0.1"
 	}
@@ -99,7 +88,7 @@ func main() {
 
 	log.Println("Generated self-signed certificate")
 
-	certificateExportPath := os.Getenv(EnvironmentVariableKeyServerCertificateExportPath)
+	certificateExportPath := os.Getenv(ultron.EnvServerCertificateExportPath)
 	if certificateExportPath != "" {
 		log.Println("Exporting CA certificate")
 
