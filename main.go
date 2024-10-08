@@ -15,9 +15,6 @@ import (
 )
 
 const (
-	EnvironmentVariableKeyKubernetesConfig              = "KUBECONFIG"
-	EnvironmentVariableKeyKubernetesServiceHost         = "KUBERNETES_SERVICE_HOST"
-	EnvironmentVariableKeyKubernetesServicePort         = "KUBERNETES_SERVICE_PORT"
 	EnvironmentVariableKeyServerAddress                 = "ULTRON_SERVER_ADDRESS"
 	EnvironmentVariableKeyServerCertificateOrganization = "ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
 	EnvironmentVariableKeyServerCertificateCommonName   = "ULTRON_SERVER_CERTIFICATE_COMMON_NAME"
@@ -29,6 +26,7 @@ const (
 func main() {
 	mapper := mapper.NewIMapper()
 	algorithm := algorithm.NewIAlgorithm()
+	// TODO: Initialize redisClient and pass to cacheService
 	cacheService := services.NewICacheService(nil, nil)
 	certificateService := services.NewICertificateService()
 	computeService := services.NewIComputeService(algorithm, cacheService, mapper)
