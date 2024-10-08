@@ -3,7 +3,6 @@ module github.com/be-heroes/ultron
 go 1.23.1
 
 require (
-	github.com/emma-community/emma-go-sdk v0.0.3
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/redis/go-redis/v9 v9.6.1
 	k8s.io/api v0.31.1

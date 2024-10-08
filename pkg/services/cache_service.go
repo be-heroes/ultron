@@ -8,8 +8,6 @@ import (
 	"time"
 
 	ultron "github.com/be-heroes/ultron/pkg"
-
-	emma "github.com/emma-community/emma-go-sdk"
 	"github.com/patrickmn/go-cache"
 	"github.com/redis/go-redis/v9"
 )
@@ -110,18 +108,7 @@ func (c *ICacheService) GetEphemeralComputeConfigurations() ([]ultron.ComputeCon
 		return nil, err
 	}
 
-	ephemeralConfigurations := ephemeralConfigurationsRaw.([]emma.VmConfiguration)
-	var convertedConfigurations []ultron.ComputeConfiguration
-
-	for i := range ephemeralConfigurations {
-		convertedConfiguration := ultron.ComputeConfiguration{
-			VmConfiguration: ephemeralConfigurations[i],
-			ComputeType:     ultron.ComputeTypeEphemeral,
-		}
-		convertedConfigurations = append(convertedConfigurations, convertedConfiguration)
-	}
-
-	return convertedConfigurations, nil
+	return ephemeralConfigurationsRaw.([]ultron.ComputeConfiguration), nil
 }
 
 func (c *ICacheService) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
@@ -130,18 +117,7 @@ func (c *ICacheService) GetDurableComputeConfigurations() ([]ultron.ComputeConfi
 		return nil, err
 	}
 
-	durableConfigurations := durableConfigurationsRaw.([]emma.VmConfiguration)
-	var convertedConfigurations []ultron.ComputeConfiguration
-
-	for i := range durableConfigurations {
-		convertedConfiguration := ultron.ComputeConfiguration{
-			VmConfiguration: durableConfigurations[i],
-			ComputeType:     ultron.ComputeTypeDurable,
-		}
-		convertedConfigurations = append(convertedConfigurations, convertedConfiguration)
-	}
-
-	return convertedConfigurations, nil
+	return durableConfigurationsRaw.([]ultron.ComputeConfiguration), nil
 }
 
 func (c *ICacheService) GetWeightedNodes() ([]ultron.WeightedNode, error) {

@@ -8,8 +8,6 @@ import (
 	ultron "github.com/be-heroes/ultron/pkg"
 	services "github.com/be-heroes/ultron/pkg/services"
 
-	emma "github.com/emma-community/emma-go-sdk"
-
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -95,16 +93,14 @@ func (mc *MockCache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguratio
 	return []ultron.ComputeConfiguration{
 		{
 			ComputeType: ultron.ComputeTypeDurable,
-			VmConfiguration: emma.VmConfiguration{
-				VCpu:     intPtr(2),
-				RamGb:    intPtr(8),
-				VolumeGb: intPtr(50),
-				Cost: &emma.VmConfigurationCost{
-					PricePerUnit: float32Ptr(0.2),
-				},
-				VolumeType:        stringPtr("SSD"),
-				CloudNetworkTypes: []string{"isolated", "public"},
+			VCpu:        intPtr(2),
+			RamGb:       intPtr(8),
+			VolumeGb:    intPtr(50),
+			Cost: &ultron.ComputeCost{
+				PricePerUnit: float32Ptr(0.2),
 			},
+			VolumeType:        stringPtr("SSD"),
+			CloudNetworkTypes: []string{"isolated", "public"},
 		},
 	}, nil
 }

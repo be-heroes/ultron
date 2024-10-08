@@ -6,7 +6,6 @@ import (
 	ultron "github.com/be-heroes/ultron/pkg"
 	services "github.com/be-heroes/ultron/pkg/services"
 
-	emma "github.com/emma-community/emma-go-sdk"
 	goCache "github.com/patrickmn/go-cache"
 )
 
@@ -27,31 +26,31 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 	// Arrange
 	iCache := services.NewICacheService(nil, nil)
 
-	vmConfigs := []emma.VmConfiguration{
-		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
-		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+	computeConfigs := []ultron.ComputeConfiguration{
+		{Id: nil, ComputeType: ultron.ComputeTypeEphemeral, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+		{Id: nil, ComputeType: ultron.ComputeTypeEphemeral, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
 	}
 
 	// Act
-	iCache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, vmConfigs, goCache.DefaultExpiration)
+	iCache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, computeConfigs, goCache.DefaultExpiration)
 
-	computeConfigs, err := iCache.GetEphemeralComputeConfigurations()
+	getComputeConfigs, err := iCache.GetEphemeralComputeConfigurations()
 
 	// Assert
 	if err != nil {
 		t.Fatalf("GetEphemeralComputeConfigurations returned an error: %v", err)
 	}
 
-	if len(computeConfigs) != len(vmConfigs) {
-		t.Errorf("Expected %d compute configurations, got %d", len(vmConfigs), len(computeConfigs))
+	if len(computeConfigs) != len(getComputeConfigs) {
+		t.Errorf("Expected %d compute configurations, got %d", len(computeConfigs), len(getComputeConfigs))
 	}
 
-	for i, config := range computeConfigs {
+	for i, config := range getComputeConfigs {
 		if config.ComputeType != ultron.ComputeTypeEphemeral {
 			t.Errorf("Expected ComputeTypeEphemeral, got %s", config.ComputeType)
 		}
-		if config.VmConfiguration.Id != vmConfigs[i].Id {
-			t.Errorf("Expected Id %d, got %d", vmConfigs[i].Id, config.VmConfiguration.Id)
+		if config.Id != computeConfigs[i].Id {
+			t.Errorf("Expected Id %d, got %d", computeConfigs[i].Id, config.Id)
 		}
 	}
 }
@@ -73,31 +72,31 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 	// Arrange
 	iCache := services.NewICacheService(nil, nil)
 
-	vmConfigs := []emma.VmConfiguration{
-		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
-		{Id: nil, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+	computeConfigs := []ultron.ComputeConfiguration{
+		{Id: nil, ComputeType: ultron.ComputeTypeDurable, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+		{Id: nil, ComputeType: ultron.ComputeTypeDurable, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
 	}
 
 	// Act
-	iCache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, vmConfigs, goCache.DefaultExpiration)
+	iCache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, computeConfigs, goCache.DefaultExpiration)
 
-	computeConfigs, err := iCache.GetDurableComputeConfigurations()
+	getComputeConfigs, err := iCache.GetDurableComputeConfigurations()
 
 	// Assert
 	if err != nil {
 		t.Fatalf("GetDurableComputeConfigurations returned an error: %v", err)
 	}
 
-	if len(computeConfigs) != len(vmConfigs) {
-		t.Errorf("Expected %d compute configurations, got %d", len(vmConfigs), len(computeConfigs))
+	if len(computeConfigs) != len(getComputeConfigs) {
+		t.Errorf("Expected %d compute configurations, got %d", len(computeConfigs), len(getComputeConfigs))
 	}
 
-	for i, config := range computeConfigs {
+	for i, config := range getComputeConfigs {
 		if config.ComputeType != ultron.ComputeTypeDurable {
 			t.Errorf("Expected ComputeTypeDurable, got %s", config.ComputeType)
 		}
-		if config.VmConfiguration.Id != vmConfigs[i].Id {
-			t.Errorf("Expected Id %d, got %d", vmConfigs[i].Id, config.VmConfiguration.Id)
+		if config.Id != computeConfigs[i].Id {
+			t.Errorf("Expected Id %d, got %d", computeConfigs[i].Id, config.Id)
 		}
 	}
 }
