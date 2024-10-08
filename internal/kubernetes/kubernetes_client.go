@@ -85,7 +85,7 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 		}
 
 		wNode.MedianPrice = medianPrice
-		// TODO: Implement support for fetching data from compute service
+		// TODO: Implement support for fetching interuption rates based on node type in compute service
 		// wNode.InterruptionRate = vmConfiguration.InterruptionRate
 
 		wNodes = append(wNodes, wNode)

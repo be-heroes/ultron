@@ -20,6 +20,8 @@ type ComputeService interface {
 	CalculateWeightedNodeMedianPrice(wNode ultron.WeightedNode) (float64, error)
 	ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration ultron.ComputeConfiguration, wNode ultron.WeightedNode) bool
 	ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration ultron.ComputeConfiguration, wPod ultron.WeightedPod) bool
+	GetInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
+	GetLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error)
 }
 
 type IComputeService struct {
@@ -72,8 +74,8 @@ func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			NetworkType:      wPod.RequestedNetworkType,
 			Price:            float64(*computeConfiguration.Cost.PricePerUnit),
 			InstanceType:     instanceType,
-			InterruptionRate: 0, // TODO: Implement support for fetching data from compute service
-			LatencyRate:      0, // TODO: Implement support for fetching data from compute service
+			InterruptionRate: 0, // TODO: Implement support for fetching interuption rates based on node type in compute service
+			LatencyRate:      0, // TODO: Implement support for fetching latency rates based on node type in compute service
 		}
 	}
 
@@ -217,4 +219,12 @@ func (cs IComputeService) ComputeConfigurationMatchesWeightedPodRequirements(com
 	}
 
 	return true
+}
+
+func (cs IComputeService) GetInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
+	return 0, nil // TODO: Implement support for fetching interuption rate based on node type in compute service
+}
+
+func (cs IComputeService) GetLatencyRateForWeightedNode(wNode ultron.WeightedNode) (float64, error) {
+	return 0, nil // TODO: Implement support for fetching latency rate based on node type in compute service
 }
