@@ -42,7 +42,6 @@ func NewICacheService(innerCache *cache.Cache, redisClient *redis.Client) *ICach
 }
 
 func (c *ICacheService) AddCacheItem(key string, value interface{}, d time.Duration) error {
-
 	if c.memCache != nil {
 		c.memCache.Set(key, value, cache.DefaultExpiration)
 	} else if c.redisClient != nil {
