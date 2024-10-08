@@ -49,7 +49,7 @@ func main() {
 	validationHandler := handlers.NewIValidationHandler(computeService)
 	kubernetesClient := kubernetes.NewIKubernetesClient(kubernetesMasterUrl, kubernetesConfigPath, mapper, computeService)
 
-	// TODO: Move cache initialization to ultron-attendant
+	// TODO: Move cache initialization logic and env vars to ultron-attendant
 	log.Println("Initializing cache")
 
 	apiClient := emma.NewAPIClient(emma.NewConfiguration())
