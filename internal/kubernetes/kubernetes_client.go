@@ -85,7 +85,7 @@ func (kc IKubernetesClient) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 		}
 
 		wNode.MedianPrice = medianPrice
-		// TODO: Uncomment once External API is updated
+		// TODO: Implement support for fetching data from compute service
 		// wNode.InterruptionRate = vmConfiguration.InterruptionRate
 
 		wNodes = append(wNodes, wNode)

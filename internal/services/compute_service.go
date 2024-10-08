@@ -72,8 +72,8 @@ func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			NetworkType:      wPod.RequestedNetworkType,
 			Price:            float64(*computeConfiguration.Cost.PricePerUnit),
 			InstanceType:     instanceType,
-			InterruptionRate: 0, // TODO: Fetch data from Jarvis
-			LatencyRate:      0, // TODO: Fetch data from Jarvis
+			InterruptionRate: 0, // TODO: Implement support for fetching data from compute service
+			LatencyRate:      0, // TODO: Implement support for fetching data from compute service
 		}
 	}
 
