@@ -13,7 +13,7 @@ import (
 )
 
 type ComputeService interface {
-	ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error)
+	MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error)
 	MatchWeightedPodToComputeConfiguration(wPod ultron.WeightedPod) (*ultron.ComputeConfiguration, error)
 	MatchWeightedNodeToComputeConfiguration(wNode ultron.WeightedNode) (*ultron.ComputeConfiguration, error)
 	MatchWeightedPodToWeightedNode(wPod ultron.WeightedPod) (*ultron.WeightedNode, error)
@@ -36,7 +36,7 @@ func NewIComputeService(algorithm algorithm.Algorithm, cacheService CacheService
 	}
 }
 
-func (cs IComputeService) ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
+func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
 	wPod, err := cs.mapper.MapPodToWeightedPod(pod)
 	if err != nil {
 		return nil, err

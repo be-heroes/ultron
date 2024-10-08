@@ -90,7 +90,7 @@ func (mh IMutationHandler) HandleAdmissionReview(request *admissionv1.AdmissionR
 		}, err
 	}
 
-	wNode, err := mh.computeService.ComputePodSpec(&pod)
+	wNode, err := mh.computeService.MatchPodSpec(&pod)
 	if err != nil {
 		return nil, err
 	}

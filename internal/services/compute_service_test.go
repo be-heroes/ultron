@@ -167,7 +167,7 @@ func TestComputePodSpec_Success(t *testing.T) {
 	pod := &corev1.Pod{}
 
 	// Act
-	wNode, err := service.ComputePodSpec(pod)
+	wNode, err := service.MatchPodSpec(pod)
 
 	// Assert
 	if err != nil {
@@ -202,7 +202,7 @@ func TestComputePodSpec_NoWeightedNode(t *testing.T) {
 	pod := &corev1.Pod{}
 
 	// Act
-	wNode, err := service.ComputePodSpec(pod)
+	wNode, err := service.MatchPodSpec(pod)
 
 	// Assert
 	if err != nil {

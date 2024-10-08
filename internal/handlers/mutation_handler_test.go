@@ -25,7 +25,7 @@ func stringPtr(s string) *string    { return &s }
 
 type MockComputeService struct{}
 
-func (mcs *MockComputeService) ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
+func (mcs *MockComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
 	return &ultron.WeightedNode{
 		Selector: map[string]string{
 			"node-type": "mock-node",
