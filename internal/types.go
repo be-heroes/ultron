@@ -20,6 +20,7 @@ type WeightedNode struct {
 	MedianPrice      float64
 	InstanceType     string
 	InterruptionRate float64
+	LatencyRate      float64
 	Selector         map[string]string
 }
 

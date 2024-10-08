@@ -72,8 +72,8 @@ func (cs IComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			NetworkType:      wPod.RequestedNetworkType,
 			Price:            float64(*computeConfiguration.Cost.PricePerUnit),
 			InstanceType:     instanceType,
-			// InterruptionRate: *float64(*computeConfiguration.InterruptionRate),
-			InterruptionRate: 0, // TODO: Replace with above once External API is updated
+			InterruptionRate: 0, // TODO: Fetch data from Jarvis
+			LatencyRate:      0, // TODO: Fetch data from Jarvis
 		}
 	}
 
@@ -142,7 +142,7 @@ func (cs IComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod)
 			continue
 		}
 
-		score := cs.algorithm.Score(wNode, pod)
+		score := cs.algorithm.TotalScore(wNode, pod)
 
 		if score > highestScore {
 			highestScore = score

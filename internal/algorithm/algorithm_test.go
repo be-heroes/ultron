@@ -7,7 +7,7 @@ import (
 	algorithm "ultron/internal/algorithm"
 )
 
-func TestResourceFitScore(t *testing.T) {
+func TestResourceScore(t *testing.T) {
 	// Arrange
 	alg := algorithm.NewIAlgorithm()
 
@@ -24,16 +24,16 @@ func TestResourceFitScore(t *testing.T) {
 	}
 
 	// Act
-	score := alg.ResourceFitScore(node, pod)
+	score := alg.ResourceScore(node, pod)
 	expected := (4.0-2.0)/8.0 + (8.0-4.0)/16.0
 
 	// Assert
 	if score != expected {
-		t.Errorf("ResourceFitScore was incorrect, got: %f, want: %f", score, expected)
+		t.Errorf("ResourceScore was incorrect, got: %f, want: %f", score, expected)
 	}
 }
 
-func TestDiskTypeScore(t *testing.T) {
+func TestStorageScore(t *testing.T) {
 	// Arrange
 	alg := algorithm.NewIAlgorithm()
 
@@ -46,24 +46,24 @@ func TestDiskTypeScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.DiskTypeScore(node, pod)
+	score1 := alg.StorageScore(node, pod)
 	expected1 := 1.0
 
 	pod.RequestedDiskType = "HDD"
-	score2 := alg.DiskTypeScore(node, pod)
+	score2 := alg.StorageScore(node, pod)
 	expected2 := 0.0
 
 	// Assert
 	if score1 != expected1 {
-		t.Errorf("DiskTypeScore was incorrect, got: %f, want: %f", score1, expected1)
+		t.Errorf("StorageScore was incorrect, got: %f, want: %f", score1, expected1)
 	}
 
 	if score2 != expected2 {
-		t.Errorf("DiskTypeScore was incorrect for mismatch, got: %f, want: %f", score2, expected2)
+		t.Errorf("StorageScore was incorrect for mismatch, got: %f, want: %f", score2, expected2)
 	}
 }
 
-func TestNetworkTypeScore(t *testing.T) {
+func TestNetworkScore(t *testing.T) {
 	// Arrange
 	alg := algorithm.NewIAlgorithm()
 
@@ -76,20 +76,20 @@ func TestNetworkTypeScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.NetworkTypeScore(node, pod)
+	score1 := alg.NetworkScore(node, pod)
 	expected1 := 1.0
 
 	pod.RequestedNetworkType = "1G"
-	score2 := alg.NetworkTypeScore(node, pod)
+	score2 := alg.NetworkScore(node, pod)
 	expected2 := 0.0
 
 	// Assert
 	if score1 != expected1 {
-		t.Errorf("NetworkTypeScore was incorrect, got: %f, want: %f", score1, expected1)
+		t.Errorf("NetworkScore was incorrect, got: %f, want: %f", score1, expected1)
 	}
 
 	if score2 != expected2 {
-		t.Errorf("NetworkTypeScore was incorrect for mismatch, got: %f, want: %f", score2, expected2)
+		t.Errorf("NetworkScore was incorrect for mismatch, got: %f, want: %f", score2, expected2)
 	}
 }
 
@@ -120,7 +120,7 @@ func TestPriceScore(t *testing.T) {
 	}
 }
 
-func TestNodeStabilityScore(t *testing.T) {
+func TestNodeScore(t *testing.T) {
 	// Arrange
 	alg := algorithm.NewIAlgorithm()
 
@@ -131,24 +131,24 @@ func TestNodeStabilityScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.NodeStabilityScore(node)
+	score1 := alg.NodeScore(node)
 	expected1 := node.InterruptionRate * (node.Price / node.MedianPrice)
 
 	node.Price = 0
-	score2 := alg.NodeStabilityScore(node)
+	score2 := alg.NodeScore(node)
 	expected2 := 0.0
 
 	// Assert
 	if score1 != expected1 {
-		t.Errorf("NodeStabilityScore was incorrect, got: %f, want: %f", score1, expected1)
+		t.Errorf("NodeScore was incorrect, got: %f, want: %f", score1, expected1)
 	}
 
 	if score2 != expected2 {
-		t.Errorf("NodeStabilityScore was incorrect for zero price, got: %f, want: %f", score2, expected2)
+		t.Errorf("NodeScore was incorrect for zero price, got: %f, want: %f", score2, expected2)
 	}
 }
 
-func TestWorkloadPriorityScore(t *testing.T) {
+func TestPodScore(t *testing.T) {
 	// Arrange
 	alg := algorithm.NewIAlgorithm()
 
@@ -157,24 +157,24 @@ func TestWorkloadPriorityScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.WorkloadPriorityScore(pod)
+	score1 := alg.PodScore(pod)
 	expected1 := 1.0
 
 	pod.Priority = ultron.PriorityLow
-	score2 := alg.WorkloadPriorityScore(pod)
+	score2 := alg.PodScore(pod)
 	expected2 := 0.0
 
 	// Assert
 	if score1 != expected1 {
-		t.Errorf("WorkloadPriorityScore was incorrect, got: %f, want: %f", score1, expected1)
+		t.Errorf("PodScore was incorrect, got: %f, want: %f", score1, expected1)
 	}
 
 	if score2 != expected2 {
-		t.Errorf("WorkloadPriorityScore was incorrect for low priority, got: %f, want: %f", score2, expected2)
+		t.Errorf("PodScore was incorrect for low priority, got: %f, want: %f", score2, expected2)
 	}
 }
 
-func TestScore(t *testing.T) {
+func TestTotalScore(t *testing.T) {
 	// Arrange
 	alg := algorithm.NewIAlgorithm()
 
@@ -199,19 +199,19 @@ func TestScore(t *testing.T) {
 	}
 
 	// Act
-	score := alg.Score(node, pod)
+	score := alg.TotalScore(node, pod)
 
-	resourceFit := algorithm.Alpha * alg.ResourceFitScore(node, pod)
-	diskType := algorithm.Beta * alg.DiskTypeScore(node, pod)
-	networkType := algorithm.Gamma * alg.NetworkTypeScore(node, pod)
-	price := algorithm.Delta * alg.PriceScore(node)
-	stability := algorithm.Epsilon * alg.NodeStabilityScore(node)
-	priority := algorithm.Zeta * alg.WorkloadPriorityScore(pod)
+	resourceScore := algorithm.Alpha * alg.ResourceScore(node, pod)
+	storageScore := algorithm.Beta * alg.StorageScore(node, pod)
+	networkScore := algorithm.Gamma * alg.NetworkScore(node, pod)
+	priceScore := algorithm.Delta * alg.PriceScore(node)
+	nodeScore := algorithm.Epsilon * alg.NodeScore(node)
+	podScore := algorithm.Zeta * alg.PodScore(pod)
 
-	expected := resourceFit + diskType + networkType + price - stability + priority
+	expected := resourceScore + storageScore + networkScore + priceScore - nodeScore + podScore
 
 	// Assert
 	if score != expected {
-		t.Errorf("Score was incorrect, got: %f, want: %f", score, expected)
+		t.Errorf("TotalScore was incorrect, got: %f, want: %f", score, expected)
 	}
 }

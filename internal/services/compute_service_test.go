@@ -53,15 +53,15 @@ func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.Weighte
 
 type MockAlgorithm struct{}
 
-func (ma *MockAlgorithm) DiskTypeScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) StorageScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) NetworkTypeScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) NetworkScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) NodeStabilityScore(wNode ultron.WeightedNode) float64 {
+func (ma *MockAlgorithm) NodeScore(wNode ultron.WeightedNode) float64 {
 	return 0
 }
 
@@ -69,15 +69,15 @@ func (ma *MockAlgorithm) PriceScore(wNode ultron.WeightedNode) float64 {
 	return 0.2
 }
 
-func (ma *MockAlgorithm) ResourceFitScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) ResourceScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 
-func (ma *MockAlgorithm) WorkloadPriorityScore(wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) PodScore(wPod ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) Score(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) TotalScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 

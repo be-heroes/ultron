@@ -5,22 +5,22 @@ import (
 )
 
 const (
-	Alpha   = 1.0 // ResourceFitScore weight
-	Beta    = 0.5 // DiskTypeScore weight
-	Gamma   = 0.5 // NetworkTypeScore weight
+	Alpha   = 1.0 // ResourceScore weight
+	Beta    = 0.5 // StorageScore weight
+	Gamma   = 0.5 // NetworkScore weight
 	Delta   = 1.0 // PriceScore weight
-	Epsilon = 1.0 // NodeStabilityScore weight
-	Zeta    = 0.8 // WorkloadPriorityScore weight
+	Epsilon = 1.0 // NodeScore weight
+	Zeta    = 0.8 // PodScore weight
 )
 
 type Algorithm interface {
-	ResourceFitScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
-	DiskTypeScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
-	NetworkTypeScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
+	ResourceScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
+	StorageScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
+	NetworkScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
 	PriceScore(node ultron.WeightedNode) float64
-	NodeStabilityScore(node ultron.WeightedNode) float64
-	WorkloadPriorityScore(pod ultron.WeightedPod) float64
-	Score(node ultron.WeightedNode, pod ultron.WeightedPod) float64
+	NodeScore(node ultron.WeightedNode) float64
+	PodScore(pod ultron.WeightedPod) float64
+	TotalScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
 }
 
 type IAlgorithm struct {
@@ -30,7 +30,7 @@ func NewIAlgorithm() *IAlgorithm {
 	return &IAlgorithm{}
 }
 
-func (a *IAlgorithm) ResourceFitScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+func (a *IAlgorithm) ResourceScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
 	var cpuScore, memScore float64
 
 	if node.TotalCPU != 0 {
@@ -48,7 +48,7 @@ func (a *IAlgorithm) ResourceFitScore(node ultron.WeightedNode, pod ultron.Weigh
 	return cpuScore + memScore
 }
 
-func (a *IAlgorithm) DiskTypeScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+func (a *IAlgorithm) StorageScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
 	if node.DiskType == pod.RequestedDiskType {
 		return 1.0
 	}
@@ -56,9 +56,9 @@ func (a *IAlgorithm) DiskTypeScore(node ultron.WeightedNode, pod ultron.Weighted
 	return 0.0
 }
 
-func (a *IAlgorithm) NetworkTypeScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+func (a *IAlgorithm) NetworkScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
 	if node.NetworkType == pod.RequestedNetworkType {
-		return 1.0
+		return 1.0 - node.LatencyRate
 	}
 
 	return 0.0
@@ -72,7 +72,7 @@ func (a *IAlgorithm) PriceScore(node ultron.WeightedNode) float64 {
 	return 1.0 - (node.MedianPrice / node.Price)
 }
 
-func (a *IAlgorithm) NodeStabilityScore(node ultron.WeightedNode) float64 {
+func (a *IAlgorithm) NodeScore(node ultron.WeightedNode) float64 {
 	if node.Price == 0 || node.MedianPrice == 0 {
 		return 0.0
 	}
@@ -80,7 +80,7 @@ func (a *IAlgorithm) NodeStabilityScore(node ultron.WeightedNode) float64 {
 	return node.InterruptionRate * (node.Price / node.MedianPrice)
 }
 
-func (a *IAlgorithm) WorkloadPriorityScore(pod ultron.WeightedPod) float64 {
+func (a *IAlgorithm) PodScore(pod ultron.WeightedPod) float64 {
 	if pod.Priority == ultron.PriorityHigh {
 		return 1.0
 	}
@@ -88,13 +88,13 @@ func (a *IAlgorithm) WorkloadPriorityScore(pod ultron.WeightedPod) float64 {
 	return 0.0
 }
 
-func (a *IAlgorithm) Score(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
-	resourceFit := Alpha * a.ResourceFitScore(node, pod)
-	diskType := Beta * a.DiskTypeScore(node, pod)
-	networkType := Gamma * a.NetworkTypeScore(node, pod)
-	price := Delta * a.PriceScore(node)
-	stability := Epsilon * a.NodeStabilityScore(node)
-	priority := Zeta * a.WorkloadPriorityScore(pod)
+func (a *IAlgorithm) TotalScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+	resourceScore := Alpha * a.ResourceScore(node, pod)
+	storageScore := Beta * a.StorageScore(node, pod)
+	networkScore := Gamma * a.NetworkScore(node, pod)
+	priceScore := Delta * a.PriceScore(node)
+	nodeScore := Epsilon * a.NodeScore(node)
+	podScore := Zeta * a.PodScore(pod)
 
-	return resourceFit + diskType + networkType + price - stability + priority
+	return resourceScore + storageScore + networkScore + priceScore - nodeScore + podScore
 }
