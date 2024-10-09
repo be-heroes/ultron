@@ -95,6 +95,12 @@ func (mh *MutationHandler) HandleAdmissionReview(request *admissionv1.AdmissionR
 		return nil, err
 	}
 
+	if wNode == nil {
+		return &admissionv1.AdmissionResponse{
+			Allowed: true,
+		}, nil
+	}
+
 	pod.Spec.NodeSelector = wNode.Selector
 	patchBytes, err := json.Marshal([]map[string]interface{}{
 		{
