@@ -32,6 +32,7 @@ const (
 	DefaultDurableInstanceType   = "ultron.durable"
 	DefaultEphemeralInstanceType = "ultron.ephemeral"
 
+	LabelManaged      = "ultron.io/managed"
 	LabelHostName     = "kubernetes.io/hostname"
 	LabelInstanceType = "node.kubernetes.io/instance-type"
 

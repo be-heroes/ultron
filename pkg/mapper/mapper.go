@@ -20,7 +20,7 @@ func NewMapper() *Mapper {
 	return &Mapper{}
 }
 
-func (m Mapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error) {
+func (m *Mapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error) {
 	if pod.Name == "" {
 		return ultron.WeightedPod{}, fmt.Errorf("missing required field: %s", ultron.MetadataName)
 	}
@@ -77,7 +77,7 @@ func (m Mapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error)
 	}, nil
 }
 
-func (m Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, error) {
+func (m *Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, error) {
 	const bytesInGiB = 1024 * 1024 * 1024
 
 	cpuAllocatable := node.Status.Allocatable[corev1.ResourceCPU]
@@ -94,6 +94,7 @@ func (m Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, e
 	totalStorage := float64(storageCapacity.Value()) / float64(bytesInGiB)
 	hostname := node.Labels[ultron.LabelHostName]
 	instanceType := node.Labels[ultron.LabelInstanceType]
+	managed := node.Labels[ultron.LabelManaged]
 
 	if hostname == "" && instanceType == "" {
 		return ultron.WeightedNode{}, fmt.Errorf("missing required label: %s or %s", ultron.LabelHostName, ultron.LabelInstanceType)
@@ -107,6 +108,10 @@ func (m Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, e
 
 	if hostname != "" {
 		selector[ultron.LabelHostName] = hostname
+	}
+
+	if managed != "" {
+		selector[ultron.LabelManaged] = managed
 	}
 
 	return ultron.WeightedNode{
@@ -126,7 +131,7 @@ func (m Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, e
 	}, nil
 }
 
-func (m Mapper) GetAnnotationOrDefault(annotations map[string]string, key, defaultValue string) string {
+func (m *Mapper) GetAnnotationOrDefault(annotations map[string]string, key, defaultValue string) string {
 	if value, exists := annotations[key]; exists {
 		return value
 	}
@@ -134,7 +139,7 @@ func (m Mapper) GetAnnotationOrDefault(annotations map[string]string, key, defau
 	return defaultValue
 }
 
-func (m Mapper) GetFloatAnnotationOrDefault(annotations map[string]string, key string, defaultValue float64) float64 {
+func (m *Mapper) GetFloatAnnotationOrDefault(annotations map[string]string, key string, defaultValue float64) float64 {
 	if valueStr, exists := annotations[key]; exists {
 		if value, err := strconv.ParseFloat(valueStr, 64); err == nil {
 			return value
@@ -144,7 +149,7 @@ func (m Mapper) GetFloatAnnotationOrDefault(annotations map[string]string, key s
 	return defaultValue
 }
 
-func (m Mapper) GetPriorityFromAnnotation(annotations map[string]string) ultron.PriorityEnum {
+func (m *Mapper) GetPriorityFromAnnotation(annotations map[string]string) ultron.PriorityEnum {
 	if value, exists := annotations[ultron.AnnotationPriority]; exists {
 		switch value {
 		case "PriorityHigh":

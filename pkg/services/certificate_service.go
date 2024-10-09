@@ -31,7 +31,7 @@ func NewCertificateService() *CertificateService {
 	return &CertificateService{}
 }
 
-func (cs CertificateService) GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
+func (cs *CertificateService) GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
 	if organization == "" || commonName == "" {
 		return tls.Certificate{}, fmt.Errorf("organization and common name must be provided")
 	}
@@ -78,7 +78,7 @@ func (cs CertificateService) GenerateSelfSignedCert(organization string, commonN
 	return tlsCert, nil
 }
 
-func (cs CertificateService) ExportCACert(caCert []byte, filePath string) error {
+func (cs *CertificateService) ExportCACert(caCert []byte, filePath string) error {
 	if caCert == nil {
 		return fmt.Errorf("CA certificate is nil")
 	}

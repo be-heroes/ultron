@@ -6,6 +6,8 @@ import (
 	"time"
 
 	ultron "github.com/be-heroes/ultron/pkg"
+	"github.com/be-heroes/ultron/pkg/algorithm"
+	mapper "github.com/be-heroes/ultron/pkg/mapper"
 	services "github.com/be-heroes/ultron/pkg/services"
 
 	corev1 "k8s.io/api/core/v1"
@@ -176,11 +178,11 @@ func (mm *MockMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedN
 
 func TestComputePodSpec_Success(t *testing.T) {
 	// Arrange
-	mockAlgorithm := &MockAlgorithm{}
-	mockCache := &MockCache{}
-	mockMapper := &MockMapper{}
+	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
+	var mockCache services.ICacheService = &MockCache{}
+	var mockMapper mapper.IMapper = &MockMapper{}
 
-	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
 
 	pod := &corev1.Pod{}
 
@@ -211,11 +213,11 @@ func TestComputePodSpec_Success(t *testing.T) {
 
 func TestComputePodSpec_NoWeightedNode(t *testing.T) {
 	// Arrange
-	mockCache := &MockCache{}
-	mockAlgorithm := &MockAlgorithm{}
-	mockMapper := &MockMapper{}
+	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
+	var mockCache services.ICacheService = &MockCache{}
+	var mockMapper mapper.IMapper = &MockMapper{}
 
-	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
 
 	pod := &corev1.Pod{}
 
@@ -234,11 +236,11 @@ func TestComputePodSpec_NoWeightedNode(t *testing.T) {
 
 func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 	// Arrange
-	mockAlgorithm := &MockAlgorithm{}
-	mockCache := &MockCache{}
-	mockMapper := &MockMapper{}
+	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
+	var mockCache services.ICacheService = &MockCache{}
+	var mockMapper mapper.IMapper = &MockMapper{}
 
-	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
 
 	wPod := ultron.WeightedPod{
 		RequestedCPU:         1,
@@ -271,11 +273,11 @@ func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 
 func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 	// Arrange
-	mockAlgorithm := &MockAlgorithm{}
-	mockCache := &MockCache{}
-	mockMapper := &MockMapper{}
+	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
+	var mockCache services.ICacheService = &MockCache{}
+	var mockMapper mapper.IMapper = &MockMapper{}
 
-	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
 
 	wNode := ultron.WeightedNode{
 		AvailableCPU:     4,
@@ -301,11 +303,11 @@ func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 
 func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 	// Arrange
-	mockAlgorithm := &MockAlgorithm{}
-	mockCache := &MockCache{}
-	mockMapper := &MockMapper{}
+	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
+	var mockCache services.ICacheService = &MockCache{}
+	var mockMapper mapper.IMapper = &MockMapper{}
 
-	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
 
 	wPod := ultron.WeightedPod{
 		RequestedCPU:    2,
@@ -331,11 +333,11 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 
 func TestMatchWeightedPodToComputeConfiguration_NoMatch(t *testing.T) {
 	// Arrange
-	mockCache := &MockCache{}
-	mockAlgorithm := &MockAlgorithm{}
-	mockMapper := &MockMapper{}
+	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
+	var mockCache services.ICacheService = &MockCache{}
+	var mockMapper mapper.IMapper = &MockMapper{}
 
-	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
 
 	wPod := ultron.WeightedPod{
 		RequestedCPU: 4,

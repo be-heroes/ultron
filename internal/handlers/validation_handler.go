@@ -90,9 +90,13 @@ func (vh ValidationHandler) HandleAdmissionReview(request *admissionv1.Admission
 		}, err
 	}
 
-	_, err := vh.computeService.MatchPodSpec(&pod)
+	wNode, err := vh.computeService.MatchPodSpec(&pod)
 	if err != nil {
 		return nil, err
+	}
+
+	if wNode == nil {
+		// TODO: If no node type can be matched by ultron we should assume the pod cannot be optimized and proceed to assign it to the observer for monitoring to figure out if the pod can be optimized in the future (e.g. a node type materializes that can match the pod and result in an optimization)
 	}
 
 	return &admissionv1.AdmissionResponse{
