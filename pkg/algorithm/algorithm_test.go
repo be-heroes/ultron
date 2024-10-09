@@ -24,7 +24,7 @@ func TestResourceScore(t *testing.T) {
 	}
 
 	// Act
-	score := alg.ResourceScore(node, pod)
+	score := alg.ResourceScore(&node, &pod)
 	expected := (4.0-2.0)/8.0 + (8.0-4.0)/16.0
 
 	// Assert
@@ -46,11 +46,11 @@ func TestStorageScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.StorageScore(node, pod)
+	score1 := alg.StorageScore(&node, &pod)
 	expected1 := 1.0
 
 	pod.RequestedDiskType = "HDD"
-	score2 := alg.StorageScore(node, pod)
+	score2 := alg.StorageScore(&node, &pod)
 	expected2 := 0.0
 
 	// Assert
@@ -76,11 +76,11 @@ func TestNetworkScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.NetworkScore(node, pod)
+	score1 := alg.NetworkScore(&node, &pod)
 	expected1 := 1.0
 
 	pod.RequestedNetworkType = "1G"
-	score2 := alg.NetworkScore(node, pod)
+	score2 := alg.NetworkScore(&node, &pod)
 	expected2 := 0.0
 
 	// Assert
@@ -103,11 +103,11 @@ func TestPriceScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.PriceScore(node)
+	score1 := alg.PriceScore(&node)
 	expected1 := 1.0 - (node.MedianPrice / node.Price)
 
 	node.Price = 0
-	score2 := alg.PriceScore(node)
+	score2 := alg.PriceScore(&node)
 	expected2 := 0.0
 
 	// Assert
@@ -131,11 +131,11 @@ func TestNodeScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.NodeScore(node)
+	score1 := alg.NodeScore(&node)
 	expected1 := node.InterruptionRate.Value * (node.Price / node.MedianPrice)
 
 	node.Price = 0
-	score2 := alg.NodeScore(node)
+	score2 := alg.NodeScore(&node)
 	expected2 := 0.0
 
 	// Assert
@@ -157,11 +157,11 @@ func TestPodScore(t *testing.T) {
 	}
 
 	// Act
-	score1 := alg.PodScore(pod)
+	score1 := alg.PodScore(&pod)
 	expected1 := 1.0
 
 	pod.Priority = ultron.PriorityLow
-	score2 := alg.PodScore(pod)
+	score2 := alg.PodScore(&pod)
 	expected2 := 0.0
 
 	// Assert
@@ -199,14 +199,14 @@ func TestTotalScore(t *testing.T) {
 	}
 
 	// Act
-	score := alg.TotalScore(node, pod)
+	score := alg.TotalScore(&node, &pod)
 
-	resourceScore := algorithm.Alpha * alg.ResourceScore(node, pod)
-	storageScore := algorithm.Beta * alg.StorageScore(node, pod)
-	networkScore := algorithm.Gamma * alg.NetworkScore(node, pod)
-	priceScore := algorithm.Delta * alg.PriceScore(node)
-	nodeScore := algorithm.Epsilon * alg.NodeScore(node)
-	podScore := algorithm.Zeta * alg.PodScore(pod)
+	resourceScore := algorithm.Alpha * alg.ResourceScore(&node, &pod)
+	storageScore := algorithm.Beta * alg.StorageScore(&node, &pod)
+	networkScore := algorithm.Gamma * alg.NetworkScore(&node, &pod)
+	priceScore := algorithm.Delta * alg.PriceScore(&node)
+	nodeScore := algorithm.Epsilon * alg.NodeScore(&node)
+	podScore := algorithm.Zeta * alg.PodScore(&pod)
 
 	expected := resourceScore + storageScore + networkScore + priceScore - nodeScore + podScore
 

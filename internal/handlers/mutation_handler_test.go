@@ -33,45 +33,45 @@ func (mcs *MockComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNo
 	}, nil
 }
 
-func (mcs *MockComputeService) CalculateWeightedNodeMedianPrice(node ultron.WeightedNode) (float64, error) {
+func (mcs *MockComputeService) CalculateWeightedNodeMedianPrice(node *ultron.WeightedNode) (float64, error) {
 	return 0, nil
 }
 
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(configuration ultron.ComputeConfiguration, node ultron.WeightedNode) bool {
+func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(configuration *ultron.ComputeConfiguration, node *ultron.WeightedNode) bool {
 	return true
 }
 
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedPodRequirements(configuration ultron.ComputeConfiguration, pod ultron.WeightedPod) bool {
+func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedPodRequirements(configuration *ultron.ComputeConfiguration, pod *ultron.WeightedPod) bool {
 	return true
 }
 
-func (mcs *MockComputeService) MatchWeightedNodeToComputeConfiguration(node ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
+func (mcs *MockComputeService) MatchWeightedNodeToComputeConfiguration(node *ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
 	return &ultron.ComputeConfiguration{}, nil
 }
 
-func (mcs *MockComputeService) MatchWeightedPodToComputeConfiguration(node ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
+func (mcs *MockComputeService) MatchWeightedPodToComputeConfiguration(node *ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
 	return &ultron.ComputeConfiguration{}, nil
 }
 
-func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod) (*ultron.WeightedNode, error) {
+func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod *ultron.WeightedPod) (*ultron.WeightedNode, error) {
 	return nil, nil
 }
 
-func (cs MockComputeService) GetInteruptionRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedInteruptionRate, error) {
+func (cs MockComputeService) GetInteruptionRateForWeightedNode(wNode *ultron.WeightedNode) (*ultron.WeightedInteruptionRate, error) {
 	return &ultron.WeightedInteruptionRate{}, nil
 }
 
-func (cs MockComputeService) GetLatencyRateForWeightedNode(wNode ultron.WeightedNode) (*ultron.WeightedLatencyRate, error) {
+func (cs MockComputeService) GetLatencyRateForWeightedNode(wNode *ultron.WeightedNode) (*ultron.WeightedLatencyRate, error) {
 	return &ultron.WeightedLatencyRate{}, nil
 }
 
 type MockAlgorithm struct{}
 
-func (ma *MockAlgorithm) StorageScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) StorageScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) NetworkScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) NetworkScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return 0
 }
 
@@ -79,19 +79,19 @@ func (ma *MockAlgorithm) NodeScore(wNode ultron.WeightedNode) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) PriceScore(wNode ultron.WeightedNode) float64 {
+func (ma *MockAlgorithm) PriceScore(wNode *ultron.WeightedNode) float64 {
 	return 0.2
 }
 
-func (ma *MockAlgorithm) ResourceScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) ResourceScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 
-func (ma *MockAlgorithm) PodScore(wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) PodScore(wPod *ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) TotalScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) TotalScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 

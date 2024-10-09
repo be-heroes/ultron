@@ -53,31 +53,31 @@ func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.Weighte
 
 type MockAlgorithm struct{}
 
-func (ma *MockAlgorithm) StorageScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) StorageScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) NetworkScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) NetworkScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) NodeScore(wNode ultron.WeightedNode) float64 {
+func (ma *MockAlgorithm) NodeScore(wNode *ultron.WeightedNode) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) PriceScore(wNode ultron.WeightedNode) float64 {
+func (ma *MockAlgorithm) PriceScore(wNode *ultron.WeightedNode) float64 {
 	return 0.2
 }
 
-func (ma *MockAlgorithm) ResourceScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) ResourceScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 
-func (ma *MockAlgorithm) PodScore(wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) PodScore(wPod *ultron.WeightedPod) float64 {
 	return 0
 }
 
-func (ma *MockAlgorithm) TotalScore(wNode ultron.WeightedNode, wPod ultron.WeightedPod) float64 {
+func (ma *MockAlgorithm) TotalScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
 	return wNode.AvailableCPU - wPod.RequestedCPU
 }
 
@@ -251,7 +251,7 @@ func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 	}
 
 	// Act
-	computeConfig, err := service.MatchWeightedPodToComputeConfiguration(wPod)
+	computeConfig, err := service.MatchWeightedPodToComputeConfiguration(&wPod)
 
 	// Assert
 	if err != nil {
@@ -288,7 +288,7 @@ func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 	}
 
 	// Act
-	medianPrice, err := service.CalculateWeightedNodeMedianPrice(wNode)
+	medianPrice, err := service.CalculateWeightedNodeMedianPrice(&wNode)
 
 	// Assert
 	if err != nil {
@@ -315,7 +315,7 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 	}
 
 	// Act
-	wNode, err := service.MatchWeightedPodToWeightedNode(wPod)
+	wNode, err := service.MatchWeightedPodToWeightedNode(&wPod)
 
 	// Assert
 	if err != nil {
@@ -344,7 +344,7 @@ func TestMatchWeightedPodToComputeConfiguration_NoMatch(t *testing.T) {
 	}
 
 	// Act
-	computeConfig, err := service.MatchWeightedPodToComputeConfiguration(wPod)
+	computeConfig, err := service.MatchWeightedPodToComputeConfiguration(&wPod)
 
 	// Assert
 	if err != nil {
