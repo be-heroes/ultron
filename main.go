@@ -72,7 +72,9 @@ func main() {
 
 	var certificateIpAddresses []net.IP
 	for _, ipAddress := range strings.Split(certificateIpAddressesCSV, ",") {
-		certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
+		if ipAddress == "" {
+			certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
+		}
 	}
 
 	log.Println("Generating self-signed certificate")

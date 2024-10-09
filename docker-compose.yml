@@ -1,0 +1,30 @@
+services:
+  # Core services
+  host-api:
+    image: ultron
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      ULTRON_REDIS_SERVER_ADDRESS: redis-server:6379
+    networks:
+      - ultron
+    ports:
+      - "54323:54323"
+      - "54324:54324"
+    depends_on:
+      - redis
+
+  # Auxiliary services
+  redis:
+    image: "redis:latest"
+    container_name: "redis-server"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - ultron
+      
+networks:
+  ultron:
