@@ -13,7 +13,7 @@ const (
 	Zeta    = 0.8 // PodScore weight
 )
 
-type Algorithm interface {
+type IAlgorithm interface {
 	ResourceScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
 	StorageScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
 	NetworkScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
@@ -23,14 +23,14 @@ type Algorithm interface {
 	TotalScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64
 }
 
-type IAlgorithm struct {
+type Algorithm struct {
 }
 
-func NewIAlgorithm() *IAlgorithm {
-	return &IAlgorithm{}
+func NewAlgorithm() *Algorithm {
+	return &Algorithm{}
 }
 
-func (a *IAlgorithm) ResourceScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+func (a *Algorithm) ResourceScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
 	var cpuScore, memScore float64
 
 	if node.TotalCPU != 0 {
@@ -48,7 +48,7 @@ func (a *IAlgorithm) ResourceScore(node ultron.WeightedNode, pod ultron.Weighted
 	return cpuScore + memScore
 }
 
-func (a *IAlgorithm) StorageScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+func (a *Algorithm) StorageScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
 	if node.DiskType == pod.RequestedDiskType {
 		return 1.0
 	}
@@ -56,7 +56,7 @@ func (a *IAlgorithm) StorageScore(node ultron.WeightedNode, pod ultron.WeightedP
 	return 0.0
 }
 
-func (a *IAlgorithm) NetworkScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+func (a *Algorithm) NetworkScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
 	if node.NetworkType == pod.RequestedNetworkType {
 		return 1.0 - node.LatencyRate.Value
 	}
@@ -64,7 +64,7 @@ func (a *IAlgorithm) NetworkScore(node ultron.WeightedNode, pod ultron.WeightedP
 	return 0.0
 }
 
-func (a *IAlgorithm) PriceScore(node ultron.WeightedNode) float64 {
+func (a *Algorithm) PriceScore(node ultron.WeightedNode) float64 {
 	if node.Price == 0 {
 		return 0.0
 	}
@@ -72,7 +72,7 @@ func (a *IAlgorithm) PriceScore(node ultron.WeightedNode) float64 {
 	return 1.0 - (node.MedianPrice / node.Price)
 }
 
-func (a *IAlgorithm) NodeScore(node ultron.WeightedNode) float64 {
+func (a *Algorithm) NodeScore(node ultron.WeightedNode) float64 {
 	if node.Price == 0 || node.MedianPrice == 0 {
 		return 0.0
 	}
@@ -80,7 +80,7 @@ func (a *IAlgorithm) NodeScore(node ultron.WeightedNode) float64 {
 	return node.InterruptionRate.Value * (node.Price / node.MedianPrice)
 }
 
-func (a *IAlgorithm) PodScore(pod ultron.WeightedPod) float64 {
+func (a *Algorithm) PodScore(pod ultron.WeightedPod) float64 {
 	if pod.Priority == ultron.PriorityHigh {
 		return 1.0
 	}
@@ -88,7 +88,7 @@ func (a *IAlgorithm) PodScore(pod ultron.WeightedPod) float64 {
 	return 0.0
 }
 
-func (a *IAlgorithm) TotalScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
+func (a *Algorithm) TotalScore(node ultron.WeightedNode, pod ultron.WeightedPod) float64 {
 	resourceScore := Alpha * a.ResourceScore(node, pod)
 	storageScore := Beta * a.StorageScore(node, pod)
 	networkScore := Gamma * a.NetworkScore(node, pod)

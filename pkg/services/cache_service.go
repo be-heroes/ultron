@@ -12,7 +12,7 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type CacheService interface {
+type ICacheService interface {
 	AddCacheItem(key string, value interface{}, d time.Duration) error
 	GetCacheItem(key string) (interface{}, error)
 	GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error)
@@ -23,23 +23,23 @@ type CacheService interface {
 	GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error)
 }
 
-type ICacheService struct {
+type CacheService struct {
 	memCache    *cache.Cache
 	redisClient *redis.Client
 }
 
-func NewICacheService(innerCache *cache.Cache, redisClient *redis.Client) *ICacheService {
+func NewCacheService(innerCache *cache.Cache, redisClient *redis.Client) *CacheService {
 	if innerCache == nil && redisClient == nil {
 		innerCache = cache.New(cache.NoExpiration, cache.NoExpiration)
 	}
 
-	return &ICacheService{
+	return &CacheService{
 		memCache:    innerCache,
 		redisClient: redisClient,
 	}
 }
 
-func (c *ICacheService) AddCacheItem(key string, value interface{}, d time.Duration) error {
+func (c *CacheService) AddCacheItem(key string, value interface{}, d time.Duration) error {
 	if c.memCache != nil {
 		c.memCache.Set(key, value, cache.DefaultExpiration)
 	} else if c.redisClient != nil {
@@ -58,7 +58,7 @@ func (c *ICacheService) AddCacheItem(key string, value interface{}, d time.Durat
 	return nil
 }
 
-func (c *ICacheService) GetCacheItem(key string) (interface{}, error) {
+func (c *CacheService) GetCacheItem(key string) (interface{}, error) {
 	var data []byte
 	var err error
 	var found bool
@@ -88,7 +88,7 @@ func (c *ICacheService) GetCacheItem(key string) (interface{}, error) {
 	return returnValue, nil
 }
 
-func (c *ICacheService) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+func (c *CacheService) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
 	durableConfigurations, err := c.GetDurableComputeConfigurations()
 	if err != nil {
 		return nil, err
@@ -102,7 +102,7 @@ func (c *ICacheService) GetAllComputeConfigurations() ([]ultron.ComputeConfigura
 	return append(durableConfigurations, ephemeralConfigurations...), nil
 }
 
-func (c *ICacheService) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+func (c *CacheService) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
 	ephemeralConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeySpotVmConfigurations)
 	if err != nil {
 		return nil, err
@@ -111,7 +111,7 @@ func (c *ICacheService) GetEphemeralComputeConfigurations() ([]ultron.ComputeCon
 	return ephemeralConfigurationsRaw.([]ultron.ComputeConfiguration), nil
 }
 
-func (c *ICacheService) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
+func (c *CacheService) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
 	durableConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeyDurableVmConfigurations)
 	if err != nil {
 		return nil, err
@@ -120,7 +120,7 @@ func (c *ICacheService) GetDurableComputeConfigurations() ([]ultron.ComputeConfi
 	return durableConfigurationsRaw.([]ultron.ComputeConfiguration), nil
 }
 
-func (c *ICacheService) GetWeightedNodes() ([]ultron.WeightedNode, error) {
+func (c *CacheService) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 	weightedNodesInterface, err := c.GetCacheItem(ultron.CacheKeyWeightedNodes)
 	if err != nil {
 		return nil, err
@@ -129,7 +129,7 @@ func (c *ICacheService) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 	return weightedNodesInterface.([]ultron.WeightedNode), nil
 }
 
-func (c *ICacheService) GetWeightedInteruptionRates() ([]ultron.WeightedInteruptionRate, error) {
+func (c *CacheService) GetWeightedInteruptionRates() ([]ultron.WeightedInteruptionRate, error) {
 	weightedInteruptionRatesInterface, err := c.GetCacheItem(ultron.CacheKeySpotVmConfigurationInteruptionRates)
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (c *ICacheService) GetWeightedInteruptionRates() ([]ultron.WeightedInterupt
 	return weightedInteruptionRatesInterface.([]ultron.WeightedInteruptionRate), nil
 }
 
-func (c *ICacheService) GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error) {
+func (c *CacheService) GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error) {
 	weightedLatencyRatesInterface, err := c.GetCacheItem(ultron.CacheKeyDurableVmConfigurationLatencyRates)
 	if err != nil {
 		return nil, err

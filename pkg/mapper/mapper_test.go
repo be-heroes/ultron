@@ -13,7 +13,7 @@ import (
 )
 
 func TestMapPodToWeightedPod_Success(t *testing.T) {
-	mapper := mapper.NewIMapper()
+	mapper := mapper.NewMapper()
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -65,7 +65,7 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 }
 
 func TestMapPodToWeightedPod_MissingName(t *testing.T) {
-	mapper := mapper.NewIMapper()
+	mapper := mapper.NewMapper()
 
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -86,7 +86,7 @@ func TestMapPodToWeightedPod_MissingName(t *testing.T) {
 
 func TestMapNodeToWeightedNode_Success(t *testing.T) {
 	// Arrange
-	mapper := mapper.NewIMapper()
+	mapper := mapper.NewMapper()
 
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -143,7 +143,7 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 
 func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 	// Arrange
-	mapper := mapper.NewIMapper()
+	mapper := mapper.NewMapper()
 
 	node := &corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
@@ -168,7 +168,7 @@ func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 
 func TestGetAnnotationOrDefault(t *testing.T) {
 	// Arrange
-	mapper := mapper.NewIMapper()
+	mapper := mapper.NewMapper()
 	tests := []struct {
 		annotations   map[string]string
 		key           string
@@ -190,7 +190,7 @@ func TestGetAnnotationOrDefault(t *testing.T) {
 
 func TestGetFloatAnnotationOrDefault(t *testing.T) {
 	// Arrange
-	mapper := mapper.NewIMapper()
+	mapper := mapper.NewMapper()
 	tests := []struct {
 		annotations   map[string]string
 		key           string
@@ -213,7 +213,7 @@ func TestGetFloatAnnotationOrDefault(t *testing.T) {
 
 func TestGetPriorityFromAnnotation(t *testing.T) {
 	// Arrange
-	mapper := mapper.NewIMapper()
+	mapper := mapper.NewMapper()
 	tests := []struct {
 		annotations   map[string]string
 		expectedValue ultron.PriorityEnum

@@ -180,7 +180,7 @@ func TestComputePodSpec_Success(t *testing.T) {
 	mockCache := &MockCache{}
 	mockMapper := &MockMapper{}
 
-	service := services.NewIComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	pod := &corev1.Pod{}
 
@@ -215,7 +215,7 @@ func TestComputePodSpec_NoWeightedNode(t *testing.T) {
 	mockAlgorithm := &MockAlgorithm{}
 	mockMapper := &MockMapper{}
 
-	service := services.NewIComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	pod := &corev1.Pod{}
 
@@ -238,7 +238,7 @@ func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 	mockCache := &MockCache{}
 	mockMapper := &MockMapper{}
 
-	service := services.NewIComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wPod := ultron.WeightedPod{
 		RequestedCPU:         1,
@@ -275,7 +275,7 @@ func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 	mockCache := &MockCache{}
 	mockMapper := &MockMapper{}
 
-	service := services.NewIComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wNode := ultron.WeightedNode{
 		AvailableCPU:     4,
@@ -305,7 +305,7 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 	mockCache := &MockCache{}
 	mockMapper := &MockMapper{}
 
-	service := services.NewIComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wPod := ultron.WeightedPod{
 		RequestedCPU:    2,
@@ -335,7 +335,7 @@ func TestMatchWeightedPodToComputeConfiguration_NoMatch(t *testing.T) {
 	mockAlgorithm := &MockAlgorithm{}
 	mockMapper := &MockMapper{}
 
-	service := services.NewIComputeService(mockAlgorithm, mockCache, mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wPod := ultron.WeightedPod{
 		RequestedCPU: 4,

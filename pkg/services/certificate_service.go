@@ -19,19 +19,19 @@ const (
 	BlockTypeRsaPrivateKey = "RSA PRIVATE KEY"
 )
 
-type CertificateService interface {
+type ICertificateService interface {
 	GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error)
 	ExportCACert(caCert []byte, filePath string) error
 }
 
-type ICertificateService struct {
+type CertificateService struct {
 }
 
-func NewICertificateService() *ICertificateService {
-	return &ICertificateService{}
+func NewCertificateService() *CertificateService {
+	return &CertificateService{}
 }
 
-func (cs ICertificateService) GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
+func (cs CertificateService) GenerateSelfSignedCert(organization string, commonName string, dnsNames []string, ipAddresses []net.IP) (tls.Certificate, error) {
 	if organization == "" || commonName == "" {
 		return tls.Certificate{}, fmt.Errorf("organization and common name must be provided")
 	}
@@ -78,7 +78,7 @@ func (cs ICertificateService) GenerateSelfSignedCert(organization string, common
 	return tlsCert, nil
 }
 
-func (cs ICertificateService) ExportCACert(caCert []byte, filePath string) error {
+func (cs CertificateService) ExportCACert(caCert []byte, filePath string) error {
 	if caCert == nil {
 		return fmt.Errorf("CA certificate is nil")
 	}

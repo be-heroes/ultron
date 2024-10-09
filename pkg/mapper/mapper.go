@@ -9,18 +9,18 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type Mapper interface {
+type IMapper interface {
 	MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error)
 	MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, error)
 }
 
-type IMapper struct{}
+type Mapper struct{}
 
-func NewIMapper() *IMapper {
-	return &IMapper{}
+func NewMapper() *Mapper {
+	return &Mapper{}
 }
 
-func (m IMapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error) {
+func (m Mapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error) {
 	if pod.Name == "" {
 		return ultron.WeightedPod{}, fmt.Errorf("missing required field: %s", ultron.MetadataName)
 	}
@@ -77,7 +77,7 @@ func (m IMapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error
 	}, nil
 }
 
-func (m IMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, error) {
+func (m Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, error) {
 	const bytesInGiB = 1024 * 1024 * 1024
 
 	cpuAllocatable := node.Status.Allocatable[corev1.ResourceCPU]
@@ -126,7 +126,7 @@ func (m IMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, 
 	}, nil
 }
 
-func (m IMapper) GetAnnotationOrDefault(annotations map[string]string, key, defaultValue string) string {
+func (m Mapper) GetAnnotationOrDefault(annotations map[string]string, key, defaultValue string) string {
 	if value, exists := annotations[key]; exists {
 		return value
 	}
@@ -134,7 +134,7 @@ func (m IMapper) GetAnnotationOrDefault(annotations map[string]string, key, defa
 	return defaultValue
 }
 
-func (m IMapper) GetFloatAnnotationOrDefault(annotations map[string]string, key string, defaultValue float64) float64 {
+func (m Mapper) GetFloatAnnotationOrDefault(annotations map[string]string, key string, defaultValue float64) float64 {
 	if valueStr, exists := annotations[key]; exists {
 		if value, err := strconv.ParseFloat(valueStr, 64); err == nil {
 			return value
@@ -144,7 +144,7 @@ func (m IMapper) GetFloatAnnotationOrDefault(annotations map[string]string, key 
 	return defaultValue
 }
 
-func (m IMapper) GetPriorityFromAnnotation(annotations map[string]string) ultron.PriorityEnum {
+func (m Mapper) GetPriorityFromAnnotation(annotations map[string]string) ultron.PriorityEnum {
 	if value, exists := annotations[ultron.AnnotationPriority]; exists {
 		switch value {
 		case "PriorityHigh":

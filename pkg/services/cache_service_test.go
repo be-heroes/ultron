@@ -9,12 +9,12 @@ import (
 	goCache "github.com/patrickmn/go-cache"
 )
 
-func TestNewICache(t *testing.T) {
+func TestNewCache(t *testing.T) {
 	// Arrange
-	var iCache *services.ICacheService = nil
+	var iCache *services.CacheService = nil
 
 	// Act
-	iCache = services.NewICacheService(nil, nil)
+	iCache = services.NewCacheService(nil, nil)
 
 	// Assert
 	if iCache == nil {
@@ -24,7 +24,7 @@ func TestNewICache(t *testing.T) {
 
 func TestGetEphemeralComputeConfigurations(t *testing.T) {
 	// Arrange
-	iCache := services.NewICacheService(nil, nil)
+	iCache := services.NewCacheService(nil, nil)
 
 	computeConfigs := []ultron.ComputeConfiguration{
 		{Id: nil, ComputeType: ultron.ComputeTypeEphemeral, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
@@ -57,7 +57,7 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 
 func TestGetEphemeralComputeConfigurations_NotFound(t *testing.T) {
 	// Arrange
-	iCache := services.NewICacheService(nil, nil)
+	iCache := services.NewCacheService(nil, nil)
 
 	// Act
 	_, err := iCache.GetEphemeralComputeConfigurations()
@@ -70,7 +70,7 @@ func TestGetEphemeralComputeConfigurations_NotFound(t *testing.T) {
 
 func TestGetDurableComputeConfigurations(t *testing.T) {
 	// Arrange
-	iCache := services.NewICacheService(nil, nil)
+	iCache := services.NewCacheService(nil, nil)
 
 	computeConfigs := []ultron.ComputeConfiguration{
 		{Id: nil, ComputeType: ultron.ComputeTypeDurable, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
@@ -103,7 +103,7 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 
 func TestGetDurableComputeConfigurations_NotFound(t *testing.T) {
 	// Arrange
-	iCache := services.NewICacheService(nil, nil)
+	iCache := services.NewCacheService(nil, nil)
 
 	// Act
 	_, err := iCache.GetDurableComputeConfigurations()

@@ -9,7 +9,7 @@ import (
 
 func TestResourceScore(t *testing.T) {
 	// Arrange
-	alg := algorithm.NewIAlgorithm()
+	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
 		TotalCPU:        8,
@@ -35,7 +35,7 @@ func TestResourceScore(t *testing.T) {
 
 func TestStorageScore(t *testing.T) {
 	// Arrange
-	alg := algorithm.NewIAlgorithm()
+	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
 		DiskType: "SSD",
@@ -65,7 +65,7 @@ func TestStorageScore(t *testing.T) {
 
 func TestNetworkScore(t *testing.T) {
 	// Arrange
-	alg := algorithm.NewIAlgorithm()
+	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
 		NetworkType: "10G",
@@ -95,7 +95,7 @@ func TestNetworkScore(t *testing.T) {
 
 func TestPriceScore(t *testing.T) {
 	// Arrange
-	alg := algorithm.NewIAlgorithm()
+	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
 		Price:       10.0,
@@ -122,7 +122,7 @@ func TestPriceScore(t *testing.T) {
 
 func TestNodeScore(t *testing.T) {
 	// Arrange
-	alg := algorithm.NewIAlgorithm()
+	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
 		Price:            10.0,
@@ -150,7 +150,7 @@ func TestNodeScore(t *testing.T) {
 
 func TestPodScore(t *testing.T) {
 	// Arrange
-	alg := algorithm.NewIAlgorithm()
+	alg := algorithm.NewAlgorithm()
 
 	pod := ultron.WeightedPod{
 		Priority: ultron.PriorityHigh,
@@ -176,7 +176,7 @@ func TestPodScore(t *testing.T) {
 
 func TestTotalScore(t *testing.T) {
 	// Arrange
-	alg := algorithm.NewIAlgorithm()
+	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
 		TotalCPU:         8,

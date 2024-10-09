@@ -12,22 +12,22 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type MutationHandler interface {
+type IMutationHandler interface {
 	MutatePodSpec(w http.ResponseWriter, r *http.Request)
 	HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error)
 }
 
-type IMutationHandler struct {
-	computeService services.ComputeService
+type MutationHandler struct {
+	computeService services.IComputeService
 }
 
-func NewIMutationHandler(computeService services.ComputeService) *IMutationHandler {
-	return &IMutationHandler{
+func NewMutationHandler(computeService services.IComputeService) *MutationHandler {
+	return &MutationHandler{
 		computeService: computeService,
 	}
 }
 
-func (mh IMutationHandler) MutatePodSpec(w http.ResponseWriter, r *http.Request) {
+func (mh MutationHandler) MutatePodSpec(w http.ResponseWriter, r *http.Request) {
 	var admissionReviewReq admissionv1.AdmissionReview
 	var admissionReviewResp admissionv1.AdmissionReview
 
@@ -76,7 +76,7 @@ func (mh IMutationHandler) MutatePodSpec(w http.ResponseWriter, r *http.Request)
 	}
 }
 
-func (mh IMutationHandler) HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
+func (mh MutationHandler) HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 	if request.Kind.Kind != "Pod" {
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,

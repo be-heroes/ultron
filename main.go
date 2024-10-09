@@ -35,13 +35,13 @@ func main() {
 		})
 	}
 
-	mapper := mapper.NewIMapper()
-	algorithm := algorithm.NewIAlgorithm()
-	cacheService := services.NewICacheService(nil, redisClient)
-	certificateService := services.NewICertificateService()
-	computeService := services.NewIComputeService(algorithm, cacheService, mapper)
-	mutationHandler := handlers.NewIMutationHandler(computeService)
-	validationHandler := handlers.NewIValidationHandler(computeService)
+	mapper := mapper.NewMapper()
+	algorithm := algorithm.NewAlgorithm()
+	cacheService := services.NewCacheService(nil, redisClient)
+	certificateService := services.NewCertificateService()
+	computeService := services.NewComputeService(algorithm, cacheService, mapper)
+	mutationHandler := handlers.NewMutationHandler(computeService)
+	validationHandler := handlers.NewValidationHandler(computeService)
 
 	log.Println("Initializing server")
 

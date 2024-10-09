@@ -12,22 +12,22 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-type ValidationHandler interface {
+type IValidationHandler interface {
 	ValidatePodSpec(w http.ResponseWriter, r *http.Request)
 	HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error)
 }
 
-type IValidationHandler struct {
-	computeService services.ComputeService
+type ValidationHandler struct {
+	computeService services.IComputeService
 }
 
-func NewIValidationHandler(computeService services.ComputeService) *IValidationHandler {
-	return &IValidationHandler{
+func NewValidationHandler(computeService services.IComputeService) *ValidationHandler {
+	return &ValidationHandler{
 		computeService: computeService,
 	}
 }
 
-func (mh IValidationHandler) ValidatePodSpec(w http.ResponseWriter, r *http.Request) {
+func (vh ValidationHandler) ValidatePodSpec(w http.ResponseWriter, r *http.Request) {
 	var admissionReviewReq admissionv1.AdmissionReview
 	var admissionReviewResp admissionv1.AdmissionReview
 
@@ -46,7 +46,7 @@ func (mh IValidationHandler) ValidatePodSpec(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	admissionResponse, err := mh.HandleAdmissionReview(admissionReviewReq.Request)
+	admissionResponse, err := vh.HandleAdmissionReview(admissionReviewReq.Request)
 	if err != nil {
 		log.Printf("Could not handle addmission review: %v", err)
 		http.Error(w, "could not handle addmission review", http.StatusInternalServerError)
@@ -76,7 +76,7 @@ func (mh IValidationHandler) ValidatePodSpec(w http.ResponseWriter, r *http.Requ
 	}
 }
 
-func (mh IValidationHandler) HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
+func (vh ValidationHandler) HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 	if request.Kind.Kind != "Pod" {
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
@@ -90,7 +90,7 @@ func (mh IValidationHandler) HandleAdmissionReview(request *admissionv1.Admissio
 		}, err
 	}
 
-	_, err := mh.computeService.MatchPodSpec(&pod)
+	_, err := vh.computeService.MatchPodSpec(&pod)
 	if err != nil {
 		return nil, err
 	}

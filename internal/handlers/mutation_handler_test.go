@@ -169,7 +169,7 @@ func (mm *MockMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedN
 
 func TestMutatePods_Success(t *testing.T) {
 	mockComputeService := &MockComputeService{}
-	handler := handlers.NewIMutationHandler(mockComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -228,7 +228,7 @@ func TestMutatePods_Success(t *testing.T) {
 
 func TestMutatePods_InvalidBody(t *testing.T) {
 	mockComputeService := &MockComputeService{}
-	handler := handlers.NewIMutationHandler(mockComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
 
 	req := httptest.NewRequest(http.MethodPost, "/mutate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
@@ -243,7 +243,7 @@ func TestMutatePods_InvalidBody(t *testing.T) {
 
 func TestMutationHandleAdmissionReview_NonPodKind(t *testing.T) {
 	mockComputeService := &MockComputeService{}
-	handler := handlers.NewIMutationHandler(mockComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{Kind: "Service"},
@@ -261,7 +261,7 @@ func TestMutationHandleAdmissionReview_NonPodKind(t *testing.T) {
 
 func TestMutationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
 	mockComputeService := &MockComputeService{}
-	handler := handlers.NewIMutationHandler(mockComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{

@@ -15,7 +15,7 @@ import (
 
 func TestGenerateSelfSignedCert_Success(t *testing.T) {
 	// Arrange
-	certService := services.NewICertificateService()
+	certService := services.NewCertificateService()
 	organization := "TestOrg"
 	commonName := "test.com"
 	dnsNames := []string{"test.com", "www.test.com"}
@@ -39,7 +39,7 @@ func TestGenerateSelfSignedCert_Success(t *testing.T) {
 
 func TestGenerateSelfSignedCert_MissingOrgAndCommonName(t *testing.T) {
 	// Arrange
-	certService := services.NewICertificateService()
+	certService := services.NewCertificateService()
 	organization := ""
 	commonName := ""
 	dnsNames := []string{"test.com"}
@@ -56,7 +56,7 @@ func TestGenerateSelfSignedCert_MissingOrgAndCommonName(t *testing.T) {
 
 func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
 	// Arrange
-	certService := services.NewICertificateService()
+	certService := services.NewCertificateService()
 	organization := "TestOrg"
 	commonName := "test.com"
 	dnsNames := []string{}
@@ -77,7 +77,7 @@ func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
 
 func TestExportCACert_Success(t *testing.T) {
 	// Arrange
-	certService := services.NewICertificateService()
+	certService := services.NewCertificateService()
 
 	// Act & Assert
 	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
@@ -106,7 +106,7 @@ func TestExportCACert_Success(t *testing.T) {
 
 func TestExportCACert_NilCert(t *testing.T) {
 	// Arrange
-	certService := services.NewICertificateService()
+	certService := services.NewCertificateService()
 
 	// Act
 	err := certService.ExportCACert(nil, "dummy.pem")
@@ -119,7 +119,7 @@ func TestExportCACert_NilCert(t *testing.T) {
 
 func TestExportCACert_FailToWriteFile(t *testing.T) {
 	// Arrange
-	certService := services.NewICertificateService()
+	certService := services.NewCertificateService()
 
 	// Act
 	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
