@@ -1,12 +1,15 @@
 package handlers
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 
+	ultron "github.com/be-heroes/ultron/pkg"
 	services "github.com/be-heroes/ultron/pkg/services"
+	"github.com/redis/go-redis/v9"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -19,11 +22,13 @@ type IValidationHandler interface {
 
 type ValidationHandler struct {
 	computeService *services.IComputeService
+	redisClient    *redis.Client
 }
 
-func NewValidationHandler(computeService *services.IComputeService) *ValidationHandler {
+func NewValidationHandler(computeService *services.IComputeService, redisClient *redis.Client) *ValidationHandler {
 	return &ValidationHandler{
 		computeService: computeService,
+		redisClient:    redisClient,
 	}
 }
 
@@ -95,8 +100,10 @@ func (vh *ValidationHandler) HandleAdmissionReview(request *admissionv1.Admissio
 		return nil, err
 	}
 
-	if wNode == nil {
-		// TODO: If no node type can be matched by ultron we should assume the pod cannot be optimized and proceed to assign it to the observer for monitoring to figure out if the pod can be optimized in the future (e.g. a node type materializes that can match the pod and result in an optimization)
+	if wNode == nil && vh.redisClient != nil {
+		vh.redisClient.Publish(context.Background(), ultron.TopicPodObserve, pod)
+	} else if vh.redisClient != nil {
+		vh.redisClient.Publish(context.Background(), ultron.TopicNodeObserve, wNode)
 	}
 
 	return &admissionv1.AdmissionResponse{

@@ -22,6 +22,9 @@ const (
 	CacheKeySpotVmConfigurations                = "ULTRON_SPOT_VMCONFIGURATION"
 	CacheKeySpotVmConfigurationInteruptionRates = "ULTRON_SPOT_VMCONFIGURATION_INTERUPTION_RATES"
 
+	TopicPodObserve  = "ULTRON_TOPIC_POD_OBSERVE"
+	TopicNodeObserve = "ULTRON_TOPIC_NODE_OBSERVE"
+
 	ComputeTypeDurable   ComputeType = "durable"
 	ComputeTypeEphemeral ComputeType = "ephemeral"
 

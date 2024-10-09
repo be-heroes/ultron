@@ -19,7 +19,7 @@ import (
 
 func TestValidatePods_Success(t *testing.T) {
 	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService)
+	handler := handlers.NewValidationHandler(&mockComputeService, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -68,7 +68,7 @@ func TestValidatePods_Success(t *testing.T) {
 
 func TestValidatePods_InvalidBody(t *testing.T) {
 	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService)
+	handler := handlers.NewValidationHandler(&mockComputeService, nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/validate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
@@ -83,7 +83,7 @@ func TestValidatePods_InvalidBody(t *testing.T) {
 
 func TestValidationHandleAdmissionReview_NonPodKind(t *testing.T) {
 	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService)
+	handler := handlers.NewValidationHandler(&mockComputeService, nil)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{Kind: "Service"},
@@ -101,7 +101,7 @@ func TestValidationHandleAdmissionReview_NonPodKind(t *testing.T) {
 
 func TestValidationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
 	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService)
+	handler := handlers.NewValidationHandler(&mockComputeService, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{

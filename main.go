@@ -40,8 +40,8 @@ func main() {
 	var cacheService services.ICacheService = services.NewCacheService(nil, redisClient)
 	var certificateService services.ICertificateService = services.NewCertificateService()
 	var computeService services.IComputeService = services.NewComputeService(&algorithm, &cacheService, &mapper)
-	mutationHandler := handlers.NewMutationHandler(&computeService)
-	validationHandler := handlers.NewValidationHandler(&computeService)
+	var mutationHandler handlers.IMutationHandler = handlers.NewMutationHandler(&computeService)
+	var validationHandler handlers.IValidationHandler = handlers.NewValidationHandler(&computeService, redisClient)
 
 	log.Println("Initializing server")
 
