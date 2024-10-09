@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"log"
 	"net"
@@ -33,6 +34,11 @@ func main() {
 			Password: os.Getenv(ultron.EnvRedisServerPassword),
 			DB:       redisServerDatabaseInt,
 		})
+
+		_, err := redisClient.Ping(context.Background()).Result()
+		if err != nil {
+			log.Fatalf("Failed to connect to Redis server: %v", err)
+		}
 	}
 
 	var mapper mapper.IMapper = mapper.NewMapper()
