@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     environment:
       ULTRON_SERVER_ADDRESS: :8443
-      ULTRON_REDIS_SERVER_ADDRESS:
+      ULTRON_REDIS_SERVER_ADDRESS: redis:6379
       ULTRON_SERVER_CERTIFICATE_EXPORT_PATH: /data/cert
     networks:
       - ultron
