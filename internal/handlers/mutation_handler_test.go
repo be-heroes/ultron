@@ -11,6 +11,7 @@ import (
 
 	handlers "github.com/be-heroes/ultron/internal/handlers"
 	ultron "github.com/be-heroes/ultron/pkg"
+	"github.com/be-heroes/ultron/pkg/services"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -168,8 +169,8 @@ func (mm *MockMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedN
 }
 
 func TestMutatePods_Success(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewMutationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewMutationHandler(&mockComputeService)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -227,8 +228,8 @@ func TestMutatePods_Success(t *testing.T) {
 }
 
 func TestMutatePods_InvalidBody(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewMutationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewMutationHandler(&mockComputeService)
 
 	req := httptest.NewRequest(http.MethodPost, "/mutate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
@@ -242,8 +243,8 @@ func TestMutatePods_InvalidBody(t *testing.T) {
 }
 
 func TestMutationHandleAdmissionReview_NonPodKind(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewMutationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewMutationHandler(&mockComputeService)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{Kind: "Service"},
@@ -260,8 +261,8 @@ func TestMutationHandleAdmissionReview_NonPodKind(t *testing.T) {
 }
 
 func TestMutationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewMutationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewMutationHandler(&mockComputeService)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{

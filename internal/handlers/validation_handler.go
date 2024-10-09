@@ -18,16 +18,16 @@ type IValidationHandler interface {
 }
 
 type ValidationHandler struct {
-	computeService services.IComputeService
+	computeService *services.IComputeService
 }
 
-func NewValidationHandler(computeService services.IComputeService) *ValidationHandler {
+func NewValidationHandler(computeService *services.IComputeService) *ValidationHandler {
 	return &ValidationHandler{
 		computeService: computeService,
 	}
 }
 
-func (vh ValidationHandler) ValidatePodSpec(w http.ResponseWriter, r *http.Request) {
+func (vh *ValidationHandler) ValidatePodSpec(w http.ResponseWriter, r *http.Request) {
 	var admissionReviewReq admissionv1.AdmissionReview
 	var admissionReviewResp admissionv1.AdmissionReview
 
@@ -76,7 +76,7 @@ func (vh ValidationHandler) ValidatePodSpec(w http.ResponseWriter, r *http.Reque
 	}
 }
 
-func (vh ValidationHandler) HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
+func (vh *ValidationHandler) HandleAdmissionReview(request *admissionv1.AdmissionRequest) (*admissionv1.AdmissionResponse, error) {
 	if request.Kind.Kind != "Pod" {
 		return &admissionv1.AdmissionResponse{
 			Allowed: true,
@@ -90,7 +90,7 @@ func (vh ValidationHandler) HandleAdmissionReview(request *admissionv1.Admission
 		}, err
 	}
 
-	wNode, err := vh.computeService.MatchPodSpec(&pod)
+	wNode, err := (*vh.computeService).MatchPodSpec(&pod)
 	if err != nil {
 		return nil, err
 	}

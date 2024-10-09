@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	handlers "github.com/be-heroes/ultron/internal/handlers"
+	services "github.com/be-heroes/ultron/pkg/services"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -17,8 +18,8 @@ import (
 )
 
 func TestValidatePods_Success(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewValidationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewValidationHandler(&mockComputeService)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -66,8 +67,8 @@ func TestValidatePods_Success(t *testing.T) {
 }
 
 func TestValidatePods_InvalidBody(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewValidationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewValidationHandler(&mockComputeService)
 
 	req := httptest.NewRequest(http.MethodPost, "/validate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
@@ -81,8 +82,8 @@ func TestValidatePods_InvalidBody(t *testing.T) {
 }
 
 func TestValidationHandleAdmissionReview_NonPodKind(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewValidationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewValidationHandler(&mockComputeService)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{Kind: "Service"},
@@ -99,8 +100,8 @@ func TestValidationHandleAdmissionReview_NonPodKind(t *testing.T) {
 }
 
 func TestValidationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
-	mockComputeService := &MockComputeService{}
-	handler := handlers.NewMutationHandler(mockComputeService)
+	var mockComputeService services.IComputeService = &MockComputeService{}
+	handler := handlers.NewValidationHandler(&mockComputeService)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
