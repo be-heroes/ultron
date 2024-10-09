@@ -8,6 +8,7 @@ services:
     environment:
       ULTRON_SERVER_ADDRESS: :8443
       ULTRON_REDIS_SERVER_ADDRESS: redis:6379
+      ULTRON_REDIS_SERVER_PASSWORD: ${{ secrets.ULTRON_REDIS_SERVER_PASSWORD }}
       ULTRON_SERVER_CERTIFICATE_EXPORT_PATH: /data/cert
     networks:
       - ultron
@@ -27,10 +28,10 @@ services:
       - redis_data:/data
     networks:
       - ultron
-      
-networks:
-  ultron:
 
 volumes:
   ultron_data:
   redis_data:
+      
+networks:
+  ultron:
