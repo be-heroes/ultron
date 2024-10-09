@@ -6,12 +6,15 @@ services:
       context: .
       dockerfile: Dockerfile
     environment:
-      ULTRON_REDIS_SERVER_ADDRESS: redis:6379
+      ULTRON_SERVER_ADDRESS: :8443
+      ULTRON_REDIS_SERVER_ADDRESS:
+      ULTRON_SERVER_CERTIFICATE_EXPORT_PATH: /data/cert
     networks:
       - ultron
     ports:
-      - "54323:54323"
-      - "54324:54324"
+      - "8443:8443"
+    volumes:
+      - ultron_data:/data
     depends_on:
       - redis
 
@@ -29,4 +32,5 @@ networks:
   ultron:
 
 volumes:
+  ultron_data:
   redis_data:
