@@ -1,6 +1,6 @@
 # Ultron
 
-Ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, its a webhook server responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the cluster.
+Ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, its a webhook server responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation and workload optimization. By applying labels based on a variety of important criteria, Ultron ensures that workloads are efficiently distributed across the available nodes.
 
 The labels applied by the ultron can include a wide range of information:
 
@@ -12,7 +12,7 @@ The labels applied by the ultron can include a wide range of information:
 
 - **Node-specific labels**: These labels are applied to optimize pod placement based on node characteristics, ensuring that pods are scheduled on nodes that can provide the best performance or cost efficiency for the given workload.
 
-This automatic labeling system is crucial for Kubernetes clusters that rely on autoscaling mechanisms like karpenter or cluster autoscaler, where nodes and pods are frequently provisioned or de-provisioned. By seamlessly integrating into these dynamic environments, the ultron plays a key role in optimizing resource usage and improving overall cluster performance.
+This automatic labeling system is crucial for Kubernetes clusters that rely on autoscaling mechanisms like karpenter or cluster autoscaler, where nodes and pods are frequently provisioned or de-provisioned. By seamlessly integrating into these dynamic environments, Ultron plays a key role assisting with optimizing resource usage and improving overall cluster performance.
 
 ## Prerequisites
 
