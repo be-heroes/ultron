@@ -18,10 +18,10 @@ type IMutationHandler interface {
 }
 
 type MutationHandler struct {
-	computeService *services.IComputeService
+	computeService services.IComputeService
 }
 
-func NewMutationHandler(computeService *services.IComputeService) *MutationHandler {
+func NewMutationHandler(computeService services.IComputeService) *MutationHandler {
 	return &MutationHandler{
 		computeService: computeService,
 	}
@@ -90,7 +90,7 @@ func (mh *MutationHandler) HandleAdmissionReview(request *admissionv1.AdmissionR
 		}, err
 	}
 
-	wNode, err := (*mh.computeService).MatchPodSpec(&pod)
+	wNode, err := mh.computeService.MatchPodSpec(&pod)
 	if err != nil {
 		return nil, err
 	}

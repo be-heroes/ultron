@@ -7,170 +7,32 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
-	handlers "github.com/be-heroes/ultron/internal/handlers"
+	"github.com/be-heroes/ultron/internal/handlers"
+	"github.com/be-heroes/ultron/mocks" // Import the generated mocks
 	ultron "github.com/be-heroes/ultron/pkg"
-	"github.com/be-heroes/ultron/pkg/services"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
+// Utility functions to help create test data
 func intPtr(i int32) *int32         { return &i }
 func float32Ptr(f float32) *float32 { return &f }
 func stringPtr(s string) *string    { return &s }
 
-type MockComputeService struct{}
-
-func (mcs *MockComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
-	return &ultron.WeightedNode{
-		Selector: map[string]string{
-			"node-type": "mock-node",
-		},
-	}, nil
-}
-
-func (mcs *MockComputeService) CalculateWeightedNodeMedianPrice(node *ultron.WeightedNode) (float64, error) {
-	return 0, nil
-}
-
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(configuration *ultron.ComputeConfiguration, node *ultron.WeightedNode) bool {
-	return true
-}
-
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedPodRequirements(configuration *ultron.ComputeConfiguration, pod *ultron.WeightedPod) bool {
-	return true
-}
-
-func (mcs *MockComputeService) MatchWeightedNodeToComputeConfiguration(node *ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
-	return &ultron.ComputeConfiguration{}, nil
-}
-
-func (mcs *MockComputeService) MatchWeightedPodToComputeConfiguration(node *ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
-	return &ultron.ComputeConfiguration{}, nil
-}
-
-func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod *ultron.WeightedPod) (*ultron.WeightedNode, error) {
-	return nil, nil
-}
-
-func (cs MockComputeService) GetInteruptionRateForWeightedNode(wNode *ultron.WeightedNode) (*ultron.WeightedInteruptionRate, error) {
-	return &ultron.WeightedInteruptionRate{}, nil
-}
-
-func (cs MockComputeService) GetLatencyRateForWeightedNode(wNode *ultron.WeightedNode) (*ultron.WeightedLatencyRate, error) {
-	return &ultron.WeightedLatencyRate{}, nil
-}
-
-type MockAlgorithm struct{}
-
-func (ma *MockAlgorithm) StorageScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) NetworkScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) NodeScore(wNode ultron.WeightedNode) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) PriceScore(wNode *ultron.WeightedNode) float64 {
-	return 0.2
-}
-
-func (ma *MockAlgorithm) ResourceScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return wNode.AvailableCPU - wPod.RequestedCPU
-}
-
-func (ma *MockAlgorithm) PodScore(wPod *ultron.WeightedPod) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) TotalScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return wNode.AvailableCPU - wPod.RequestedCPU
-}
-
-type MockCache struct{}
-
-func (mc *MockCache) AddCacheItem(key string, value interface{}, time time.Duration) error {
-	return nil
-}
-
-func (mc *MockCache) GetCacheItem(key string) (interface{}, error) {
-	return nil, nil
-}
-
-func (mc *MockCache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	return []ultron.ComputeConfiguration{
-		{
-			ComputeType: ultron.ComputeTypeDurable,
-			VCpu:        intPtr(2),
-			RamGb:       intPtr(8),
-			VolumeGb:    intPtr(50),
-			Cost: &ultron.ComputeCost{
-				PricePerUnit: float32Ptr(0.2),
-			},
-			VolumeType:        stringPtr("SSD"),
-			CloudNetworkTypes: []string{"isolated", "public"},
-		},
-	}, nil
-}
-
-func (mc *MockCache) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	return nil, nil
-}
-
-func (mc *MockCache) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	return nil, nil
-}
-
-func (mc *MockCache) GetWeightedNodes() ([]ultron.WeightedNode, error) {
-	return []ultron.WeightedNode{
-		{
-			AvailableCPU:     4,
-			TotalCPU:         4,
-			AvailableMemory:  8,
-			TotalMemory:      8,
-			AvailableStorage: 50,
-			DiskType:         "SSD",
-			NetworkType:      "isolated",
-		},
-	}, nil
-}
-
-type MockMapper struct{}
-
-func (mm *MockMapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error) {
-	return ultron.WeightedPod{
-		RequestedCPU:         2,
-		RequestedMemory:      4,
-		RequestedStorage:     50,
-		RequestedDiskType:    "SSD",
-		RequestedNetworkType: "isolated",
-	}, nil
-}
-
-func (mm *MockMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, error) {
-	return ultron.WeightedNode{
-		AvailableCPU:     2,
-		TotalCPU:         4,
-		AvailableMemory:  8,
-		TotalMemory:      16,
-		AvailableStorage: 100,
-		TotalStorage:     200,
-		DiskType:         "SSD",
-		NetworkType:      "5G",
-	}, nil
-}
-
 func TestMutatePods_Success(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewMutationHandler(&mockComputeService)
+	mockComputeService := new(mocks.IComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
+
+	mockComputeService.On("MatchPodSpec", mock.AnythingOfType("*v1.Pod")).
+		Return(&ultron.WeightedNode{
+			Selector: map[string]string{"node-type": "mock-node"},
+		}, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -199,37 +61,22 @@ func TestMutatePods_Success(t *testing.T) {
 	resp := w.Result()
 	body, _ := io.ReadAll(resp.Body)
 
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("Expected status code 200, got %d", resp.StatusCode)
-	}
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
 
 	var admissionReviewResp admissionv1.AdmissionReview
-	if err := json.Unmarshal(body, &admissionReviewResp); err != nil {
-		t.Fatalf("Expected valid AdmissionReview response, but got error: %v", err)
-	}
+	err := json.Unmarshal(body, &admissionReviewResp)
+	assert.NoError(t, err, "Expected valid AdmissionReview response")
 
-	if admissionReviewResp.Response.UID != admissionReviewReq.Request.UID {
-		t.Errorf("Expected response UID to match request UID, got %s", admissionReviewResp.Response.UID)
-	}
-
-	if admissionReviewResp.Response.Allowed != true {
-		t.Errorf("Expected Allowed to be true, but got false")
-	}
-
-	patch := admissionReviewResp.Response.Patch
-	if patch == nil {
-		t.Fatalf("Expected non-nil patch, but got nil")
-	}
+	assert.Equal(t, admissionReviewReq.Request.UID, admissionReviewResp.Response.UID, "Expected response UID to match request UID")
+	assert.True(t, admissionReviewResp.Response.Allowed, "Expected Allowed to be true")
 
 	expectedPatch := `[{"op":"add","path":"/spec/nodeSelector","value":{"node-type":"mock-node"}}]`
-	if string(patch) != expectedPatch {
-		t.Errorf("Expected patch %s, but got %s", expectedPatch, string(patch))
-	}
+	assert.Equal(t, expectedPatch, string(admissionReviewResp.Response.Patch), "Expected patch to match")
 }
 
 func TestMutatePods_InvalidBody(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewMutationHandler(&mockComputeService)
+	mockComputeService := new(mocks.IComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
 
 	req := httptest.NewRequest(http.MethodPost, "/mutate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
@@ -237,32 +84,27 @@ func TestMutatePods_InvalidBody(t *testing.T) {
 	handler.MutatePodSpec(w, req)
 
 	resp := w.Result()
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Fatalf("Expected status code 400, got %d", resp.StatusCode)
-	}
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Expected status code 400")
 }
 
 func TestMutationHandleAdmissionReview_NonPodKind(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewMutationHandler(&mockComputeService)
+	mockComputeService := new(mocks.IComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{Kind: "Service"},
 	}
 
 	admissionResponse, err := handler.HandleAdmissionReview(admissionRequest)
-	if err != nil {
-		t.Fatalf("HandleAdmissionReview returned an error: %v", err)
-	}
-
-	if admissionResponse.Allowed != true {
-		t.Errorf("Expected Allowed to be true for non-pod kind, got false")
-	}
+	assert.NoError(t, err, "HandleAdmissionReview should not return an error")
+	assert.True(t, admissionResponse.Allowed, "Expected Allowed to be true for non-pod kind")
 }
 
 func TestMutationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewMutationHandler(&mockComputeService)
+	mockComputeService := new(mocks.IComputeService)
+	handler := handlers.NewMutationHandler(mockComputeService)
+
+	mockComputeService.On("MatchPodSpec", mock.AnythingOfType("*v1.Pod")).Return(nil, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -281,11 +123,6 @@ func TestMutationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
 	}
 
 	admissionResponse, err := handler.HandleAdmissionReview(admissionRequest)
-	if err != nil {
-		t.Fatalf("HandleAdmissionReview returned an error: %v", err)
-	}
-
-	if admissionResponse.Allowed != true {
-		t.Errorf("Expected Allowed to be true, but got false")
-	}
+	assert.NoError(t, err, "HandleAdmissionReview should not return an error")
+	assert.True(t, admissionResponse.Allowed, "Expected Allowed to be true")
 }

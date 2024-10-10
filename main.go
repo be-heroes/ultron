@@ -47,9 +47,9 @@ func main() {
 	var algorithm algorithm.IAlgorithm = algorithm.NewAlgorithm()
 	var cacheService services.ICacheService = services.NewCacheService(nil, redisClient)
 	var certificateService services.ICertificateService = services.NewCertificateService()
-	var computeService services.IComputeService = services.NewComputeService(&algorithm, &cacheService, &mapper)
-	var mutationHandler handlers.IMutationHandler = handlers.NewMutationHandler(&computeService)
-	var validationHandler handlers.IValidationHandler = handlers.NewValidationHandler(&computeService, redisClient)
+	var computeService services.IComputeService = services.NewComputeService(algorithm, cacheService, mapper)
+	var mutationHandler handlers.IMutationHandler = handlers.NewMutationHandler(computeService)
+	var validationHandler handlers.IValidationHandler = handlers.NewValidationHandler(computeService, redisClient)
 
 	serverAddress := os.Getenv(ultron.EnvServerAddress)
 	if serverAddress == "" {

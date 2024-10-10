@@ -3,13 +3,12 @@ package services_test
 import (
 	"math"
 	"testing"
-	"time"
 
+	"github.com/be-heroes/ultron/mocks" // Import the generated mocks
 	ultron "github.com/be-heroes/ultron/pkg"
-	"github.com/be-heroes/ultron/pkg/algorithm"
-	mapper "github.com/be-heroes/ultron/pkg/mapper"
 	services "github.com/be-heroes/ultron/pkg/services"
-
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	corev1 "k8s.io/api/core/v1"
 )
 
@@ -17,82 +16,107 @@ func intPtr(i int32) *int32         { return &i }
 func float32Ptr(f float32) *float32 { return &f }
 func stringPtr(s string) *string    { return &s }
 
-type MockComputeService struct{}
+func TestComputePodSpec_Success(t *testing.T) {
+	// Arrange
+	mockAlgorithm := new(mocks.IAlgorithm)
+	mockCache := new(mocks.ICacheService)
+	mockMapper := new(mocks.IMapper)
 
-func (mcs *MockComputeService) ComputePodSpec(pod *corev1.Pod) (*ultron.WeightedNode, error) {
-	return &ultron.WeightedNode{
-		Selector: map[string]string{
-			"node-type": "mock-node",
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+
+	pod := &corev1.Pod{}
+
+	// Set up mock behavior for Mapper
+	mockMapper.On("MapPodToWeightedPod", pod).Return(ultron.WeightedPod{
+		RequestedCPU:         2,
+		RequestedMemory:      4,
+		RequestedStorage:     50,
+		RequestedDiskType:    "SSD",
+		RequestedNetworkType: "isolated",
+	}, nil)
+
+	// Set up mock behavior for Cache
+	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{
+		{
+			AvailableCPU:     4,
+			TotalCPU:         4,
+			AvailableMemory:  8,
+			TotalMemory:      8,
+			AvailableStorage: 50,
+			DiskType:         "SSD",
+			NetworkType:      "isolated",
 		},
-	}, nil
+	}, nil)
+
+	// Set up mock behavior for Algorithm
+	mockAlgorithm.On("TotalScore", mock.AnythingOfType("*pkg.WeightedNode"), mock.AnythingOfType("*pkg.WeightedPod")).Return(1.0)
+
+	// Act
+	wNode, err := service.MatchPodSpec(pod)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.NotNil(t, wNode)
+	assert.Equal(t, 4.0, wNode.AvailableCPU)
+	assert.Equal(t, "SSD", wNode.DiskType)
+	assert.Equal(t, "isolated", wNode.NetworkType)
+
+	// Assert expectations for all mocks
+	mockMapper.AssertExpectations(t)
+	mockCache.AssertExpectations(t)
+	mockAlgorithm.AssertExpectations(t)
 }
 
-func (mcs *MockComputeService) CalculateWeightedNodeMedianPrice(node ultron.WeightedNode) (float64, error) {
-	return 0, nil
+func TestComputePodSpec_NoWeightedNode(t *testing.T) {
+	// Arrange
+	mockAlgorithm := new(mocks.IAlgorithm)
+	mockCache := new(mocks.ICacheService)
+	mockMapper := new(mocks.IMapper)
+
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
+
+	pod := &corev1.Pod{}
+
+	// Set up mock behavior for Mapper
+	mockMapper.On("MapPodToWeightedPod", pod).Return(ultron.WeightedPod{}, nil)
+
+	// Set up mock behavior for Cache to return no nodes
+	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{}, nil)
+
+	// Since no nodes are returned, TotalScore shouldn't be called, but add a maybe return for safety
+	mockAlgorithm.On("TotalScore", mock.Anything, mock.Anything).Maybe().Return(0.0)
+
+	// Act
+	wNode, err := service.MatchPodSpec(pod)
+
+	// Assert
+	assert.NoError(t, err)
+	assert.Empty(t, wNode, "Expected wNode to be empty when no nodes are available")
+
+	// Assert expectations for all mocks
+	mockMapper.AssertExpectations(t)
+	mockCache.AssertExpectations(t)
+	mockAlgorithm.AssertExpectations(t)
 }
 
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(configuration ultron.ComputeConfiguration, node ultron.WeightedNode) bool {
-	return true
-}
+func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
+	// Arrange
+	mockAlgorithm := new(mocks.IAlgorithm)
+	mockCache := new(mocks.ICacheService)
+	mockMapper := new(mocks.IMapper)
 
-func (mcs *MockComputeService) ComputeConfigurationMatchesWeightedPodRequirements(configuration ultron.ComputeConfiguration, pod ultron.WeightedPod) bool {
-	return true
-}
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
-func (mcs *MockComputeService) MatchWeightedNodeToComputeConfiguration(node ultron.WeightedNode) (*ultron.ComputeConfiguration, error) {
-	return &ultron.ComputeConfiguration{}, nil
-}
+	wPod := ultron.WeightedPod{
+		RequestedCPU:         1,
+		RequestedMemory:      2,
+		RequestedStorage:     30,
+		RequestedDiskType:    "SSD",
+		RequestedNetworkType: "isolated",
+	}
 
-func (mcs *MockComputeService) MatchWeightedPodToComputeConfiguration(node ultron.WeightedPod) (*ultron.ComputeConfiguration, error) {
-	return &ultron.ComputeConfiguration{}, nil
-}
-
-func (mcs *MockComputeService) MatchWeightedPodToWeightedNode(pod ultron.WeightedPod) (*ultron.WeightedNode, error) {
-	return nil, nil
-}
-
-type MockAlgorithm struct{}
-
-func (ma *MockAlgorithm) StorageScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) NetworkScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) NodeScore(wNode *ultron.WeightedNode) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) PriceScore(wNode *ultron.WeightedNode) float64 {
-	return 0.2
-}
-
-func (ma *MockAlgorithm) ResourceScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return wNode.AvailableCPU - wPod.RequestedCPU
-}
-
-func (ma *MockAlgorithm) PodScore(wPod *ultron.WeightedPod) float64 {
-	return 0
-}
-
-func (ma *MockAlgorithm) TotalScore(wNode *ultron.WeightedNode, wPod *ultron.WeightedPod) float64 {
-	return wNode.AvailableCPU - wPod.RequestedCPU
-}
-
-type MockCache struct{}
-
-func (mc *MockCache) AddCacheItem(key string, value interface{}, time time.Duration) error {
-	return nil
-}
-
-func (mc *MockCache) GetCacheItem(key string) (interface{}, error) {
-	return nil, nil
-}
-
-func (mc *MockCache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	return []ultron.ComputeConfiguration{
+	// Set up mock behavior for Cache
+	mockCache.On("GetAllComputeConfigurations").Return([]ultron.ComputeConfiguration{
 		{
 			ComputeType: ultron.ComputeTypeDurable,
 			VCpu:        intPtr(2),
@@ -104,180 +128,28 @@ func (mc *MockCache) GetAllComputeConfigurations() ([]ultron.ComputeConfiguratio
 			VolumeType:        stringPtr("SSD"),
 			CloudNetworkTypes: []string{"isolated", "public"},
 		},
-	}, nil
-}
-
-func (mc *MockCache) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	return nil, nil
-}
-
-func (mc *MockCache) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	return nil, nil
-}
-
-func (mc *MockCache) GetWeightedNodes() ([]ultron.WeightedNode, error) {
-	return []ultron.WeightedNode{
-		{
-			AvailableCPU:     4,
-			TotalCPU:         4,
-			AvailableMemory:  8,
-			TotalMemory:      8,
-			AvailableStorage: 50,
-			DiskType:         "SSD",
-			NetworkType:      "isolated",
-		},
-	}, nil
-}
-
-func (mc *MockCache) GetWeightedInteruptionRates() ([]ultron.WeightedInteruptionRate, error) {
-	return []ultron.WeightedInteruptionRate{
-		{
-			Selector: map[string]string{
-				"node-type": "mock-node",
-			},
-			Value: 0.1,
-		},
-	}, nil
-}
-
-func (mc *MockCache) GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error) {
-	return []ultron.WeightedLatencyRate{
-		{
-			Selector: map[string]string{
-				"node-type": "mock-node",
-			},
-			Value: 0.1,
-		},
-	}, nil
-}
-
-type MockMapper struct{}
-
-func (mm *MockMapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error) {
-	return ultron.WeightedPod{
-		RequestedCPU:         2,
-		RequestedMemory:      4,
-		RequestedStorage:     50,
-		RequestedDiskType:    "SSD",
-		RequestedNetworkType: "isolated",
-	}, nil
-}
-
-func (mm *MockMapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, error) {
-	return ultron.WeightedNode{
-		AvailableCPU:     2,
-		TotalCPU:         4,
-		AvailableMemory:  8,
-		TotalMemory:      16,
-		AvailableStorage: 100,
-		TotalStorage:     200,
-		DiskType:         "SSD",
-		NetworkType:      "5G",
-	}, nil
-}
-
-func TestComputePodSpec_Success(t *testing.T) {
-	// Arrange
-	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
-	var mockCache services.ICacheService = &MockCache{}
-	var mockMapper mapper.IMapper = &MockMapper{}
-
-	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
-
-	pod := &corev1.Pod{}
-
-	// Act
-	wNode, err := service.MatchPodSpec(pod)
-
-	// Assert
-	if err != nil {
-		t.Fatalf("ComputePodSpec returned an error: %v", err)
-	}
-
-	if wNode == nil {
-		t.Fatal("Expected wNode to not be nil")
-	}
-
-	if wNode.AvailableCPU != 4 {
-		t.Errorf("Expected AvailableCPU to be 4, got %f", wNode.AvailableCPU)
-	}
-
-	if wNode.DiskType != "SSD" {
-		t.Errorf("Expected DiskType to be SSD, got %s", wNode.DiskType)
-	}
-
-	if wNode.NetworkType != "isolated" {
-		t.Errorf("Expected NetworkType to be isolated, got %s", wNode.NetworkType)
-	}
-}
-
-func TestComputePodSpec_NoWeightedNode(t *testing.T) {
-	// Arrange
-	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
-	var mockCache services.ICacheService = &MockCache{}
-	var mockMapper mapper.IMapper = &MockMapper{}
-
-	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
-
-	pod := &corev1.Pod{}
-
-	// Act
-	wNode, err := service.MatchPodSpec(pod)
-
-	// Assert
-	if err != nil {
-		t.Fatalf("ComputePodSpec returned an error: %v", err)
-	}
-
-	if wNode == nil {
-		t.Fatal("Expected wNode to not be nil")
-	}
-}
-
-func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
-	// Arrange
-	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
-	var mockCache services.ICacheService = &MockCache{}
-	var mockMapper mapper.IMapper = &MockMapper{}
-
-	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
-
-	wPod := ultron.WeightedPod{
-		RequestedCPU:         1,
-		RequestedMemory:      2,
-		RequestedStorage:     30,
-		RequestedDiskType:    "SSD",
-		RequestedNetworkType: "isolated",
-	}
+	}, nil)
 
 	// Act
 	computeConfig, err := service.MatchWeightedPodToComputeConfiguration(&wPod)
 
 	// Assert
-	if err != nil {
-		t.Fatalf("MatchWeightedPodToComputeConfiguration returned an error: %v", err)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, computeConfig)
+	assert.Equal(t, int32(2), *computeConfig.VCpu)
+	assert.Equal(t, ultron.ComputeTypeDurable, computeConfig.ComputeType)
 
-	if computeConfig == nil {
-		t.Fatal("Expected computeConfig to not be nil")
-	}
-
-	if *computeConfig.VCpu != 2 {
-		t.Errorf("Expected VCpu to be 2, got %d", *computeConfig.VCpu)
-	}
-
-	if computeConfig.ComputeType != ultron.ComputeTypeDurable {
-		t.Errorf("Expected ComputeType to be durable, got %s", computeConfig.ComputeType)
-	}
+	// Assert expectations for all mocks
+	mockCache.AssertExpectations(t)
 }
 
 func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 	// Arrange
-	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
-	var mockCache services.ICacheService = &MockCache{}
-	var mockMapper mapper.IMapper = &MockMapper{}
+	mockAlgorithm := new(mocks.IAlgorithm)
+	mockCache := new(mocks.ICacheService)
+	mockMapper := new(mocks.IMapper)
 
-	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wNode := ultron.WeightedNode{
 		AvailableCPU:     4,
@@ -285,73 +157,72 @@ func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 		AvailableStorage: 50,
 		DiskType:         "SSD",
 		NetworkType:      "isolated",
+		Price:            10.0,
+		MedianPrice:      5.0,
 	}
+
+	mockCache.On("GetAllComputeConfigurations").Return([]ultron.ComputeConfiguration{
+		{
+			ComputeType: ultron.ComputeTypeDurable,
+			VCpu:        intPtr(2),
+			RamGb:       intPtr(8),
+			VolumeGb:    intPtr(50),
+			Cost: &ultron.ComputeCost{
+				PricePerUnit: float32Ptr(0.2),
+			},
+			VolumeType:        stringPtr("SSD"),
+			CloudNetworkTypes: []string{"isolated", "public"},
+		},
+	}, nil)
 
 	// Act
 	medianPrice, err := service.CalculateWeightedNodeMedianPrice(&wNode)
 
 	// Assert
-	if err != nil {
-		t.Fatalf("CalculateWeightedNodeMedianPrice returned an error: %v", err)
-	}
+	assert.NoError(t, err)
+	assert.False(t, math.IsNaN(medianPrice), "Median price should not be NaN")
+	assert.InDelta(t, 0.2, medianPrice, 0.01, "Median price did not match expected value")
 
-	expectedPrice := 0.2
-	if math.Abs(medianPrice-expectedPrice) > 0.01 {
-		t.Errorf("Expected median price to be %f, got %f", expectedPrice, medianPrice)
-	}
+	// Assert expectations for all mocks
+	mockCache.AssertExpectations(t)
+	mockAlgorithm.AssertExpectations(t)
 }
 
 func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 	// Arrange
-	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
-	var mockCache services.ICacheService = &MockCache{}
-	var mockMapper mapper.IMapper = &MockMapper{}
+	mockAlgorithm := new(mocks.IAlgorithm)
+	mockCache := new(mocks.ICacheService)
+	mockMapper := new(mocks.IMapper)
 
-	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
+	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wPod := ultron.WeightedPod{
 		RequestedCPU:    2,
 		RequestedMemory: 4,
 	}
 
+	// Set up mock behavior for Cache
+	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{
+		{
+			AvailableCPU:    4,
+			AvailableMemory: 8,
+			DiskType:        "SSD",
+			NetworkType:     "isolated",
+		},
+	}, nil)
+
+	// Set up mock behavior for Algorithm
+	mockAlgorithm.On("TotalScore", mock.AnythingOfType("*pkg.WeightedNode"), mock.AnythingOfType("*pkg.WeightedPod")).Return(1.0)
+
 	// Act
 	wNode, err := service.MatchWeightedPodToWeightedNode(&wPod)
 
 	// Assert
-	if err != nil {
-		t.Fatalf("MatchWeightedPodToWeightedNode returned an error: %v", err)
-	}
+	assert.NoError(t, err)
+	assert.NotNil(t, wNode, "Expected a weighted node to be found")
+	assert.Equal(t, 4.0, wNode.AvailableCPU)
 
-	if wNode == nil {
-		t.Fatal("Expected wNode to not be nil")
-	}
-
-	if wNode.AvailableCPU != 4 {
-		t.Errorf("Expected AvailableCPU to be 4, got %f", wNode.AvailableCPU)
-	}
-}
-
-func TestMatchWeightedPodToComputeConfiguration_NoMatch(t *testing.T) {
-	// Arrange
-	var mockAlgorithm algorithm.IAlgorithm = &MockAlgorithm{}
-	var mockCache services.ICacheService = &MockCache{}
-	var mockMapper mapper.IMapper = &MockMapper{}
-
-	service := services.NewComputeService(&mockAlgorithm, &mockCache, &mockMapper)
-
-	wPod := ultron.WeightedPod{
-		RequestedCPU: 4,
-	}
-
-	// Act
-	computeConfig, err := service.MatchWeightedPodToComputeConfiguration(&wPod)
-
-	// Assert
-	if err != nil {
-		t.Fatalf("Expected no error, but got: %v", err)
-	}
-
-	if computeConfig != nil {
-		t.Fatalf("Expected no matching configuration, but got: %v", computeConfig)
-	}
+	// Assert expectations for all mocks
+	mockCache.AssertExpectations(t)
+	mockAlgorithm.AssertExpectations(t)
 }

@@ -21,11 +21,11 @@ type IValidationHandler interface {
 }
 
 type ValidationHandler struct {
-	computeService *services.IComputeService
+	computeService services.IComputeService
 	redisClient    *redis.Client
 }
 
-func NewValidationHandler(computeService *services.IComputeService, redisClient *redis.Client) *ValidationHandler {
+func NewValidationHandler(computeService services.IComputeService, redisClient *redis.Client) *ValidationHandler {
 	return &ValidationHandler{
 		computeService: computeService,
 		redisClient:    redisClient,
@@ -95,7 +95,7 @@ func (vh *ValidationHandler) HandleAdmissionReview(request *admissionv1.Admissio
 		}, err
 	}
 
-	wNode, err := (*vh.computeService).MatchPodSpec(&pod)
+	wNode, err := vh.computeService.MatchPodSpec(&pod)
 	if err != nil {
 		return nil, err
 	}

@@ -9,17 +9,27 @@ import (
 	"testing"
 
 	handlers "github.com/be-heroes/ultron/internal/handlers"
-	services "github.com/be-heroes/ultron/pkg/services"
+	"github.com/be-heroes/ultron/mocks" // Import the generated mocks
+	ultron "github.com/be-heroes/ultron/pkg"
 
 	admissionv1 "k8s.io/api/admission/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func TestValidatePods_Success(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService, nil)
+	mockComputeService := new(mocks.IComputeService)
+
+	mockComputeService.On("MatchPodSpec", mock.AnythingOfType("*v1.Pod")).
+		Return(&ultron.WeightedNode{
+			Selector: map[string]string{"node-type": "mock-node"},
+		}, nil)
+
+	handler := handlers.NewValidationHandler(mockComputeService, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -48,27 +58,19 @@ func TestValidatePods_Success(t *testing.T) {
 	resp := w.Result()
 	body, _ := io.ReadAll(resp.Body)
 
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("Expected status code 200, got %d", resp.StatusCode)
-	}
+	assert.Equal(t, http.StatusOK, resp.StatusCode, "Expected status code 200")
 
 	var admissionReviewResp admissionv1.AdmissionReview
-	if err := json.Unmarshal(body, &admissionReviewResp); err != nil {
-		t.Fatalf("Expected valid AdmissionReview response, but got error: %v", err)
-	}
-
-	if admissionReviewResp.Response.UID != admissionReviewReq.Request.UID {
-		t.Errorf("Expected response UID to match request UID, got %s", admissionReviewResp.Response.UID)
-	}
-
-	if admissionReviewResp.Response.Allowed != true {
-		t.Errorf("Expected Allowed to be true, but got false")
-	}
+	err := json.Unmarshal(body, &admissionReviewResp)
+	assert.NoError(t, err, "Expected valid AdmissionReview response")
+	assert.Equal(t, admissionReviewReq.Request.UID, admissionReviewResp.Response.UID, "Expected response UID to match request UID")
+	assert.True(t, admissionReviewResp.Response.Allowed, "Expected Allowed to be true")
 }
 
 func TestValidatePods_InvalidBody(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService, nil)
+	mockComputeService := new(mocks.IComputeService)
+
+	handler := handlers.NewValidationHandler(mockComputeService, nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/validate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
@@ -76,32 +78,29 @@ func TestValidatePods_InvalidBody(t *testing.T) {
 	handler.ValidatePodSpec(w, req)
 
 	resp := w.Result()
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Fatalf("Expected status code 400, got %d", resp.StatusCode)
-	}
+	assert.Equal(t, http.StatusBadRequest, resp.StatusCode, "Expected status code 400")
 }
 
 func TestValidationHandleAdmissionReview_NonPodKind(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService, nil)
+	mockComputeService := new(mocks.IComputeService)
+
+	handler := handlers.NewValidationHandler(mockComputeService, nil)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{Kind: "Service"},
 	}
 
 	admissionResponse, err := handler.HandleAdmissionReview(admissionRequest)
-	if err != nil {
-		t.Fatalf("HandleAdmissionReview returned an error: %v", err)
-	}
-
-	if admissionResponse.Allowed != true {
-		t.Errorf("Expected Allowed to be true for non-pod kind, got false")
-	}
+	assert.NoError(t, err, "HandleAdmissionReview should not return an error")
+	assert.True(t, admissionResponse.Allowed, "Expected Allowed to be true for non-pod kind")
 }
 
 func TestValidationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
-	var mockComputeService services.IComputeService = &MockComputeService{}
-	handler := handlers.NewValidationHandler(&mockComputeService, nil)
+	mockComputeService := new(mocks.IComputeService)
+
+	mockComputeService.On("MatchPodSpec", mock.AnythingOfType("*v1.Pod")).Return(nil, nil)
+
+	handler := handlers.NewValidationHandler(mockComputeService, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -120,11 +119,6 @@ func TestValidationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
 	}
 
 	admissionResponse, err := handler.HandleAdmissionReview(admissionRequest)
-	if err != nil {
-		t.Fatalf("HandleAdmissionReview returned an error: %v", err)
-	}
-
-	if admissionResponse.Allowed != true {
-		t.Errorf("Expected Allowed to be true, but got false")
-	}
+	assert.NoError(t, err, "HandleAdmissionReview should not return an error")
+	assert.True(t, admissionResponse.Allowed, "Expected Allowed to be true")
 }
