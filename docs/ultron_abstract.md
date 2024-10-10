@@ -38,7 +38,7 @@ A long-term goal of the ultron-operator is to support multi-cloud-node-provider 
 
 ## ultron
 
-The ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation, and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the cluster.
+The ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation, and workload optimization. By applying labels based on a variety of important criteria, Ultron ensures that workloads are efficiently distributed across available nodes or assigned to a newly provisioned one if needed.
 
 The labels applied by the ultron can include a wide range of information:
 
@@ -56,7 +56,7 @@ This automatic labeling system is crucial for Kubernetes clusters that rely on a
 
 As nodes and pods are scaled up or down, Project Ultron automatically applies labels to each pod and node according to predefined rules or user-specified criteria. This ensures that workloads are not only provisioned quickly but also placed optimally based on specific parameters such as workload type (batch, real-time, AI/ML), resource needs (CPU, memory) and custom-defined priorities. By assigning these labels at the moment of pod provisioning, ultron-karpenter enables Kubernetes to make informed scheduling decisions that maximize resource utilization, balance workloads and improve overall cluster performance.
 
-Additionally this integration with karpenter ensures that the entire provisioning process remains cost-efficient by helping to route workloads to the most appropriate and cost-effective nodes. In scenarios involving multi-cloud or hybrid cloud setups, Project Ultrons integration could be extended to route workloads across different cloud providers based on resource availability, performance needs or pricing, further optimizing both cost and efficiency in a multi-cloud environment. This dynamic labeling capability, combined with karpenter's ability to provision nodes in real-time, allows clusters to handle surges in demand seamlessly while maintaining operational efficiency and cost control.
+This integration with karpenter ensures that the entire provisioning process remains cost-efficient by helping to route workloads to the most appropriate and cost-effective nodes. In scenarios involving multi-cloud or hybrid cloud setups, Project Ultrons integration could be extended to route workloads across different cloud providers based on resource availability, performance needs or pricing, further optimizing both cost and efficiency in a multi-cloud environment. This dynamic labeling capability, combined with karpenter's ability to provision nodes in real-time, allows clusters to handle surges in demand seamlessly while maintaining operational efficiency and cost control.
 
 ## ultron-cluster-autoscaler
 
