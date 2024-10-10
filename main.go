@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"log"
 	"net"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"go.uber.org/zap"
 
 	handlers "github.com/be-heroes/ultron/internal/handlers"
 	ultron "github.com/be-heroes/ultron/pkg"
@@ -18,114 +19,136 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-func main() {
-	log.Println("Initializing ultron")
+type Config struct {
+	RedisServerAddress        string
+	RedisServerPassword       string
+	RedisServerDatabase       int
+	ServerAddress             string
+	CertificateOrganization   string
+	CertificateCommonName     string
+	CertificateDnsNamesCSV    string
+	CertificateIpAddressesCSV string
+	CertificateExportPath     string
+}
 
-	var redisClient *redis.Client
-
-	redisServerAddress := os.Getenv(ultron.EnvRedisServerAddress)
-	redisServerDatabase := os.Getenv(ultron.EnvRedisServerDatabase)
-	redisServerDatabaseInt, err := strconv.Atoi(redisServerDatabase)
+func LoadConfig() (*Config, error) {
+	redisDatabase, err := strconv.Atoi(os.Getenv(ultron.EnvRedisServerDatabase))
 	if err != nil {
-		redisServerDatabaseInt = 0
+		redisDatabase = 0
 	}
 
-	if redisServerAddress != "" {
-		redisClient = redis.NewClient(&redis.Options{
-			Addr:     redisServerAddress,
-			Password: os.Getenv(ultron.EnvRedisServerPassword),
-			DB:       redisServerDatabaseInt,
-		})
+	return &Config{
+		RedisServerAddress:        os.Getenv(ultron.EnvRedisServerAddress),
+		RedisServerPassword:       os.Getenv(ultron.EnvRedisServerPassword),
+		RedisServerDatabase:       redisDatabase,
+		ServerAddress:             getEnvWithDefault(ultron.EnvServerAddress, ":8443"),
+		CertificateOrganization:   getEnvWithDefault(ultron.EnvServerCertificateOrganization, "be-heroes"),
+		CertificateCommonName:     getEnvWithDefault(ultron.EnvServerCertificateCommonName, "ultron-service.default.svc"),
+		CertificateDnsNamesCSV:    getEnvWithDefault(ultron.EnvServerCertificateDnsNames, "ultron-service.default.svc,ultron-service,localhost"),
+		CertificateIpAddressesCSV: getEnvWithDefault(ultron.EnvServerCertificateIpAddresses, "127.0.0.1"),
+		CertificateExportPath:     os.Getenv(ultron.EnvServerCertificateExportPath),
+	}, nil
+}
 
-		_, err := redisClient.Ping(context.Background()).Result()
-		if err != nil {
-			log.Fatalf("Failed to connect to Redis server: %v", err)
-		}
+func getEnvWithDefault(envVar, defaultValue string) string {
+	value := os.Getenv(envVar)
+	if value == "" {
+		return defaultValue
 	}
+	return value
+}
 
-	var mapper mapper.IMapper = mapper.NewMapper()
-	var algorithm algorithm.IAlgorithm = algorithm.NewAlgorithm()
-	var cacheService services.ICacheService = services.NewCacheService(nil, redisClient)
-	var certificateService services.ICertificateService = services.NewCertificateService()
-	var computeService services.IComputeService = services.NewComputeService(algorithm, cacheService, mapper)
-	var mutationHandler handlers.IMutationHandler = handlers.NewMutationHandler(computeService)
-	var validationHandler handlers.IValidationHandler = handlers.NewValidationHandler(computeService, redisClient)
-
-	serverAddress := os.Getenv(ultron.EnvServerAddress)
-	if serverAddress == "" {
-		serverAddress = ":8443"
+func initializeRedisClient(ctx context.Context, config *Config, sugar *zap.SugaredLogger) *redis.Client {
+	if config.RedisServerAddress == "" {
+		return nil
 	}
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     config.RedisServerAddress,
+		Password: config.RedisServerPassword,
+		DB:       config.RedisServerDatabase,
+	})
 
-	certificateOrganization := os.Getenv(ultron.EnvServerCertificateOrganization)
-	if certificateOrganization == "" {
-		certificateOrganization = "be-heroes"
+	_, err := redisClient.Ping(ctx).Result()
+	if err != nil {
+		sugar.Fatalf("Failed to connect to Redis server: %v", err)
 	}
+	return redisClient
+}
 
-	certificateCommonName := os.Getenv(ultron.EnvServerCertificateCommonName)
-	if certificateCommonName == "" {
-		certificateCommonName = "ultron-service.default.svc"
-	}
-
-	certificateDnsNamesCSV := os.Getenv(ultron.EnvServerCertificateDnsNames)
-	if certificateDnsNamesCSV == "" {
-		certificateDnsNamesCSV = "ultron-service.default.svc,ultron-service,localhost"
-	}
-
-	certificateIpAddressesCSV := os.Getenv(ultron.EnvServerCertificateIpAddresses)
-	if certificateIpAddressesCSV == "" {
-		certificateIpAddressesCSV = "127.0.0.1"
-	}
-
+func parseCertificateIpAddresses(csv string) []net.IP {
 	var certificateIpAddresses []net.IP
-	for _, ipAddress := range strings.Split(certificateIpAddressesCSV, ",") {
-		if ipAddress == "" {
+	for _, ipAddress := range strings.Split(csv, ",") {
+		if ipAddress != "" {
 			certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
 		}
 	}
+	return certificateIpAddresses
+}
 
-	log.Println("Initialized ultron")
-	log.Println("Generating self-signed certificate")
+func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+	sugar := logger.Sugar()
+	sugar.Info("Initializing ultron")
 
-	cert, err := certificateService.GenerateSelfSignedCert(
-		certificateOrganization,
-		certificateCommonName,
-		strings.Split(certificateDnsNamesCSV, ","),
-		certificateIpAddresses)
+	config, err := LoadConfig()
 	if err != nil {
-		log.Fatalf("Failed to generate self-signed certificate: %v", err)
+		sugar.Fatalf("Failed to load configuration: %v", err)
 	}
 
-	log.Println("Generated self-signed certificate")
+	ctx := context.Background()
+	redisClient := initializeRedisClient(ctx, config, sugar)
 
-	certificateExportPath := os.Getenv(ultron.EnvServerCertificateExportPath)
-	if certificateExportPath != "" {
-		log.Println("Exporting CA certificate")
+	mapperInstance := mapper.NewMapper()
+	algorithmInstance := algorithm.NewAlgorithm()
+	cacheService := services.NewCacheService(nil, redisClient)
+	certificateService := services.NewCertificateService()
+	computeService := services.NewComputeService(algorithmInstance, cacheService, mapperInstance)
+	mutationHandler := handlers.NewMutationHandler(computeService)
+	validationHandler := handlers.NewValidationHandler(computeService, redisClient)
 
-		err = certificateService.ExportCACert(cert.Certificate[0], certificateExportPath)
+	sugar.Info("Initialized ultron")
+	sugar.Info("Generating self-signed certificate")
+
+	cert, err := certificateService.GenerateSelfSignedCert(
+		config.CertificateOrganization,
+		config.CertificateCommonName,
+		strings.Split(config.CertificateDnsNamesCSV, ","),
+		parseCertificateIpAddresses(config.CertificateIpAddressesCSV),
+	)
+	if err != nil {
+		sugar.Fatalf("Failed to generate self-signed certificate: %v", err)
+	}
+
+	sugar.Info("Generated self-signed certificate")
+
+	if config.CertificateExportPath != "" {
+		sugar.Info("Exporting CA certificate")
+
+		err = certificateService.ExportCACert(cert.Certificate[0], config.CertificateExportPath)
 		if err != nil {
-			log.Fatalf("Failed to export CA certificate to file: %v", err)
+			sugar.Fatalf("Failed to export CA certificate to file: %v", err)
 		}
 
-		log.Println("Exported CA certificate")
+		sugar.Info("Exported CA certificate")
 	}
 
 	mux := http.NewServeMux()
-
 	mux.HandleFunc("/mutate", mutationHandler.MutatePodSpec)
 	mux.HandleFunc("/validate", validationHandler.ValidatePodSpec)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 
+	sugar.Info("Starting ultron")
+
 	server := &http.Server{
-		Addr: serverAddress,
+		Addr: config.ServerAddress,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		},
 		Handler: mux,
 	}
 
-	log.Println("Starting ultron")
-
 	if err := server.ListenAndServeTLS("", ""); err != nil {
-		log.Fatalf("Failed to listen and serve ultron: %v", err)
+		sugar.Fatalf("Failed to listen and serve ultron: %v", err)
 	}
 }
