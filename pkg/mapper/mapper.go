@@ -28,35 +28,41 @@ func (m *Mapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error
 	var totalCPURequest, totalMemoryRequest, totalCPULimit, totalMemoryLimit float64
 
 	for _, container := range pod.Spec.Containers {
-		cpuRequest := container.Resources.Requests[corev1.ResourceCPU]
-		memRequest := container.Resources.Requests[corev1.ResourceMemory]
-		cpuLimit := container.Resources.Limits[corev1.ResourceCPU]
-		memLimit := container.Resources.Limits[corev1.ResourceMemory]
+		if container.Resources.Requests != nil {
+			cpuRequest := container.Resources.Requests[corev1.ResourceCPU]
+			cpuRequestFloat, err := strconv.ParseFloat(cpuRequest.AsDec().String(), 64)
+			if err != nil {
+				return ultron.WeightedPod{}, fmt.Errorf("failed to parse CPU request: %w", err)
+			}
 
-		cpuRequestFloat, err := strconv.ParseFloat(cpuRequest.AsDec().String(), 64)
-		if err != nil {
-			return ultron.WeightedPod{}, fmt.Errorf("failed to parse CPU request: %w", err)
+			totalCPURequest += cpuRequestFloat
+
+			memRequest := container.Resources.Requests[corev1.ResourceMemory]
+			memRequestFloat, err := strconv.ParseFloat(memRequest.AsDec().String(), 64)
+			if err != nil {
+				return ultron.WeightedPod{}, fmt.Errorf("failed to parse memory request: %w", err)
+			}
+
+			totalMemoryRequest += memRequestFloat
 		}
 
-		totalCPURequest += cpuRequestFloat
-		memRequestFloat, err := strconv.ParseFloat(memRequest.AsDec().String(), 64)
-		if err != nil {
-			return ultron.WeightedPod{}, fmt.Errorf("failed to parse memory request: %w", err)
-		}
+		if container.Resources.Limits != nil {
+			cpuLimit := container.Resources.Limits[corev1.ResourceCPU]
+			cpuLimitFloat, err := strconv.ParseFloat(cpuLimit.AsDec().String(), 64)
+			if err != nil {
+				return ultron.WeightedPod{}, fmt.Errorf("failed to parse CPU limit: %w", err)
+			}
 
-		totalMemoryRequest += memRequestFloat
-		cpuLimitFloat, err := strconv.ParseFloat(cpuLimit.AsDec().String(), 64)
-		if err != nil {
-			return ultron.WeightedPod{}, fmt.Errorf("failed to parse CPU limit: %w", err)
-		}
+			totalCPULimit += cpuLimitFloat
 
-		totalCPULimit += cpuLimitFloat
-		memLimitFloat, err := strconv.ParseFloat(memLimit.AsDec().String(), 64)
-		if err != nil {
-			return ultron.WeightedPod{}, fmt.Errorf("failed to parse memory limit: %w", err)
-		}
+			memLimit := container.Resources.Limits[corev1.ResourceMemory]
+			memLimitFloat, err := strconv.ParseFloat(memLimit.AsDec().String(), 64)
+			if err != nil {
+				return ultron.WeightedPod{}, fmt.Errorf("failed to parse memory limit: %w", err)
+			}
 
-		totalMemoryLimit += memLimitFloat
+			totalMemoryLimit += memLimitFloat
+		}
 	}
 
 	requestedDiskType := m.GetAnnotationOrDefault(pod.Annotations, ultron.AnnotationDiskType, ultron.DefaultDiskType)
@@ -94,7 +100,7 @@ func (m *Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, 
 	totalStorage := float64(storageCapacity.Value()) / float64(bytesInGiB)
 	hostname := node.Labels[ultron.LabelHostName]
 	instanceType := node.Labels[ultron.LabelInstanceType]
-	managed := node.Labels[ultron.LabelManaged]
+	managed := node.Annotations[ultron.AnnotationManaged]
 
 	if hostname == "" && instanceType == "" {
 		return ultron.WeightedNode{}, fmt.Errorf("missing required label: %s or %s", ultron.LabelHostName, ultron.LabelInstanceType)
@@ -111,7 +117,7 @@ func (m *Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, 
 	}
 
 	if managed != "" {
-		selector[ultron.LabelManaged] = managed
+		selector[ultron.AnnotationManaged] = managed
 	}
 
 	return ultron.WeightedNode{

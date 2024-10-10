@@ -48,8 +48,8 @@ func (mh *MutationHandler) MutatePodSpec(w http.ResponseWriter, r *http.Request)
 
 	admissionResponse, err := mh.HandleAdmissionReview(admissionReviewReq.Request)
 	if err != nil {
-		log.Printf("Could not handle addmission review: %v", err)
-		http.Error(w, "could not handle addmission review", http.StatusInternalServerError)
+		log.Printf("Could not handle admission review: %v", err)
+		http.Error(w, "could not handle admission review", http.StatusInternalServerError)
 
 		return
 	}

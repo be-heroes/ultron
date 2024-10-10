@@ -65,7 +65,7 @@ func (cs *ComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			}
 
 			wNode = &ultron.WeightedNode{
-				Selector:         map[string]string{ultron.LabelInstanceType: instanceType, ultron.LabelManaged: "true"},
+				Selector:         map[string]string{ultron.LabelInstanceType: instanceType, ultron.AnnotationManaged: "true"},
 				AvailableCPU:     float64(*computeConfiguration.VCpu),
 				TotalCPU:         float64(*computeConfiguration.VCpu),
 				AvailableMemory:  float64(*computeConfiguration.RamGb),
