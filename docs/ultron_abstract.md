@@ -4,7 +4,7 @@ Project Ultron is an open-source initiative from the be-heroes aimed at creating
 
 ## Key components
 
-- **ultron-operator**: The ultron-operator is the central component of Project Ultron, acting as the orchestrator that brings together all the other components and enables the projects overall functionality. At its core, the operator is responsible for managing the lifecycle of the custom resources (CRDs) that are essential for implementing Project Ultrons advanced features such as auto-labeling, multi-cloud-node-provider routing, and the integration with scaling tools like karpenter and cluster autoscaler. By bundling all the necessary CRDs, the ultron-operator simplifies the configuration and operational management of Kubernetes clusters, ensuring seamless interaction between the autoscalers, webhook servers, and labeling mechanisms.
+- **ultron-operator**: The ultron-operator is the central component of Project Ultron, acting as the orchestrator that brings together all the other components and enables the projects overall functionality. At its core, the operator is responsible for managing the lifecycle of the custom resources (CRDs) that are essential for implementing Project Ultrons advanced features such as auto-labeling, multi-cloud-node-provider placement and the integration with scaling tools like karpenter and cluster autoscaler. By bundling all the necessary CRDs, the ultron-operator simplifies the configuration and operational management of Kubernetes clusters, ensuring seamless interaction between the autoscalers, webhook servers, and labeling mechanisms.
 
 - **ultron**: This is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, the webhook server is responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation and workload optimization. By applying labels based on a variety of important criteria, the webhookserver ensures that workloads are efficiently distributed across the clusters available nodes.
 
@@ -20,7 +20,7 @@ Project Ultron is an open-source initiative from the be-heroes aimed at creating
 
 - **Operational efficiency**: Auto-labeling reduces the manual effort required in cluster operations, improving automation in scaling events.
 
-- **Multi-cloud workload routing**: By supporting multi-cloud-node-provider routing through auto-labeling, the operator will allow users to optimize workloads across multiple cloud environments seamlessly, reducing vendor lock-in and improving cost management.
+- **Multi-cloud workload placement**: By supporting multi-cloud-node-provider placement through auto-labeling, the operator will allow users to optimize workloads across multiple cloud environments seamlessly, reducing vendor lock-in and improving cost management.
 
 ## ultron-operator
 
