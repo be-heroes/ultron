@@ -19,6 +19,8 @@ import (
 )
 
 func main() {
+	log.Println("Initializing redis client")
+
 	var redisClient *redis.Client
 
 	redisServerAddress := os.Getenv(ultron.EnvRedisServerAddress)
@@ -41,6 +43,9 @@ func main() {
 		}
 	}
 
+	log.Println("Initialized redis client")
+	log.Println("Initializing application dependencies")
+
 	var mapper mapper.IMapper = mapper.NewMapper()
 	var algorithm algorithm.IAlgorithm = algorithm.NewAlgorithm()
 	var cacheService services.ICacheService = services.NewCacheService(nil, redisClient)
@@ -49,6 +54,7 @@ func main() {
 	var mutationHandler handlers.IMutationHandler = handlers.NewMutationHandler(&computeService)
 	var validationHandler handlers.IValidationHandler = handlers.NewValidationHandler(&computeService, redisClient)
 
+	log.Println("Initialized application dependencies")
 	log.Println("Initializing server")
 
 	serverAddress := os.Getenv(ultron.EnvServerAddress)
