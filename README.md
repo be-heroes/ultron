@@ -1,6 +1,6 @@
 # Ultron
 
-Ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, its a webhook server responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation and workload optimization. By applying labels based on a variety of important criteria, Ultron ensures that workloads are efficiently distributed across the available nodes.
+Ultron is a critical component of Project Ultron, designed to enhance the automation and intelligence of workload management within Kubernetes clusters. At its core, its a webhook server responsible for dynamically and automatically assigning labels to pods as they are provisioned. This auto-labeling mechanism enables Kubernetes to make more informed decisions about pod scheduling, resource allocation and workload optimization. By applying labels based on a variety of important criteria, Ultron ensures that workloads are efficiently distributed across the available nodes or assigned to a newly provisioned one if needed.
 
 The labels applied by the ultron can include a wide range of information:
 
