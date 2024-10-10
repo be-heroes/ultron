@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	log.Println("Initializing redis client")
+	log.Println("Initializing ultron")
 
 	var redisClient *redis.Client
 
@@ -43,9 +43,6 @@ func main() {
 		}
 	}
 
-	log.Println("Initialized redis client")
-	log.Println("Initializing application dependencies")
-
 	var mapper mapper.IMapper = mapper.NewMapper()
 	var algorithm algorithm.IAlgorithm = algorithm.NewAlgorithm()
 	var cacheService services.ICacheService = services.NewCacheService(nil, redisClient)
@@ -53,9 +50,6 @@ func main() {
 	var computeService services.IComputeService = services.NewComputeService(&algorithm, &cacheService, &mapper)
 	var mutationHandler handlers.IMutationHandler = handlers.NewMutationHandler(&computeService)
 	var validationHandler handlers.IValidationHandler = handlers.NewValidationHandler(&computeService, redisClient)
-
-	log.Println("Initialized application dependencies")
-	log.Println("Initializing server")
 
 	serverAddress := os.Getenv(ultron.EnvServerAddress)
 	if serverAddress == "" {
@@ -89,6 +83,7 @@ func main() {
 		}
 	}
 
+	log.Println("Initialized ultron")
 	log.Println("Generating self-signed certificate")
 
 	cert, err := certificateService.GenerateSelfSignedCert(
@@ -128,9 +123,9 @@ func main() {
 		Handler: mux,
 	}
 
-	log.Println("Initialized server")
+	log.Println("Starting ultron")
 
 	if err := server.ListenAndServeTLS("", ""); err != nil {
-		log.Fatalf("Failed to listen and serve server: %v", err)
+		log.Fatalf("Failed to listen and serve ultron: %v", err)
 	}
 }
