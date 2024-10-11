@@ -216,15 +216,15 @@ func (cs *ComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(co
 }
 
 func (cs *ComputeService) ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration *ultron.ComputeConfiguration, wPod *ultron.WeightedPod) bool {
-	if float64(*computeConfiguration.VCpu) > wPod.RequestedCPU {
+	if float64(*computeConfiguration.VCpu) < wPod.RequestedCPU {
 		return false
 	}
 
-	if float64(*computeConfiguration.RamGb) > wPod.RequestedMemory {
+	if float64(*computeConfiguration.RamGb) < wPod.RequestedMemory {
 		return false
 	}
 
-	if float64(*computeConfiguration.VolumeGb) > wPod.RequestedStorage {
+	if float64(*computeConfiguration.VolumeGb) < wPod.RequestedStorage {
 		return false
 	}
 
