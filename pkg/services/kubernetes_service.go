@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	ultron "github.com/be-heroes/ultron/pkg"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -13,7 +14,16 @@ import (
 	metricsclient "k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
-// TODO: Add tests for this service
+type ICoreClient interface {
+	ListNodes(ctx context.Context, opts metav1.ListOptions) (*corev1.NodeList, error)
+	ListNamespaces(ctx context.Context, opts metav1.ListOptions) (*corev1.NamespaceList, error)
+}
+
+type IMetricsClient interface {
+	ListNodeMetrics(ctx context.Context, opts metav1.ListOptions) (*ultron.MetricsNodeList, error)
+	ListPodMetrics(ctx context.Context, namespace string, opts metav1.ListOptions) (*ultron.MetricsPodList, error)
+}
+
 type IKubernetesService interface {
 	GetNodes() ([]corev1.Node, error)
 	GetNodeMetrics() (map[string]map[string]string, error)
@@ -21,7 +31,9 @@ type IKubernetesService interface {
 }
 
 type KubernetesService struct {
-	config *rest.Config
+	config        *rest.Config
+	K8sClient     ICoreClient
+	MetricsClient IMetricsClient
 }
 
 func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath string) (*KubernetesService, error) {
@@ -33,7 +45,7 @@ func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath strin
 
 	config, err := clientcmd.BuildConfigFromFlags(kubernetesMasterUrl, kubernetesConfigPath)
 	if err != nil {
-		fmt.Println("Falling back to docker Kubernetes API at  https://kubernetes.docker.internal:6443")
+		fmt.Println("Falling back to docker Kubernetes API at https://kubernetes.docker.internal:6443")
 
 		config = &rest.Config{
 			Host: "https://kubernetes.docker.internal:6443",
@@ -43,38 +55,40 @@ func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath strin
 		}
 	}
 
+	k8sClientset, err := kubernetes.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
+	metricsClientset, err := metricsclient.NewForConfig(config)
+	if err != nil {
+		return nil, err
+	}
+
 	return &KubernetesService{
-		config: config,
+		config:        config,
+		K8sClient:     &ultron.RealKubernetesClient{ClientSet: k8sClientset},
+		MetricsClient: &ultron.RealMetricsClient{ClientSet: metricsClientset},
 	}, nil
 }
 
-func (kc *KubernetesService) GetNodes() ([]corev1.Node, error) {
-	clientset, err := kubernetes.NewForConfig(kc.config)
+func (ks *KubernetesService) GetNodes() ([]corev1.Node, error) {
+	nodesList, err := ks.K8sClient.ListNodes(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	nodes, err := clientset.CoreV1().Nodes().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	return nodes.Items, nil
+	return nodesList.Items, nil
 }
 
-func (k *KubernetesService) GetNodeMetrics() (map[string]map[string]string, error) {
-	metricsClient, err := metricsclient.NewForConfig(k.config)
-	if err != nil {
-		return nil, err
-	}
-
-	nodeMetrics, err := metricsClient.MetricsV1beta1().NodeMetricses().List(context.TODO(), metav1.ListOptions{})
+func (ks *KubernetesService) GetNodeMetrics() (map[string]map[string]string, error) {
+	metricsNodeList, err := ks.MetricsClient.ListNodeMetrics(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	metrics := make(map[string]map[string]string)
-	for _, nodeMetric := range nodeMetrics.Items {
+	for _, nodeMetric := range metricsNodeList.Items {
 		cpuUsage := nodeMetric.Usage["cpu"]
 		memoryUsage := nodeMetric.Usage["memory"]
 
@@ -87,26 +101,15 @@ func (k *KubernetesService) GetNodeMetrics() (map[string]map[string]string, erro
 	return metrics, nil
 }
 
-func (k *KubernetesService) GetPodMetrics() (map[string]map[string]string, error) {
-	clientset, err := kubernetes.NewForConfig(k.config)
-	if err != nil {
-		return nil, err
-	}
-
-	namespaces, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
-	if err != nil {
-		return nil, err
-	}
-
-	metricsClient, err := metricsclient.NewForConfig(k.config)
+func (ks *KubernetesService) GetPodMetrics() (map[string]map[string]string, error) {
+	namespacesList, err := ks.K8sClient.ListNamespaces(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	metrics := make(map[string]map[string]string)
-	for _, namespace := range namespaces.Items {
-		podMetricsList, err := metricsClient.MetricsV1beta1().PodMetricses(namespace.Name).List(context.TODO(), metav1.ListOptions{})
-
+	for _, namespace := range namespacesList.Items {
+		podMetricsList, err := ks.MetricsClient.ListPodMetrics(context.TODO(), namespace.Name, metav1.ListOptions{})
 		if err != nil {
 			return nil, err
 		}
@@ -123,7 +126,8 @@ func (k *KubernetesService) GetPodMetrics() (map[string]map[string]string, error
 				memoryTotal += memUsage.Value()
 			}
 
-			metrics[podMetric.Name] = map[string]string{
+			metricsKey := fmt.Sprintf("%s/%s", podMetric.Namespace, podMetric.Name)
+			metrics[metricsKey] = map[string]string{
 				"cpuTotal":    strconv.FormatInt(cpuTotal, 10),
 				"memoryTotal": strconv.FormatInt(memoryTotal, 10),
 			}
