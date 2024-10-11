@@ -19,7 +19,7 @@ func TestNewCache(t *testing.T) {
 	iCache = services.NewCacheService(nil, nil)
 
 	// Assert
-	assert.NotNil(t, iCache, "NewICache should not return nil")
+	assert.NotNil(t, iCache, "NewCacheService should not return nil")
 }
 
 func TestGetEphemeralComputeConfigurations(t *testing.T) {
