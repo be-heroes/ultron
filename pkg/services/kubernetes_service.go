@@ -13,6 +13,7 @@ import (
 	metricsclient "k8s.io/metrics/pkg/client/clientset/versioned"
 )
 
+// TODO: Add tests for this service
 type IKubernetesService interface {
 	GetNodes() ([]corev1.Node, error)
 	GetNodeMetrics() (map[string]map[string]string, error)
