@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/be-heroes/ultron/mocks" // Import the generated mocks
+	"github.com/be-heroes/ultron/mocks"
 	ultron "github.com/be-heroes/ultron/pkg"
 	services "github.com/be-heroes/ultron/pkg/services"
 	"github.com/stretchr/testify/assert"
@@ -26,7 +26,6 @@ func TestComputePodSpec_Success(t *testing.T) {
 
 	pod := &corev1.Pod{}
 
-	// Set up mock behavior for Mapper
 	mockMapper.On("MapPodToWeightedPod", pod).Return(ultron.WeightedPod{
 		RequestedCPU:         2,
 		RequestedMemory:      4,
@@ -35,7 +34,6 @@ func TestComputePodSpec_Success(t *testing.T) {
 		RequestedNetworkType: "isolated",
 	}, nil)
 
-	// Set up mock behavior for Cache
 	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{
 		{
 			AvailableCPU:     4,
@@ -48,7 +46,6 @@ func TestComputePodSpec_Success(t *testing.T) {
 		},
 	}, nil)
 
-	// Set up mock behavior for Algorithm
 	mockAlgorithm.On("TotalScore", mock.AnythingOfType("*pkg.WeightedNode"), mock.AnythingOfType("*pkg.WeightedPod")).Return(1.0)
 
 	// Act
@@ -61,7 +58,6 @@ func TestComputePodSpec_Success(t *testing.T) {
 	assert.Equal(t, "SSD", wNode.DiskType)
 	assert.Equal(t, "isolated", wNode.NetworkType)
 
-	// Assert expectations for all mocks
 	mockMapper.AssertExpectations(t)
 	mockCache.AssertExpectations(t)
 	mockAlgorithm.AssertExpectations(t)
@@ -77,13 +73,10 @@ func TestComputePodSpec_NoWeightedNode(t *testing.T) {
 
 	pod := &corev1.Pod{}
 
-	// Set up mock behavior for Mapper
 	mockMapper.On("MapPodToWeightedPod", pod).Return(ultron.WeightedPod{}, nil)
 
-	// Set up mock behavior for Cache to return no nodes
 	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{}, nil)
 
-	// Since no nodes are returned, TotalScore shouldn't be called, but add a maybe return for safety
 	mockAlgorithm.On("TotalScore", mock.Anything, mock.Anything).Maybe().Return(0.0)
 
 	// Act
@@ -93,7 +86,6 @@ func TestComputePodSpec_NoWeightedNode(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Empty(t, wNode, "Expected wNode to be empty when no nodes are available")
 
-	// Assert expectations for all mocks
 	mockMapper.AssertExpectations(t)
 	mockCache.AssertExpectations(t)
 	mockAlgorithm.AssertExpectations(t)
@@ -115,7 +107,6 @@ func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 		RequestedNetworkType: "isolated",
 	}
 
-	// Set up mock behavior for Cache
 	mockCache.On("GetAllComputeConfigurations").Return([]ultron.ComputeConfiguration{
 		{
 			ComputeType: ultron.ComputeTypeDurable,
@@ -139,7 +130,6 @@ func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 	assert.Equal(t, int32(2), *computeConfig.VCpu)
 	assert.Equal(t, ultron.ComputeTypeDurable, computeConfig.ComputeType)
 
-	// Assert expectations for all mocks
 	mockCache.AssertExpectations(t)
 }
 
@@ -183,7 +173,6 @@ func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 	assert.False(t, math.IsNaN(medianPrice), "Median price should not be NaN")
 	assert.InDelta(t, 0.2, medianPrice, 0.01, "Median price did not match expected value")
 
-	// Assert expectations for all mocks
 	mockCache.AssertExpectations(t)
 	mockAlgorithm.AssertExpectations(t)
 }
@@ -201,7 +190,6 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 		RequestedMemory: 4,
 	}
 
-	// Set up mock behavior for Cache
 	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{
 		{
 			AvailableCPU:    4,
@@ -211,7 +199,6 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 		},
 	}, nil)
 
-	// Set up mock behavior for Algorithm
 	mockAlgorithm.On("TotalScore", mock.AnythingOfType("*pkg.WeightedNode"), mock.AnythingOfType("*pkg.WeightedPod")).Return(1.0)
 
 	// Act
@@ -222,7 +209,6 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 	assert.NotNil(t, wNode, "Expected a weighted node to be found")
 	assert.Equal(t, 4.0, wNode.AvailableCPU)
 
-	// Assert expectations for all mocks
 	mockCache.AssertExpectations(t)
 	mockAlgorithm.AssertExpectations(t)
 }

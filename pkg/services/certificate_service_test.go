@@ -66,7 +66,7 @@ func TestExportCACert_Success(t *testing.T) {
 	// Arrange
 	certService := services.NewCertificateService()
 
-	// Act & Assert
+	// Act
 	priv, _ := rsa.GenerateKey(rand.Reader, 2048)
 	template := &x509.Certificate{
 		SerialNumber: big.NewInt(1),
