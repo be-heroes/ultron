@@ -3,6 +3,18 @@ package pkg
 type ComputeType string
 type PriorityEnum bool
 
+type Config struct {
+	RedisServerAddress        string
+	RedisServerPassword       string
+	RedisServerDatabase       int
+	ServerAddress             string
+	CertificateOrganization   string
+	CertificateCommonName     string
+	CertificateDnsNamesCSV    string
+	CertificateIpAddressesCSV string
+	CertificateExportPath     string
+}
+
 type WeightedNode struct {
 	Selector         map[string]string
 	AvailableCPU     float64

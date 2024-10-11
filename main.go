@@ -5,8 +5,6 @@ import (
 	"crypto/tls"
 	"net"
 	"net/http"
-	"os"
-	"strconv"
 	"strings"
 
 	"go.uber.org/zap"
@@ -19,56 +17,12 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
-type Config struct {
-	RedisServerAddress        string
-	RedisServerPassword       string
-	RedisServerDatabase       int
-	ServerAddress             string
-	CertificateOrganization   string
-	CertificateCommonName     string
-	CertificateDnsNamesCSV    string
-	CertificateIpAddressesCSV string
-	CertificateExportPath     string
-}
-
-func LoadConfig() (*Config, error) {
-	redisDatabase, err := strconv.Atoi(os.Getenv(ultron.EnvRedisServerDatabase))
-	if err != nil {
-		redisDatabase = 0
-	}
-
-	return &Config{
-		RedisServerAddress:        os.Getenv(ultron.EnvRedisServerAddress),
-		RedisServerPassword:       os.Getenv(ultron.EnvRedisServerPassword),
-		RedisServerDatabase:       redisDatabase,
-		ServerAddress:             getEnvWithDefault(ultron.EnvServerAddress, ":8443"),
-		CertificateOrganization:   getEnvWithDefault(ultron.EnvServerCertificateOrganization, "be-heroes"),
-		CertificateCommonName:     getEnvWithDefault(ultron.EnvServerCertificateCommonName, "ultron-service.default.svc"),
-		CertificateDnsNamesCSV:    getEnvWithDefault(ultron.EnvServerCertificateDnsNames, "ultron-service.default.svc,ultron-service,localhost"),
-		CertificateIpAddressesCSV: getEnvWithDefault(ultron.EnvServerCertificateIpAddresses, "127.0.0.1"),
-		CertificateExportPath:     os.Getenv(ultron.EnvServerCertificateExportPath),
-	}, nil
-}
-
-func getEnvWithDefault(envVar, defaultValue string) string {
-	value := os.Getenv(envVar)
-	if value == "" {
-		return defaultValue
-	}
-
-	return value
-}
-
-func initializeRedisClient(ctx context.Context, config *Config, sugar *zap.SugaredLogger) *redis.Client {
+func initializeRedisClientFromConfig(ctx context.Context, config *ultron.Config, sugar *zap.SugaredLogger) *redis.Client {
 	if config.RedisServerAddress == "" {
 		return nil
 	}
 
-	redisClient := redis.NewClient(&redis.Options{
-		Addr:     config.RedisServerAddress,
-		Password: config.RedisServerPassword,
-		DB:       config.RedisServerDatabase,
-	})
+	redisClient := ultron.InitializeRedisClient(config.RedisServerAddress, config.RedisServerPassword, config.RedisServerDatabase)
 
 	_, err := redisClient.Ping(ctx).Result()
 	if err != nil {
@@ -97,13 +51,13 @@ func main() {
 	sugar := logger.Sugar()
 	sugar.Info("Initializing ultron")
 
-	config, err := LoadConfig()
+	config, err := ultron.LoadConfig()
 	if err != nil {
 		sugar.Fatalf("Failed to load configuration: %v", err)
 	}
 
 	ctx := context.Background()
-	redisClient := initializeRedisClient(ctx, config, sugar)
+	redisClient := initializeRedisClientFromConfig(ctx, config, sugar)
 	mapperInstance := mapper.NewMapper()
 	algorithmInstance := algorithm.NewAlgorithm()
 	cacheService := services.NewCacheService(nil, redisClient)
