@@ -21,7 +21,7 @@ func main() {
 	defer logger.Sync()
 
 	sugar := logger.Sugar()
-	sugar.Info("Initializing ultron")
+	sugar.Info("Initializing Ultron")
 
 	config, err := ultron.LoadConfig()
 	if err != nil {
@@ -38,7 +38,7 @@ func main() {
 	mutationHandler := handlers.NewMutationHandler(computeService)
 	validationHandler := handlers.NewValidationHandler(computeService, redisClient)
 
-	sugar.Info("Initialized ultron")
+	sugar.Info("Initialized Ultron")
 	sugar.Info("Generating self-signed certificate")
 
 	cert, err := certificateService.GenerateSelfSignedCert(
@@ -69,7 +69,7 @@ func main() {
 	mux.HandleFunc("/validate", validationHandler.ValidatePodSpec)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 
-	sugar.Info("Starting ultron")
+	sugar.Info("Starting Ultron")
 
 	server := &http.Server{
 		Addr: config.ServerAddress,
@@ -80,7 +80,7 @@ func main() {
 	}
 
 	if err := server.ListenAndServeTLS("", ""); err != nil {
-		sugar.Fatalf("Failed to listen and serve ultron: %v", err)
+		sugar.Fatalf("Failed to listen and serve Ultron: %v", err)
 	}
 }
 
