@@ -32,6 +32,9 @@ const (
 	EnvRedisServerAddress            = "ULTRON_SERVER_REDIS_ADDRESS"
 	EnvRedisServerPassword           = "ULTRON_SERVER_REDIS_PASSWORD"
 	EnvRedisServerDatabase           = "ULTRON_SERVER_REDIS_DATABASE"
+	EnvKubernetesConfig              = "KUBECONFIG"
+	EnvKubernetesServiceHost         = "KUBERNETES_SERVICE_HOST"
+	EnvKubernetesServicePort         = "KUBERNETES_SERVICE_PORT"
 
 	LabelHostName     = "kubernetes.io/hostname"
 	LabelInstanceType = "node.kubernetes.io/instance-type"
