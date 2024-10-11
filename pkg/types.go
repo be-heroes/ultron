@@ -3,6 +3,14 @@ package pkg
 type ComputeType string
 type PriorityEnum bool
 
+func (p PriorityEnum) String() string {
+	if p {
+		return "PriorityHigh"
+	}
+
+	return "PriorityLow"
+}
+
 type Config struct {
 	RedisServerAddress        string
 	RedisServerPassword       string

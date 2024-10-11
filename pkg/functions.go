@@ -28,14 +28,6 @@ func LoadConfig() (*Config, error) {
 	}, nil
 }
 
-func (p PriorityEnum) String() string {
-	if p {
-		return "PriorityHigh"
-	}
-
-	return "PriorityLow"
-}
-
 func InitializeRedisClient(address string, password string, db int) *redis.Client {
 	return redis.NewClient(&redis.Options{
 		Addr:     address,
