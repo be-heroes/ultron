@@ -55,6 +55,7 @@ func getEnvWithDefault(envVar, defaultValue string) string {
 	if value == "" {
 		return defaultValue
 	}
+
 	return value
 }
 
@@ -62,6 +63,7 @@ func initializeRedisClient(ctx context.Context, config *Config, sugar *zap.Sugar
 	if config.RedisServerAddress == "" {
 		return nil
 	}
+
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     config.RedisServerAddress,
 		Password: config.RedisServerPassword,
@@ -72,22 +74,26 @@ func initializeRedisClient(ctx context.Context, config *Config, sugar *zap.Sugar
 	if err != nil {
 		sugar.Fatalf("Failed to connect to Redis server: %v", err)
 	}
+
 	return redisClient
 }
 
 func parseCertificateIpAddresses(csv string) []net.IP {
 	var certificateIpAddresses []net.IP
+
 	for _, ipAddress := range strings.Split(csv, ",") {
 		if ipAddress != "" {
 			certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
 		}
 	}
+
 	return certificateIpAddresses
 }
 
 func main() {
 	logger, _ := zap.NewProduction()
 	defer logger.Sync()
+
 	sugar := logger.Sugar()
 	sugar.Info("Initializing ultron")
 
@@ -98,7 +104,6 @@ func main() {
 
 	ctx := context.Background()
 	redisClient := initializeRedisClient(ctx, config, sugar)
-
 	mapperInstance := mapper.NewMapper()
 	algorithmInstance := algorithm.NewAlgorithm()
 	cacheService := services.NewCacheService(nil, redisClient)
