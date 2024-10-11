@@ -23,7 +23,7 @@ type KubernetesService struct {
 	config *rest.Config
 }
 
-func NewKubernetesClient(kubernetesMasterUrl string, kubernetesConfigPath string) (*KubernetesService, error) {
+func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath string) (*KubernetesService, error) {
 	var err error
 
 	if kubernetesMasterUrl == "tcp://:" {
