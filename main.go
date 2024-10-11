@@ -14,35 +14,7 @@ import (
 	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
 	mapper "github.com/be-heroes/ultron/pkg/mapper"
 	services "github.com/be-heroes/ultron/pkg/services"
-	"github.com/redis/go-redis/v9"
 )
-
-func initializeRedisClientFromConfig(ctx context.Context, config *ultron.Config, sugar *zap.SugaredLogger) *redis.Client {
-	if config.RedisServerAddress == "" {
-		return nil
-	}
-
-	redisClient := ultron.InitializeRedisClient(config.RedisServerAddress, config.RedisServerPassword, config.RedisServerDatabase)
-
-	_, err := redisClient.Ping(ctx).Result()
-	if err != nil {
-		sugar.Fatalf("Failed to connect to Redis server: %v", err)
-	}
-
-	return redisClient
-}
-
-func parseCertificateIpAddresses(csv string) []net.IP {
-	var certificateIpAddresses []net.IP
-
-	for _, ipAddress := range strings.Split(csv, ",") {
-		if ipAddress != "" {
-			certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
-		}
-	}
-
-	return certificateIpAddresses
-}
 
 func main() {
 	logger, _ := zap.NewProduction()
@@ -57,7 +29,7 @@ func main() {
 	}
 
 	ctx := context.Background()
-	redisClient := initializeRedisClientFromConfig(ctx, config, sugar)
+	redisClient := ultron.InitializeRedisClientFromConfig(ctx, config, sugar)
 	mapperInstance := mapper.NewMapper()
 	algorithmInstance := algorithm.NewAlgorithm()
 	cacheService := services.NewCacheService(nil, redisClient)
@@ -110,4 +82,16 @@ func main() {
 	if err := server.ListenAndServeTLS("", ""); err != nil {
 		sugar.Fatalf("Failed to listen and serve ultron: %v", err)
 	}
+}
+
+func parseCertificateIpAddresses(csv string) []net.IP {
+	var certificateIpAddresses []net.IP
+
+	for _, ipAddress := range strings.Split(csv, ",") {
+		if ipAddress != "" {
+			certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
+		}
+	}
+
+	return certificateIpAddresses
 }

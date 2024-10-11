@@ -1,10 +1,12 @@
 package pkg
 
 import (
+	"context"
 	"os"
 	"strconv"
 
 	"github.com/redis/go-redis/v9"
+	"go.uber.org/zap"
 )
 
 func LoadConfig() (*Config, error) {
@@ -35,10 +37,6 @@ func (p PriorityEnum) String() string {
 }
 
 func InitializeRedisClient(address string, password string, db int) *redis.Client {
-	if address == "" {
-		return nil
-	}
-
 	return redis.NewClient(&redis.Options{
 		Addr:     address,
 		Password: password,
@@ -46,8 +44,20 @@ func InitializeRedisClient(address string, password string, db int) *redis.Clien
 	})
 }
 
+func InitializeRedisClientFromConfig(ctx context.Context, config *Config, sugar *zap.SugaredLogger) *redis.Client {
+	redisClient := InitializeRedisClient(config.RedisServerAddress, config.RedisServerPassword, config.RedisServerDatabase)
+
+	_, err := redisClient.Ping(ctx).Result()
+	if err != nil {
+		sugar.Fatalf("Failed to connect to Redis server: %v", err)
+	}
+
+	return redisClient
+}
+
 func getEnvWithDefault(envVar, defaultValue string) string {
 	value := os.Getenv(envVar)
+
 	if value == "" {
 		return defaultValue
 	}
