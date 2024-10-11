@@ -3,6 +3,8 @@ package services_test
 import (
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	ultron "github.com/be-heroes/ultron/pkg"
 	services "github.com/be-heroes/ultron/pkg/services"
 
@@ -17,9 +19,7 @@ func TestNewCache(t *testing.T) {
 	iCache = services.NewCacheService(nil, nil)
 
 	// Assert
-	if iCache == nil {
-		t.Errorf("NewICache should not return nil")
-	}
+	assert.NotNil(t, iCache, "NewICache should not return nil")
 }
 
 func TestGetEphemeralComputeConfigurations(t *testing.T) {
@@ -37,21 +37,12 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 	getComputeConfigs, err := iCache.GetEphemeralComputeConfigurations()
 
 	// Assert
-	if err != nil {
-		t.Fatalf("GetEphemeralComputeConfigurations returned an error: %v", err)
-	}
-
-	if len(computeConfigs) != len(getComputeConfigs) {
-		t.Errorf("Expected %d compute configurations, got %d", len(computeConfigs), len(getComputeConfigs))
-	}
+	assert.NoError(t, err, "GetEphemeralComputeConfigurations should not return an error")
+	assert.Equal(t, len(computeConfigs), len(getComputeConfigs), "Expected number of compute configurations does not match")
 
 	for i, config := range getComputeConfigs {
-		if config.ComputeType != ultron.ComputeTypeEphemeral {
-			t.Errorf("Expected ComputeTypeEphemeral, got %s", config.ComputeType)
-		}
-		if config.Id != computeConfigs[i].Id {
-			t.Errorf("Expected Id %d, got %d", computeConfigs[i].Id, config.Id)
-		}
+		assert.Equal(t, ultron.ComputeTypeEphemeral, config.ComputeType, "Expected ComputeTypeEphemeral")
+		assert.Equal(t, computeConfigs[i].Id, config.Id, "Expected matching Id")
 	}
 }
 
@@ -63,9 +54,7 @@ func TestGetEphemeralComputeConfigurations_NotFound(t *testing.T) {
 	_, err := iCache.GetEphemeralComputeConfigurations()
 
 	// Assert
-	if err == nil {
-		t.Errorf("Expected an error when spot configurations are not found in the cache")
-	}
+	assert.Error(t, err, "Expected an error when spot configurations are not found in the cache")
 }
 
 func TestGetDurableComputeConfigurations(t *testing.T) {
@@ -83,21 +72,12 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 	getComputeConfigs, err := iCache.GetDurableComputeConfigurations()
 
 	// Assert
-	if err != nil {
-		t.Fatalf("GetDurableComputeConfigurations returned an error: %v", err)
-	}
-
-	if len(computeConfigs) != len(getComputeConfigs) {
-		t.Errorf("Expected %d compute configurations, got %d", len(computeConfigs), len(getComputeConfigs))
-	}
+	assert.NoError(t, err, "GetDurableComputeConfigurations should not return an error")
+	assert.Equal(t, len(computeConfigs), len(getComputeConfigs), "Expected number of compute configurations does not match")
 
 	for i, config := range getComputeConfigs {
-		if config.ComputeType != ultron.ComputeTypeDurable {
-			t.Errorf("Expected ComputeTypeDurable, got %s", config.ComputeType)
-		}
-		if config.Id != computeConfigs[i].Id {
-			t.Errorf("Expected Id %d, got %d", computeConfigs[i].Id, config.Id)
-		}
+		assert.Equal(t, ultron.ComputeTypeDurable, config.ComputeType, "Expected ComputeTypeDurable")
+		assert.Equal(t, computeConfigs[i].Id, config.Id, "Expected matching Id")
 	}
 }
 
@@ -109,7 +89,5 @@ func TestGetDurableComputeConfigurations_NotFound(t *testing.T) {
 	_, err := iCache.GetDurableComputeConfigurations()
 
 	// Assert
-	if err == nil {
-		t.Errorf("Expected an error when spot configurations are not found in the cache")
-	}
+	assert.Error(t, err, "Expected an error when durable configurations are not found in the cache")
 }

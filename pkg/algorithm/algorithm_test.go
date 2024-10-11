@@ -5,6 +5,7 @@ import (
 
 	ultron "github.com/be-heroes/ultron/pkg"
 	algorithm "github.com/be-heroes/ultron/pkg/algorithm"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestResourceScore(t *testing.T) {
@@ -28,9 +29,7 @@ func TestResourceScore(t *testing.T) {
 	expected := (4.0-2.0)/8.0 + (8.0-4.0)/16.0
 
 	// Assert
-	if score != expected {
-		t.Errorf("ResourceScore was incorrect, got: %f, want: %f", score, expected)
-	}
+	assert.Equal(t, expected, score, "ResourceScore was incorrect")
 }
 
 func TestStorageScore(t *testing.T) {
@@ -54,13 +53,8 @@ func TestStorageScore(t *testing.T) {
 	expected2 := 0.0
 
 	// Assert
-	if score1 != expected1 {
-		t.Errorf("StorageScore was incorrect, got: %f, want: %f", score1, expected1)
-	}
-
-	if score2 != expected2 {
-		t.Errorf("StorageScore was incorrect for mismatch, got: %f, want: %f", score2, expected2)
-	}
+	assert.Equal(t, expected1, score1, "StorageScore was incorrect")
+	assert.Equal(t, expected2, score2, "StorageScore was incorrect for mismatch")
 }
 
 func TestNetworkScore(t *testing.T) {
@@ -84,13 +78,8 @@ func TestNetworkScore(t *testing.T) {
 	expected2 := 0.0
 
 	// Assert
-	if score1 != expected1 {
-		t.Errorf("NetworkScore was incorrect, got: %f, want: %f", score1, expected1)
-	}
-
-	if score2 != expected2 {
-		t.Errorf("NetworkScore was incorrect for mismatch, got: %f, want: %f", score2, expected2)
-	}
+	assert.Equal(t, expected1, score1, "NetworkScore was incorrect")
+	assert.Equal(t, expected2, score2, "NetworkScore was incorrect for mismatch")
 }
 
 func TestPriceScore(t *testing.T) {
@@ -111,13 +100,8 @@ func TestPriceScore(t *testing.T) {
 	expected2 := 0.0
 
 	// Assert
-	if score1 != expected1 {
-		t.Errorf("PriceScore was incorrect, got: %f, want: %f", score1, expected1)
-	}
-
-	if score2 != expected2 {
-		t.Errorf("PriceScore was incorrect for zero price, got: %f, want: %f", score2, expected2)
-	}
+	assert.Equal(t, expected1, score1, "PriceScore was incorrect")
+	assert.Equal(t, expected2, score2, "PriceScore was incorrect for zero price")
 }
 
 func TestNodeScore(t *testing.T) {
@@ -139,13 +123,8 @@ func TestNodeScore(t *testing.T) {
 	expected2 := 0.0
 
 	// Assert
-	if score1 != expected1 {
-		t.Errorf("NodeScore was incorrect, got: %f, want: %f", score1, expected1)
-	}
-
-	if score2 != expected2 {
-		t.Errorf("NodeScore was incorrect for zero price, got: %f, want: %f", score2, expected2)
-	}
+	assert.Equal(t, expected1, score1, "NodeScore was incorrect")
+	assert.Equal(t, expected2, score2, "NodeScore was incorrect for zero price")
 }
 
 func TestPodScore(t *testing.T) {
@@ -165,13 +144,8 @@ func TestPodScore(t *testing.T) {
 	expected2 := 0.0
 
 	// Assert
-	if score1 != expected1 {
-		t.Errorf("PodScore was incorrect, got: %f, want: %f", score1, expected1)
-	}
-
-	if score2 != expected2 {
-		t.Errorf("PodScore was incorrect for low priority, got: %f, want: %f", score2, expected2)
-	}
+	assert.Equal(t, expected1, score1, "PodScore was incorrect")
+	assert.Equal(t, expected2, score2, "PodScore was incorrect for low priority")
 }
 
 func TestTotalScore(t *testing.T) {
@@ -211,7 +185,5 @@ func TestTotalScore(t *testing.T) {
 	expected := resourceScore + storageScore + networkScore + priceScore - nodeScore + podScore
 
 	// Assert
-	if score != expected {
-		t.Errorf("TotalScore was incorrect, got: %f, want: %f", score, expected)
-	}
+	assert.Equal(t, expected, score, "TotalScore was incorrect")
 }

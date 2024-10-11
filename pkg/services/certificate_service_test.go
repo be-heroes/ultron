@@ -11,6 +11,7 @@ import (
 	"time"
 
 	services "github.com/be-heroes/ultron/pkg/services"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestGenerateSelfSignedCert_Success(t *testing.T) {
@@ -25,16 +26,9 @@ func TestGenerateSelfSignedCert_Success(t *testing.T) {
 	cert, err := certService.GenerateSelfSignedCert(organization, commonName, dnsNames, ipAddresses)
 
 	// Assert
-	if err != nil {
-		t.Fatalf("GenerateSelfSignedCert returned an error: %v", err)
-	}
-
-	if len(cert.Certificate) == 0 {
-		t.Error("Expected certificate to be generated, but got none")
-	}
-	if cert.PrivateKey == nil {
-		t.Error("Expected private key to be generated, but got nil")
-	}
+	assert.NoError(t, err, "GenerateSelfSignedCert should not return an error")
+	assert.NotEmpty(t, cert.Certificate, "Expected certificate to be generated, but got none")
+	assert.NotNil(t, cert.PrivateKey, "Expected private key to be generated, but got nil")
 }
 
 func TestGenerateSelfSignedCert_MissingOrgAndCommonName(t *testing.T) {
@@ -49,9 +43,7 @@ func TestGenerateSelfSignedCert_MissingOrgAndCommonName(t *testing.T) {
 	_, err := certService.GenerateSelfSignedCert(organization, commonName, dnsNames, ipAddresses)
 
 	// Assert
-	if err == nil {
-		t.Fatal("Expected error for missing organization and common name, but got none")
-	}
+	assert.Error(t, err, "Expected error for missing organization and common name, but got none")
 }
 
 func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
@@ -66,13 +58,8 @@ func TestGenerateSelfSignedCert_EmptyDNSAndIP(t *testing.T) {
 	cert, err := certService.GenerateSelfSignedCert(organization, commonName, dnsNames, ipAddresses)
 
 	// Assert
-	if err != nil {
-		t.Fatalf("GenerateSelfSignedCert returned an error: %v", err)
-	}
-
-	if len(cert.Certificate) == 0 {
-		t.Error("Expected certificate to be generated, but got none")
-	}
+	assert.NoError(t, err, "GenerateSelfSignedCert should not return an error")
+	assert.NotEmpty(t, cert.Certificate, "Expected certificate to be generated, but got none")
 }
 
 func TestExportCACert_Success(t *testing.T) {
@@ -89,18 +76,15 @@ func TestExportCACert_Success(t *testing.T) {
 	caCertDER, _ := x509.CreateCertificate(rand.Reader, template, template, &priv.PublicKey, priv)
 
 	filePath := "test_ca_cert.pem"
-
 	err := certService.ExportCACert(caCertDER, filePath)
 
-	if err != nil {
-		t.Fatalf("ExportCACert returned an error: %v", err)
-	}
+	// Assert
+	assert.NoError(t, err, "ExportCACert should not return an error")
 
 	_, err = os.Stat(filePath)
-	if os.IsNotExist(err) {
-		t.Fatalf("Expected CA certificate file to be created, but it does not exist")
-	}
+	assert.NoError(t, err, "Expected CA certificate file to be created, but it does not exist")
 
+	// Cleanup
 	os.Remove(filePath)
 }
 
@@ -112,9 +96,7 @@ func TestExportCACert_NilCert(t *testing.T) {
 	err := certService.ExportCACert(nil, "dummy.pem")
 
 	// Assert
-	if err == nil {
-		t.Fatal("Expected error for nil certificate, but got none")
-	}
+	assert.Error(t, err, "Expected error for nil certificate, but got none")
 }
 
 func TestExportCACert_FailToWriteFile(t *testing.T) {
@@ -131,11 +113,8 @@ func TestExportCACert_FailToWriteFile(t *testing.T) {
 	caCertDER, _ := x509.CreateCertificate(rand.Reader, template, template, &priv.PublicKey, priv)
 
 	filePath := "/invalid_path/test_ca_cert.pem"
-
 	err := certService.ExportCACert(caCertDER, filePath)
 
 	// Assert
-	if err == nil {
-		t.Fatal("Expected error for invalid file path, but got none")
-	}
+	assert.Error(t, err, "Expected error for invalid file path, but got none")
 }

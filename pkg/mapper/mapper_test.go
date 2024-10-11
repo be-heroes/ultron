@@ -6,6 +6,7 @@ import (
 
 	ultron "github.com/be-heroes/ultron/pkg"
 	mapper "github.com/be-heroes/ultron/pkg/mapper"
+	"github.com/stretchr/testify/assert"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -42,26 +43,16 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 		},
 	}
 
+	// Act
 	weightedPod, err := mapper.MapPodToWeightedPod(pod)
-	if err != nil {
-		t.Fatalf("MapPodToWeightedPod returned an error: %v", err)
-	}
 
-	if weightedPod.RequestedCPU != 0.5 {
-		t.Errorf("Expected RequestedCPU to be 0.5, got %f", weightedPod.RequestedCPU)
-	}
-	if weightedPod.RequestedMemory != 1*1024*1024*1024 {
-		t.Errorf("Expected RequestedMemory to be 1Gi, got %f", weightedPod.RequestedMemory)
-	}
-	if weightedPod.RequestedDiskType != "HDD" {
-		t.Errorf("Expected RequestedDiskType to be HDD, got %s", weightedPod.RequestedDiskType)
-	}
-	if weightedPod.RequestedNetworkType != "4G" {
-		t.Errorf("Expected RequestedNetworkType to be 4G, got %s", weightedPod.RequestedNetworkType)
-	}
-	if weightedPod.RequestedStorage != 20 {
-		t.Errorf("Expected RequestedStorage to be 20GB, got %f", weightedPod.RequestedStorage)
-	}
+	// Assert
+	assert.NoError(t, err, "MapPodToWeightedPod should not return an error")
+	assert.Equal(t, 0.5, weightedPod.RequestedCPU, "Expected RequestedCPU to be 0.5")
+	assert.Equal(t, float64(1*1024*1024*1024), weightedPod.RequestedMemory, "Expected RequestedMemory to be 1Gi")
+	assert.Equal(t, "HDD", weightedPod.RequestedDiskType, "Expected RequestedDiskType to be HDD")
+	assert.Equal(t, "4G", weightedPod.RequestedNetworkType, "Expected RequestedNetworkType to be 4G")
+	assert.Equal(t, float64(20), weightedPod.RequestedStorage, "Expected RequestedStorage to be 20GB")
 }
 
 func TestMapPodToWeightedPod_MissingName(t *testing.T) {
@@ -73,19 +64,16 @@ func TestMapPodToWeightedPod_MissingName(t *testing.T) {
 		},
 	}
 
+	// Act
 	_, err := mapper.MapPodToWeightedPod(pod)
-	if err == nil {
-		t.Fatalf("Expected error for missing pod name, but got none")
-	}
 
+	// Assert
+	assert.Error(t, err, "Expected error for missing pod name")
 	expectedErr := fmt.Sprintf("missing required field: %s", ultron.MetadataName)
-	if err.Error() != expectedErr {
-		t.Errorf("Expected error '%s', but got '%v'", expectedErr, err)
-	}
+	assert.EqualError(t, err, expectedErr, "Expected error message does not match")
 }
 
 func TestMapNodeToWeightedNode_Success(t *testing.T) {
-	// Arrange
 	mapper := mapper.NewMapper()
 
 	node := &corev1.Node{
@@ -117,32 +105,16 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 	weightedNode, err := mapper.MapNodeToWeightedNode(node)
 
 	// Assert
-	if err != nil {
-		t.Fatalf("MapNodeToWeightedNode returned an error: %v", err)
-	}
-
-	if weightedNode.AvailableCPU != 2 {
-		t.Errorf("Expected AvailableCPU to be 2, got %f", weightedNode.AvailableCPU)
-	}
-	if weightedNode.TotalCPU != 4 {
-		t.Errorf("Expected TotalCPU to be 4, got %f", weightedNode.TotalCPU)
-	}
-	if weightedNode.AvailableMemory != 8 {
-		t.Errorf("Expected AvailableMemory to be 8Gi, got %f", weightedNode.AvailableMemory)
-	}
-	if weightedNode.TotalMemory != 16 {
-		t.Errorf("Expected TotalMemory to be 16Gi, got %f", weightedNode.TotalMemory)
-	}
-	if weightedNode.DiskType != "SSD" {
-		t.Errorf("Expected DiskType to be SSD, got %s", weightedNode.DiskType)
-	}
-	if weightedNode.NetworkType != "5G" {
-		t.Errorf("Expected NetworkType to be 5G, got %s", weightedNode.NetworkType)
-	}
+	assert.NoError(t, err, "MapNodeToWeightedNode should not return an error")
+	assert.Equal(t, 2.0, weightedNode.AvailableCPU, "Expected AvailableCPU to be 2")
+	assert.Equal(t, 4.0, weightedNode.TotalCPU, "Expected TotalCPU to be 4")
+	assert.Equal(t, float64(8), weightedNode.AvailableMemory, "Expected AvailableMemory to be 8Gi")
+	assert.Equal(t, float64(16), weightedNode.TotalMemory, "Expected TotalMemory to be 16Gi")
+	assert.Equal(t, "SSD", weightedNode.DiskType, "Expected DiskType to be SSD")
+	assert.Equal(t, "5G", weightedNode.NetworkType, "Expected NetworkType to be 5G")
 }
 
 func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
-	// Arrange
 	mapper := mapper.NewMapper()
 
 	node := &corev1.Node{
@@ -156,19 +128,14 @@ func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
 	_, err := mapper.MapNodeToWeightedNode(node)
 
 	// Assert
-	if err == nil {
-		t.Fatalf("Expected error for missing instance type, but got none")
-	}
-
+	assert.Error(t, err, "Expected error for missing instance type")
 	expectedErr := fmt.Sprintf("missing required label: %s or %s", ultron.LabelHostName, ultron.LabelInstanceType)
-	if err.Error() != expectedErr {
-		t.Errorf("Expected error '%s', but got '%v'", expectedErr, err)
-	}
+	assert.EqualError(t, err, expectedErr, "Expected error message does not match")
 }
 
 func TestGetAnnotationOrDefault(t *testing.T) {
-	// Arrange
 	mapper := mapper.NewMapper()
+
 	tests := []struct {
 		annotations   map[string]string
 		key           string
@@ -179,18 +146,15 @@ func TestGetAnnotationOrDefault(t *testing.T) {
 		{map[string]string{"key1": "value1"}, "key2", "default", "default"},
 	}
 
-	// Act & Assert
 	for _, test := range tests {
 		result := mapper.GetAnnotationOrDefault(test.annotations, test.key, test.defaultValue)
-		if result != test.expectedValue {
-			t.Errorf("expected %v, got %v", test.expectedValue, result)
-		}
+		assert.Equal(t, test.expectedValue, result, fmt.Sprintf("Expected %v, got %v", test.expectedValue, result))
 	}
 }
 
 func TestGetFloatAnnotationOrDefault(t *testing.T) {
-	// Arrange
 	mapper := mapper.NewMapper()
+
 	tests := []struct {
 		annotations   map[string]string
 		key           string
@@ -202,18 +166,15 @@ func TestGetFloatAnnotationOrDefault(t *testing.T) {
 		{map[string]string{}, "key2", 1.23, 1.23},
 	}
 
-	// Act & Assert
 	for _, test := range tests {
 		result := mapper.GetFloatAnnotationOrDefault(test.annotations, test.key, test.defaultValue)
-		if result != test.expectedValue {
-			t.Errorf("expected %v, got %v", test.expectedValue, result)
-		}
+		assert.Equal(t, test.expectedValue, result, fmt.Sprintf("Expected %v, got %v", test.expectedValue, result))
 	}
 }
 
 func TestGetPriorityFromAnnotation(t *testing.T) {
-	// Arrange
 	mapper := mapper.NewMapper()
+
 	tests := []struct {
 		annotations   map[string]string
 		expectedValue ultron.PriorityEnum
@@ -222,11 +183,8 @@ func TestGetPriorityFromAnnotation(t *testing.T) {
 		{map[string]string{ultron.AnnotationPriority: "PriorityLow"}, ultron.PriorityLow},
 	}
 
-	// Act & Assert
 	for _, test := range tests {
 		result := mapper.GetPriorityFromAnnotation(test.annotations)
-		if result != test.expectedValue {
-			t.Errorf("expected %v, got %v", test.expectedValue, result)
-		}
+		assert.Equal(t, test.expectedValue, result, fmt.Sprintf("Expected %v, got %v", test.expectedValue, result))
 	}
 }
