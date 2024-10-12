@@ -24,7 +24,7 @@ func LoadConfig() (*Config, error) {
 		CertificateCommonName:     getEnvWithDefault(EnvServerCertificateCommonName, "ultron-service.default.svc"),
 		CertificateDnsNamesCSV:    getEnvWithDefault(EnvServerCertificateDnsNames, "ultron-service.default.svc,ultron-service,localhost"),
 		CertificateIpAddressesCSV: getEnvWithDefault(EnvServerCertificateIpAddresses, "127.0.0.1"),
-		CertificateExportPath:     os.Getenv(EnvServerCertificateExportPath),
+		CertificateExportPath:     getEnvWithDefault(EnvServerCertificateExportPath, "ultron_ca_cert.pem"),
 	}, nil
 }
 
