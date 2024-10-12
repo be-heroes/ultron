@@ -60,3 +60,5 @@ require (
 )
 
 retract [v0.0.1, v0.0.11]
+
+retract v0.2.1
