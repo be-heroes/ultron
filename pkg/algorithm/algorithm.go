@@ -57,7 +57,7 @@ func (a *Algorithm) StorageScore(node *ultron.WeightedNode, pod *ultron.Weighted
 }
 
 func (a *Algorithm) NetworkScore(node *ultron.WeightedNode, pod *ultron.WeightedPod) float64 {
-	if node.NetworkType == pod.RequestedNetworkType {
+	if node.NetworkType == pod.RequestedNetworkType && node.LatencyRate.Value >= 0 {
 		return 1.0 - node.LatencyRate.Value
 	}
 
@@ -73,11 +73,11 @@ func (a *Algorithm) PriceScore(node *ultron.WeightedNode) float64 {
 }
 
 func (a *Algorithm) NodeScore(node *ultron.WeightedNode) float64 {
-	if node.Price == 0 || node.MedianPrice == 0 {
+	if node.Price == 0 || node.MedianPrice == 0 || node.InterruptionRate.Value < 0 {
 		return 0.0
 	}
 
-	return node.InterruptionRate.Value * (node.Price / node.MedianPrice)
+	return node.Price / (node.MedianPrice + node.InterruptionRate.Value)
 }
 
 func (a *Algorithm) PodScore(pod *ultron.WeightedPod) float64 {

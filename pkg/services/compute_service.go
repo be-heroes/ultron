@@ -82,14 +82,22 @@ func (cs *ComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 				return nil, err
 			}
 
-			wNode.InterruptionRate = *interuptionRate
+			if interuptionRate != nil {
+				wNode.InterruptionRate = *interuptionRate
+			} else {
+				wNode.InterruptionRate = ultron.WeightedInteruptionRate{Value: -1}
+			}
 
 			latencyRate, err := cs.GetLatencyRateForWeightedNode(wNode)
 			if err != nil {
 				return nil, err
 			}
 
-			wNode.LatencyRate = *latencyRate
+			if interuptionRate != nil {
+				wNode.LatencyRate = *latencyRate
+			} else {
+				wNode.LatencyRate = ultron.WeightedLatencyRate{Value: -1}
+			}
 		}
 	}
 

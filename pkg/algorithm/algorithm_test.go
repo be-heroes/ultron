@@ -116,7 +116,7 @@ func TestNodeScore(t *testing.T) {
 
 	// Act
 	score1 := alg.NodeScore(&node)
-	expected1 := node.InterruptionRate.Value * (node.Price / node.MedianPrice)
+	expected1 := node.Price / (node.MedianPrice + node.InterruptionRate.Value)
 
 	node.Price = 0
 	score2 := alg.NodeScore(&node)
