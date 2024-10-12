@@ -25,9 +25,9 @@ type IMetricsClient interface {
 }
 
 type IKubernetesService interface {
-	GetNodes() ([]corev1.Node, error)
-	GetNodeMetrics() (map[string]map[string]string, error)
-	GetPodMetrics() (map[string]map[string]string, error)
+	GetNodes(ctx context.Context) ([]corev1.Node, error)
+	GetNodeMetrics(ctx context.Context) (map[string]map[string]string, error)
+	GetPodMetrics(ctx context.Context) (map[string]map[string]string, error)
 }
 
 type KubernetesService struct {
