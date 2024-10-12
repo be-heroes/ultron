@@ -25,7 +25,7 @@ func main() {
 
 	config, err := ultron.LoadConfig()
 	if err != nil {
-		sugar.Fatalf("Failed to load configuration: %v", err)
+		sugar.Fatalf("Failed to load Ultron configuration: %v", err)
 	}
 
 	ctx := context.Background()
