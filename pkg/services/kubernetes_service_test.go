@@ -1,6 +1,7 @@
 package services_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -31,7 +32,7 @@ func TestGetNodes(t *testing.T) {
 		MetricsClient: mockMetricsClient,
 	}
 
-	nodes, err := service.GetNodes()
+	nodes, err := service.GetNodes(context.Background())
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(nodes))
@@ -69,7 +70,7 @@ func TestGetNodeMetrics(t *testing.T) {
 		MetricsClient: mockMetricsClient,
 	}
 
-	nodeMetrics, err := service.GetNodeMetrics()
+	nodeMetrics, err := service.GetNodeMetrics(context.Background())
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(nodeMetrics))
@@ -120,7 +121,7 @@ func TestGetPodMetrics(t *testing.T) {
 		MetricsClient: mockMetricsClient,
 	}
 
-	metrics, err := service.GetPodMetrics()
+	metrics, err := service.GetPodMetrics(context.Background())
 
 	assert.NoError(t, err)
 	assert.Contains(t, metrics, "default/pod1")

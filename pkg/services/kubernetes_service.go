@@ -72,8 +72,8 @@ func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath strin
 	}, nil
 }
 
-func (ks *KubernetesService) GetNodes() ([]corev1.Node, error) {
-	nodesList, err := ks.K8sClient.ListNodes(context.TODO(), metav1.ListOptions{})
+func (ks *KubernetesService) GetNodes(ctx context.Context) ([]corev1.Node, error) {
+	nodesList, err := ks.K8sClient.ListNodes(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -81,8 +81,8 @@ func (ks *KubernetesService) GetNodes() ([]corev1.Node, error) {
 	return nodesList.Items, nil
 }
 
-func (ks *KubernetesService) GetNodeMetrics() (map[string]map[string]string, error) {
-	metricsNodeList, err := ks.MetricsClient.ListNodeMetrics(context.TODO(), metav1.ListOptions{})
+func (ks *KubernetesService) GetNodeMetrics(ctx context.Context) (map[string]map[string]string, error) {
+	metricsNodeList, err := ks.MetricsClient.ListNodeMetrics(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -101,15 +101,15 @@ func (ks *KubernetesService) GetNodeMetrics() (map[string]map[string]string, err
 	return metrics, nil
 }
 
-func (ks *KubernetesService) GetPodMetrics() (map[string]map[string]string, error) {
-	namespacesList, err := ks.K8sClient.ListNamespaces(context.TODO(), metav1.ListOptions{})
+func (ks *KubernetesService) GetPodMetrics(ctx context.Context) (map[string]map[string]string, error) {
+	namespacesList, err := ks.K8sClient.ListNamespaces(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
 	metrics := make(map[string]map[string]string)
 	for _, namespace := range namespacesList.Items {
-		podMetricsList, err := ks.MetricsClient.ListPodMetrics(context.TODO(), namespace.Name, metav1.ListOptions{})
+		podMetricsList, err := ks.MetricsClient.ListPodMetrics(ctx, namespace.Name, metav1.ListOptions{})
 		if err != nil {
 			return nil, err
 		}
