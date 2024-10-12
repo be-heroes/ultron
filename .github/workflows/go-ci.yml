@@ -6,7 +6,7 @@ on:
       run_docker:
         description: 'Whether to run Docker build and push'
         required: false
-        default: 'false'
+        default: 'true'
 
   push:
     branches:
