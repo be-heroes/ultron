@@ -44,6 +44,11 @@ const (
 
 	MetadataName = "metadata.name"
 
+	MetricKeyCpuUsage    = "cpu_usage"
+	MetricKeyCpuTotal    = "cpu_total"
+	MetricKeyMemoryUsage = "memory_usage"
+	MetricKeyMemoryTotal = "memory_total"
+
 	PriorityLow  PriorityEnum = false
 	PriorityHigh PriorityEnum = true
 
