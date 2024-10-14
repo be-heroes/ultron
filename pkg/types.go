@@ -1,15 +1,7 @@
 package pkg
 
 import (
-	"context"
-
-	"k8s.io/client-go/kubernetes"
-	v1 "k8s.io/client-go/kubernetes/typed/core/v1"
-
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	metricsclient "k8s.io/metrics/pkg/client/clientset/versioned"
-	metricsv1beta1 "k8s.io/metrics/pkg/client/clientset/versioned/typed/metrics/v1beta1"
 )
 
 type ComputeType string
@@ -101,22 +93,6 @@ type ComputeConfiguration struct {
 	ComputeType       ComputeType  `json:"computeType,omitempty"`
 }
 
-type KubernetesClientWrapper struct {
-	ClientSet *kubernetes.Clientset
-}
-
-func (k *KubernetesClientWrapper) CoreV1() v1.CoreV1Interface {
-	return k.ClientSet.CoreV1()
-}
-
-type MetricsClientWrapper struct {
-	ClientSet *metricsclient.Clientset
-}
-
-func (m *MetricsClientWrapper) MetricsV1beta1() metricsv1beta1.MetricsV1beta1Interface {
-	return m.ClientSet.MetricsV1beta1()
-}
-
 type MetricsNodeList struct {
 	Items []MetricsNode
 }
@@ -139,66 +115,4 @@ type MetricsPod struct {
 type MetricsContainer struct {
 	Name  string
 	Usage corev1.ResourceList
-}
-
-type RealKubernetesClient struct {
-	ClientSet *kubernetes.Clientset
-}
-
-func (r *RealKubernetesClient) ListNodes(ctx context.Context, opts metav1.ListOptions) (*corev1.NodeList, error) {
-	return r.ClientSet.CoreV1().Nodes().List(ctx, opts)
-}
-
-func (r *RealKubernetesClient) ListPods(ctx context.Context, namespace string, opts metav1.ListOptions) (*corev1.PodList, error) {
-	return r.ClientSet.CoreV1().Pods(namespace).List(ctx, opts)
-}
-
-func (r *RealKubernetesClient) ListNamespaces(ctx context.Context, opts metav1.ListOptions) (*corev1.NamespaceList, error) {
-	return r.ClientSet.CoreV1().Namespaces().List(ctx, opts)
-}
-
-type RealMetricsClient struct {
-	ClientSet *metricsclient.Clientset
-}
-
-func (r *RealMetricsClient) ListNodeMetrics(ctx context.Context, opts metav1.ListOptions) (*MetricsNodeList, error) {
-	nodeMetricsList, err := r.ClientSet.MetricsV1beta1().NodeMetricses().List(ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	var metricsNodeList MetricsNodeList
-	for _, item := range nodeMetricsList.Items {
-		metricsNodeList.Items = append(metricsNodeList.Items, MetricsNode{
-			Name:  item.Name,
-			Usage: item.Usage,
-		})
-	}
-
-	return &metricsNodeList, nil
-}
-
-func (r *RealMetricsClient) ListPodMetrics(ctx context.Context, namespace string, opts metav1.ListOptions) (*MetricsPodList, error) {
-	podMetricsList, err := r.ClientSet.MetricsV1beta1().PodMetricses(namespace).List(ctx, opts)
-	if err != nil {
-		return nil, err
-	}
-
-	var metricsPodList MetricsPodList
-	for _, item := range podMetricsList.Items {
-		var containers []MetricsContainer
-		for _, c := range item.Containers {
-			containers = append(containers, MetricsContainer{
-				Name:  c.Name,
-				Usage: c.Usage,
-			})
-		}
-		metricsPodList.Items = append(metricsPodList.Items, MetricsPod{
-			Name:       item.Name,
-			Namespace:  item.Namespace,
-			Containers: containers,
-		})
-	}
-
-	return &metricsPodList, nil
 }

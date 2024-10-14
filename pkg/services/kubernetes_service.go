@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
+	k8s "github.com/be-heroes/ultron/internal/handlers/clients/kubernetes"
 	ultron "github.com/be-heroes/ultron/pkg"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -60,8 +61,8 @@ func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath strin
 
 	return &KubernetesService{
 		config:        config,
-		K8sClient:     &ultron.RealKubernetesClient{ClientSet: k8sClientset},
-		MetricsClient: &ultron.RealMetricsClient{ClientSet: metricsClientset},
+		K8sClient:     &k8s.RealKubernetesClient{ClientSet: k8sClientset},
+		MetricsClient: &k8s.RealMetricsClient{ClientSet: metricsClientset},
 	}, nil
 }
 
