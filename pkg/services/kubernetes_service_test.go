@@ -70,7 +70,7 @@ func TestGetNodeMetrics(t *testing.T) {
 		MetricsClient: mockMetricsClient,
 	}
 
-	nodeMetrics, err := service.GetNodeMetrics(context.Background())
+	nodeMetrics, err := service.GetNodeMetrics(context.Background(), metav1.ListOptions{})
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(nodeMetrics))
@@ -121,7 +121,7 @@ func TestGetPodMetrics(t *testing.T) {
 		MetricsClient: mockMetricsClient,
 	}
 
-	metrics, err := service.GetPodMetrics(context.Background())
+	metrics, err := service.GetPodMetrics(context.Background(), metav1.ListOptions{})
 
 	assert.NoError(t, err)
 	assert.Contains(t, metrics, "default/pod1")
