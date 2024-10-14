@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	k8s "github.com/be-heroes/ultron/internal/handlers/clients/kubernetes"
+	k8s "github.com/be-heroes/ultron/internal/clients/kubernetes"
 	ultron "github.com/be-heroes/ultron/pkg"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
