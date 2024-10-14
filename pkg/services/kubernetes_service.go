@@ -15,6 +15,7 @@ import (
 )
 
 type ICoreClient interface {
+	ListPods(ctx context.Context, namespace string, opts metav1.ListOptions) (*corev1.PodList, error)
 	ListNodes(ctx context.Context, opts metav1.ListOptions) (*corev1.NodeList, error)
 	ListNamespaces(ctx context.Context, opts metav1.ListOptions) (*corev1.NamespaceList, error)
 }
@@ -25,7 +26,8 @@ type IMetricsClient interface {
 }
 
 type IKubernetesService interface {
-	GetNodes(ctx context.Context) ([]corev1.Node, error)
+	GetPods(ctx context.Context, options metav1.ListOptions) ([]corev1.Pod, error)
+	GetNodes(ctx context.Context, options metav1.ListOptions) ([]corev1.Node, error)
 	GetNodeMetrics(ctx context.Context, options metav1.ListOptions) (map[string]map[string]string, error)
 	GetPodMetrics(ctx context.Context, options metav1.ListOptions) (map[string]map[string]string, error)
 }
@@ -72,13 +74,33 @@ func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath strin
 	}, nil
 }
 
-func (ks *KubernetesService) GetNodes(ctx context.Context) ([]corev1.Node, error) {
-	nodesList, err := ks.K8sClient.ListNodes(ctx, metav1.ListOptions{})
+func (ks *KubernetesService) GetNodes(ctx context.Context, options metav1.ListOptions) ([]corev1.Node, error) {
+	nodesList, err := ks.K8sClient.ListNodes(ctx, options)
 	if err != nil {
 		return nil, err
 	}
 
 	return nodesList.Items, nil
+}
+
+func (ks *KubernetesService) GetPods(ctx context.Context, options metav1.ListOptions) ([]corev1.Pod, error) {
+	namespacesList, err := ks.K8sClient.ListNamespaces(ctx, options)
+	if err != nil {
+		return nil, err
+	}
+
+	var pods []corev1.Pod
+
+	for _, namespace := range namespacesList.Items {
+		podList, err := ks.K8sClient.ListPods(ctx, namespace.Name, options)
+		if err != nil {
+			return nil, err
+		}
+
+		pods = append(pods, podList.Items...)
+	}
+
+	return pods, nil
 }
 
 func (ks *KubernetesService) GetNodeMetrics(ctx context.Context, options metav1.ListOptions) (map[string]map[string]string, error) {

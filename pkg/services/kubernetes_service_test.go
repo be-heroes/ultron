@@ -32,7 +32,7 @@ func TestGetNodes(t *testing.T) {
 		MetricsClient: mockMetricsClient,
 	}
 
-	nodes, err := service.GetNodes(context.Background())
+	nodes, err := service.GetNodes(context.Background(), metav1.ListOptions{})
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(nodes))
@@ -130,4 +130,43 @@ func TestGetPodMetrics(t *testing.T) {
 
 	mockK8sClient.AssertExpectations(t)
 	mockMetricsClient.AssertExpectations(t)
+}
+
+func TestGetPods(t *testing.T) {
+	mockK8sClient := new(mocks.ICoreClient)
+
+	mockK8sClient.On("ListNamespaces", mock.Anything, metav1.ListOptions{}).Return(&corev1.NamespaceList{
+		Items: []corev1.Namespace{
+			{ObjectMeta: metav1.ObjectMeta{Name: "default"}},
+			{ObjectMeta: metav1.ObjectMeta{Name: "kube-system"}},
+		},
+	}, nil)
+
+	mockK8sClient.On("ListPods", mock.Anything, "default", metav1.ListOptions{}).Return(&corev1.PodList{
+		Items: []corev1.Pod{
+			{ObjectMeta: metav1.ObjectMeta{Name: "pod1", Namespace: "default"}},
+		},
+	}, nil)
+
+	mockK8sClient.On("ListPods", mock.Anything, "kube-system", metav1.ListOptions{}).Return(&corev1.PodList{
+		Items: []corev1.Pod{
+			{ObjectMeta: metav1.ObjectMeta{Name: "pod2", Namespace: "kube-system"}},
+		},
+	}, nil)
+
+	service := &services.KubernetesService{
+		K8sClient:     mockK8sClient,
+		MetricsClient: nil,
+	}
+
+	pods, err := service.GetPods(context.Background(), metav1.ListOptions{})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(pods))
+	assert.Equal(t, "pod1", pods[0].Name)
+	assert.Equal(t, "default", pods[0].Namespace)
+	assert.Equal(t, "pod2", pods[1].Name)
+	assert.Equal(t, "kube-system", pods[1].Namespace)
+
+	mockK8sClient.AssertExpectations(t)
 }

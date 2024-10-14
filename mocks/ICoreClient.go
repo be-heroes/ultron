@@ -77,6 +77,36 @@ func (_m *ICoreClient) ListNodes(ctx context.Context, opts v1.ListOptions) (*cor
 	return r0, r1
 }
 
+// ListPods provides a mock function with given fields: ctx, namespace, opts
+func (_m *ICoreClient) ListPods(ctx context.Context, namespace string, opts v1.ListOptions) (*corev1.PodList, error) {
+	ret := _m.Called(ctx, namespace, opts)
+
+	if len(ret) == 0 {
+		panic("no return value specified for ListPods")
+	}
+
+	var r0 *corev1.PodList
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, v1.ListOptions) (*corev1.PodList, error)); ok {
+		return rf(ctx, namespace, opts)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, string, v1.ListOptions) *corev1.PodList); ok {
+		r0 = rf(ctx, namespace, opts)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*corev1.PodList)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, string, v1.ListOptions) error); ok {
+		r1 = rf(ctx, namespace, opts)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // NewICoreClient creates a new instance of ICoreClient. It also registers a testing interface on the mock and a cleanup function to assert the mocks expectations.
 // The first argument is typically a *testing.T value.
 func NewICoreClient(t interface {

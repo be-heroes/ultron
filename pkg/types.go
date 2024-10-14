@@ -149,6 +149,10 @@ func (r *RealKubernetesClient) ListNodes(ctx context.Context, opts metav1.ListOp
 	return r.ClientSet.CoreV1().Nodes().List(ctx, opts)
 }
 
+func (r *RealKubernetesClient) ListPods(ctx context.Context, namespace string, opts metav1.ListOptions) (*corev1.PodList, error) {
+	return r.ClientSet.CoreV1().Pods(namespace).List(ctx, opts)
+}
+
 func (r *RealKubernetesClient) ListNamespaces(ctx context.Context, opts metav1.ListOptions) (*corev1.NamespaceList, error) {
 	return r.ClientSet.CoreV1().Namespaces().List(ctx, opts)
 }
