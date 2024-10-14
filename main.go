@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"crypto/tls"
-	"net"
 	"net/http"
 	"strings"
 
@@ -45,7 +44,7 @@ func main() {
 		config.CertificateOrganization,
 		config.CertificateCommonName,
 		strings.Split(config.CertificateDnsNamesCSV, ","),
-		parseCertificateIpAddresses(config.CertificateIpAddressesCSV),
+		ultron.ParseCsvIpAddressString(config.CertificateIpAddressesCSV),
 	)
 	if err != nil {
 		sugar.Fatalf("Failed to generate self-signed certificate: %v", err)
@@ -82,16 +81,4 @@ func main() {
 	if err := server.ListenAndServeTLS("", ""); err != nil {
 		sugar.Fatalf("Failed to listen and serve Ultron: %v", err)
 	}
-}
-
-func parseCertificateIpAddresses(csv string) []net.IP {
-	var certificateIpAddresses []net.IP
-
-	for _, ipAddress := range strings.Split(csv, ",") {
-		if ipAddress != "" {
-			certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
-		}
-	}
-
-	return certificateIpAddresses
 }

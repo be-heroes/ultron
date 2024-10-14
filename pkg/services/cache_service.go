@@ -103,7 +103,7 @@ func (c *CacheService) GetAllComputeConfigurations() ([]ultron.ComputeConfigurat
 }
 
 func (c *CacheService) GetEphemeralComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	ephemeralConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeySpotVmConfigurations)
+	ephemeralConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeyEphemeralComputeConfigurations)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func (c *CacheService) GetEphemeralComputeConfigurations() ([]ultron.ComputeConf
 }
 
 func (c *CacheService) GetDurableComputeConfigurations() ([]ultron.ComputeConfiguration, error) {
-	durableConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeyDurableVmConfigurations)
+	durableConfigurationsRaw, err := c.GetCacheItem(ultron.CacheKeyDurableComputeConfigurations)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +130,7 @@ func (c *CacheService) GetWeightedNodes() ([]ultron.WeightedNode, error) {
 }
 
 func (c *CacheService) GetWeightedInteruptionRates() ([]ultron.WeightedInteruptionRate, error) {
-	weightedInteruptionRatesInterface, err := c.GetCacheItem(ultron.CacheKeySpotVmConfigurationInteruptionRates)
+	weightedInteruptionRatesInterface, err := c.GetCacheItem(ultron.CacheKeyEphemeralComputeConfigurationInteruptionRates)
 	if err != nil {
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func (c *CacheService) GetWeightedInteruptionRates() ([]ultron.WeightedInterupti
 }
 
 func (c *CacheService) GetWeightedLatencyRates() ([]ultron.WeightedLatencyRate, error) {
-	weightedLatencyRatesInterface, err := c.GetCacheItem(ultron.CacheKeyDurableVmConfigurationLatencyRates)
+	weightedLatencyRatesInterface, err := c.GetCacheItem(ultron.CacheKeyDurableComputeConfigurationLatencyRates)
 	if err != nil {
 		return nil, err
 	}

@@ -256,6 +256,7 @@ func (cs *ComputeService) GetInteruptionRateForWeightedNode(wNode *ultron.Weight
 	for _, rate := range rates {
 		if rate.Selector[ultron.LabelInstanceType] == wNode.InstanceType {
 			match = &rate
+
 			break
 		}
 	}
@@ -272,6 +273,7 @@ func (cs *ComputeService) GetLatencyRateForWeightedNode(wNode *ultron.WeightedNo
 	for _, rate := range rates {
 		if rate.Selector[ultron.LabelInstanceType] == wNode.InstanceType {
 			match = &rate
+
 			break
 		}
 	}

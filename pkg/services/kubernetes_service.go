@@ -39,22 +39,13 @@ type KubernetesService struct {
 }
 
 func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath string) (*KubernetesService, error) {
-	var err error
-
 	if kubernetesMasterUrl == "tcp://:" {
 		kubernetesMasterUrl = ""
 	}
 
 	config, err := clientcmd.BuildConfigFromFlags(kubernetesMasterUrl, kubernetesConfigPath)
 	if err != nil {
-		fmt.Println("Falling back to docker Kubernetes API at https://kubernetes.docker.internal:6443")
-
-		config = &rest.Config{
-			Host: "https://kubernetes.docker.internal:6443",
-			TLSClientConfig: rest.TLSClientConfig{
-				Insecure: true,
-			},
-		}
+		return nil, err
 	}
 
 	k8sClientset, err := kubernetes.NewForConfig(config)
@@ -110,6 +101,7 @@ func (ks *KubernetesService) GetNodeMetrics(ctx context.Context, options metav1.
 	}
 
 	metrics := make(map[string]map[string]string)
+
 	for _, nodeMetric := range metricsNodeList.Items {
 		cpuUsage := nodeMetric.Usage["cpu"]
 		memoryUsage := nodeMetric.Usage["memory"]
@@ -130,6 +122,7 @@ func (ks *KubernetesService) GetPodMetrics(ctx context.Context, options metav1.L
 	}
 
 	metrics := make(map[string]map[string]string)
+
 	for _, namespace := range namespacesList.Items {
 		podMetricsList, err := ks.MetricsClient.ListPodMetrics(ctx, namespace.Name, options)
 		if err != nil {

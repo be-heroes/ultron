@@ -32,7 +32,7 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 	}
 
 	// Act
-	iCache.AddCacheItem(ultron.CacheKeySpotVmConfigurations, computeConfigs, goCache.DefaultExpiration)
+	iCache.AddCacheItem(ultron.CacheKeyEphemeralComputeConfigurations, computeConfigs, goCache.DefaultExpiration)
 
 	getComputeConfigs, err := iCache.GetEphemeralComputeConfigurations()
 
@@ -67,7 +67,7 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 	}
 
 	// Act
-	iCache.AddCacheItem(ultron.CacheKeyDurableVmConfigurations, computeConfigs, goCache.DefaultExpiration)
+	iCache.AddCacheItem(ultron.CacheKeyDurableComputeConfigurations, computeConfigs, goCache.DefaultExpiration)
 
 	getComputeConfigs, err := iCache.GetDurableComputeConfigurations()
 

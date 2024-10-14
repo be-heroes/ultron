@@ -12,11 +12,8 @@ import (
 	"net"
 	"os"
 	"time"
-)
 
-const (
-	BlockTypeCertificate   = "CERTIFICATE"
-	BlockTypeRsaPrivateKey = "RSA PRIVATE KEY"
+	ultron "github.com/be-heroes/ultron/pkg"
 )
 
 type ICertificateService interface {
@@ -68,8 +65,8 @@ func (cs *CertificateService) GenerateSelfSignedCert(organization string, common
 		return tls.Certificate{}, err
 	}
 
-	certPEM := pem.EncodeToMemory(&pem.Block{Type: BlockTypeCertificate, Bytes: certDERBytes})
-	keyPEM := pem.EncodeToMemory(&pem.Block{Type: BlockTypeRsaPrivateKey, Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+	certPEM := pem.EncodeToMemory(&pem.Block{Type: ultron.BlockTypeCertificate, Bytes: certDERBytes})
+	keyPEM := pem.EncodeToMemory(&pem.Block{Type: ultron.BlockTypeRsaPrivateKey, Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 	tlsCert, err := tls.X509KeyPair(certPEM, keyPEM)
 	if err != nil {
 		return tls.Certificate{}, err
@@ -84,7 +81,7 @@ func (cs *CertificateService) ExportCACert(caCert []byte, filePath string) error
 	}
 
 	certPEMBlock := pem.EncodeToMemory(&pem.Block{
-		Type:  BlockTypeCertificate,
+		Type:  ultron.BlockTypeCertificate,
 		Bytes: caCert,
 	})
 

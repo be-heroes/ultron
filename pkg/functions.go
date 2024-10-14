@@ -2,8 +2,10 @@ package pkg
 
 import (
 	"context"
+	"net"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
@@ -55,4 +57,16 @@ func getEnvWithDefault(envVar, defaultValue string) string {
 	}
 
 	return value
+}
+
+func ParseCsvIpAddressString(csv string) []net.IP {
+	var certificateIpAddresses []net.IP
+
+	for _, ipAddress := range strings.Split(csv, ",") {
+		if ipAddress != "" {
+			certificateIpAddresses = append(certificateIpAddresses, net.ParseIP(ipAddress))
+		}
+	}
+
+	return certificateIpAddresses
 }

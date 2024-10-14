@@ -7,11 +7,14 @@ const (
 	AnnotationPriority    = "ultron.io/priority"
 	AnnotationManaged     = "ultron.io/managed"
 
-	CacheKeyWeightedNodes                       = "ULTRON_WEIGHTED_NODES"
-	CacheKeyDurableVmConfigurations             = "ULTRON_DURABLE_VMCONFIGURATION"
-	CacheKeyDurableVmConfigurationLatencyRates  = "ULTRON_DURABLE_VMCONFIGURATION_LATENCY_RATES"
-	CacheKeySpotVmConfigurations                = "ULTRON_SPOT_VMCONFIGURATION"
-	CacheKeySpotVmConfigurationInteruptionRates = "ULTRON_SPOT_VMCONFIGURATION_INTERUPTION_RATES"
+	BlockTypeCertificate   = "CERTIFICATE"
+	BlockTypeRsaPrivateKey = "RSA PRIVATE KEY"
+
+	CacheKeyWeightedNodes                                 = "ULTRON_WEIGHTED_NODES"
+	CacheKeyDurableComputeConfigurations                  = "ULTRON_DURABLE_CONFIGURATION"
+	CacheKeyDurableComputeConfigurationLatencyRates       = "ULTRON_DURABLE_COMPUTECONFIGURATION_LATENCY_RATES"
+	CacheKeyEphemeralComputeConfigurations                = "ULTRON_EPHEMERAL_COMPUTECONFIGURATION"
+	CacheKeyEphemeralComputeConfigurationInteruptionRates = "ULTRON_EPHEMERAL_COMPUTECONFIGURATION_INTERUPTION_RATES"
 
 	ComputeTypeDurable   ComputeType = "durable"
 	ComputeTypeEphemeral ComputeType = "ephemeral"
