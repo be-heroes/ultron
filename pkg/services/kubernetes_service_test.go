@@ -74,10 +74,10 @@ func TestGetNodeMetrics(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(nodeMetrics))
-	assert.Equal(t, "500.000", nodeMetrics["node1"]["cpuUsage"])
-	assert.Equal(t, "1073741824", nodeMetrics["node1"]["memoryUsage"])
-	assert.Equal(t, "300.000", nodeMetrics["node2"]["cpuUsage"])
-	assert.Equal(t, "536870912", nodeMetrics["node2"]["memoryUsage"])
+	assert.Equal(t, "500.000", nodeMetrics["node1"][ultron.MetricKeyCpuUsage])
+	assert.Equal(t, "1073741824", nodeMetrics["node1"][ultron.MetricKeyMemoryUsage])
+	assert.Equal(t, "300.000", nodeMetrics["node2"][ultron.MetricKeyCpuUsage])
+	assert.Equal(t, "536870912", nodeMetrics["node2"][ultron.MetricKeyMemoryUsage])
 
 	mockMetricsClient.AssertExpectations(t)
 }
@@ -125,8 +125,8 @@ func TestGetPodMetrics(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.Contains(t, metrics, "default/pod1")
-	assert.Equal(t, "300", metrics["default/pod1"]["cpuTotal"])
-	assert.Equal(t, "402653184", metrics["default/pod1"]["memoryTotal"])
+	assert.Equal(t, "300", metrics["default/pod1"][ultron.MetricKeyCpuTotal])
+	assert.Equal(t, "402653184", metrics["default/pod1"][ultron.MetricKeyMemoryTotal])
 
 	mockK8sClient.AssertExpectations(t)
 	mockMetricsClient.AssertExpectations(t)
