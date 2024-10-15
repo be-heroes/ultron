@@ -29,11 +29,11 @@ func main() {
 
 	ctx := context.Background()
 	redisClient := ultron.InitializeRedisClientFromConfig(ctx, config, sugar)
-	mapperInstance := mapper.NewMapper()
-	algorithmInstance := algorithm.NewAlgorithm()
+	mapper := mapper.NewMapper()
+	algorithm := algorithm.NewAlgorithm()
 	cacheService := services.NewCacheService(nil, redisClient)
 	certificateService := services.NewCertificateService()
-	computeService := services.NewComputeService(algorithmInstance, cacheService, mapperInstance)
+	computeService := services.NewComputeService(algorithm, cacheService, mapper)
 	mutationHandler := handlers.NewMutationHandler(computeService)
 	validationHandler := handlers.NewValidationHandler(computeService, redisClient)
 
