@@ -79,6 +79,6 @@ func main() {
 	}
 
 	if err := server.ListenAndServeTLS("", ""); err != nil {
-		sugar.Fatalf("Failed to listen and serve Ultron: %v", err)
+		sugar.Fatalf("Failed to start Ultron: %v", err)
 	}
 }
