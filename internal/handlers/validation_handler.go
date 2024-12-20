@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	ultron "github.com/be-heroes/ultron/pkg"
+	mapper "github.com/be-heroes/ultron/pkg/mapper"
 	services "github.com/be-heroes/ultron/pkg/services"
 	"github.com/redis/go-redis/v9"
 
@@ -23,12 +24,14 @@ type IValidationHandler interface {
 type ValidationHandler struct {
 	computeService services.IComputeService
 	redisClient    *redis.Client
+	mapper         mapper.IMapper
 }
 
-func NewValidationHandler(computeService services.IComputeService, redisClient *redis.Client) *ValidationHandler {
+func NewValidationHandler(computeService services.IComputeService, mapper mapper.IMapper, redisClient *redis.Client) *ValidationHandler {
 	return &ValidationHandler{
 		computeService: computeService,
 		redisClient:    redisClient,
+		mapper:         mapper,
 	}
 }
 
@@ -101,7 +104,13 @@ func (vh *ValidationHandler) HandleAdmissionReview(request *admissionv1.Admissio
 	}
 
 	if wNode == nil && vh.redisClient != nil {
-		vh.redisClient.Publish(context.Background(), ultron.TopicPodObserve, pod)
+		wPod, err := vh.mapper.MapPodToWeightedPod(&pod)
+
+		if err != nil {
+			return nil, err
+		}
+
+		vh.redisClient.Publish(context.Background(), ultron.TopicPodObserve, wPod)
 	} else if vh.redisClient != nil {
 		vh.redisClient.Publish(context.Background(), ultron.TopicNodeObserve, wNode)
 	}

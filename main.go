@@ -35,7 +35,7 @@ func main() {
 	certificateService := services.NewCertificateService()
 	computeService := services.NewComputeService(algorithm, cacheService, mapper)
 	mutationHandler := handlers.NewMutationHandler(computeService)
-	validationHandler := handlers.NewValidationHandler(computeService, redisClient)
+	validationHandler := handlers.NewValidationHandler(computeService, mapper, redisClient)
 
 	sugar.Info("Initialized Ultron")
 	sugar.Info("Generating self-signed certificate")

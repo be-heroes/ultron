@@ -23,13 +23,14 @@ import (
 
 func TestValidatePods_Success(t *testing.T) {
 	mockComputeService := new(mocks.IComputeService)
+	mockMapper := new(mocks.IMapper)
 
 	mockComputeService.On("MatchPodSpec", mock.AnythingOfType("*v1.Pod")).
 		Return(&ultron.WeightedNode{
 			Selector: map[string]string{"node-type": "mock-node"},
 		}, nil)
 
-	handler := handlers.NewValidationHandler(mockComputeService, nil)
+	handler := handlers.NewValidationHandler(mockComputeService, mockMapper, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
@@ -69,8 +70,9 @@ func TestValidatePods_Success(t *testing.T) {
 
 func TestValidatePods_InvalidBody(t *testing.T) {
 	mockComputeService := new(mocks.IComputeService)
+	mockMapper := new(mocks.IMapper)
 
-	handler := handlers.NewValidationHandler(mockComputeService, nil)
+	handler := handlers.NewValidationHandler(mockComputeService, mockMapper, nil)
 
 	req := httptest.NewRequest(http.MethodPost, "/validate", bytes.NewBuffer([]byte("invalid body")))
 	w := httptest.NewRecorder()
@@ -83,8 +85,9 @@ func TestValidatePods_InvalidBody(t *testing.T) {
 
 func TestValidationHandleAdmissionReview_NonPodKind(t *testing.T) {
 	mockComputeService := new(mocks.IComputeService)
+	mockMapper := new(mocks.IMapper)
 
-	handler := handlers.NewValidationHandler(mockComputeService, nil)
+	handler := handlers.NewValidationHandler(mockComputeService, mockMapper, nil)
 
 	admissionRequest := &admissionv1.AdmissionRequest{
 		Kind: metav1.GroupVersionKind{Kind: "Service"},
@@ -97,10 +100,11 @@ func TestValidationHandleAdmissionReview_NonPodKind(t *testing.T) {
 
 func TestValidationHandleAdmissionReview_PodSpecFailure(t *testing.T) {
 	mockComputeService := new(mocks.IComputeService)
+	mockMapper := new(mocks.IMapper)
 
 	mockComputeService.On("MatchPodSpec", mock.AnythingOfType("*v1.Pod")).Return(nil, nil)
 
-	handler := handlers.NewValidationHandler(mockComputeService, nil)
+	handler := handlers.NewValidationHandler(mockComputeService, mockMapper, nil)
 
 	pod := corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
