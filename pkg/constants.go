@@ -67,6 +67,8 @@ const (
 	WeightKeyPrice            = "price"
 	WeightKeyPriceMedian      = "price_median"
 
-	WorkloadPriorityLow  WorkloadPriorityEnum = false
-	WorkloadPriorityHigh WorkloadPriorityEnum = true
+	WorkloadPriorityLow       WorkloadPriorityEnum = false
+	WorkloadPriorityHigh      WorkloadPriorityEnum = true
+	WorkloadPriorityHighLabel                      = "PriorityHigh"
+	WorkloadPriorityLowLabel                       = "PriorityLow"
 )

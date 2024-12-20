@@ -167,9 +167,9 @@ func (m *Mapper) GetFloatAnnotationOrDefault(annotations map[string]string, key 
 func (m *Mapper) GetPriorityFromAnnotation(annotations map[string]string) ultron.WorkloadPriorityEnum {
 	if value, exists := annotations[ultron.AnnotationWorkloadPriority]; exists {
 		switch value {
-		case "PriorityHigh":
+		case ultron.WorkloadPriorityHighLabel:
 			return ultron.WorkloadPriorityHigh
-		case "PriorityLow":
+		case ultron.WorkloadPriorityLowLabel:
 			return ultron.WorkloadPriorityLow
 		}
 	}

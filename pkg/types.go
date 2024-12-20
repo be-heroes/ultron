@@ -9,10 +9,10 @@ type WorkloadPriorityEnum bool
 
 func (p WorkloadPriorityEnum) String() string {
 	if p {
-		return "PriorityHigh"
+		return WorkloadPriorityHighLabel
 	}
 
-	return "PriorityLow"
+	return WorkloadPriorityLowLabel
 }
 
 type ComputeConfiguration struct {

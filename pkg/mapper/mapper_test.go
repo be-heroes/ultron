@@ -177,8 +177,8 @@ func TestGetPriorityFromAnnotation(t *testing.T) {
 		annotations   map[string]string
 		expectedValue ultron.WorkloadPriorityEnum
 	}{
-		{map[string]string{ultron.AnnotationWorkloadPriority: "PriorityHigh"}, ultron.WorkloadPriorityHigh},
-		{map[string]string{ultron.AnnotationWorkloadPriority: "PriorityLow"}, ultron.WorkloadPriorityLow},
+		{map[string]string{ultron.AnnotationWorkloadPriority: ultron.WorkloadPriorityHighLabel}, ultron.WorkloadPriorityHigh},
+		{map[string]string{ultron.AnnotationWorkloadPriority: ultron.WorkloadPriorityLowLabel}, ultron.WorkloadPriorityLow},
 	}
 
 	for _, test := range tests {
