@@ -33,14 +33,14 @@ func NewAlgorithm() *Algorithm {
 func (a *Algorithm) ResourceScore(node *ultron.WeightedNode, pod *ultron.WeightedPod) float64 {
 	var cpuScore, memScore float64
 
-	if node.TotalCPU != 0 {
-		cpuScore = (node.AvailableCPU - pod.RequestedCPU) / node.TotalCPU
+	if node.Weights[ultron.WeightKeyCpuTotal] != 0 {
+		cpuScore = (node.Weights[ultron.WeightKeyCpuAvailable] - pod.Weights[ultron.WeightKeyCpuRequested]) / node.Weights[ultron.WeightKeyCpuTotal]
 	} else {
 		cpuScore = 0.0
 	}
 
-	if node.TotalMemory != 0 {
-		memScore = (node.AvailableMemory - pod.RequestedMemory) / node.TotalMemory
+	if node.Weights[ultron.WeightKeyMemoryTotal] != 0 {
+		memScore = (node.Weights[ultron.WeightKeyMemoryAvailable] - pod.Weights[ultron.WeightKeyMemoryRequested]) / node.Weights[ultron.WeightKeyMemoryTotal]
 	} else {
 		memScore = 0.0
 	}
@@ -49,7 +49,7 @@ func (a *Algorithm) ResourceScore(node *ultron.WeightedNode, pod *ultron.Weighte
 }
 
 func (a *Algorithm) StorageScore(node *ultron.WeightedNode, pod *ultron.WeightedPod) float64 {
-	if node.DiskType == pod.RequestedDiskType {
+	if node.Annotations[ultron.AnnotationDiskType] == pod.Annotations[ultron.AnnotationDiskType] {
 		return 1.0
 	}
 
@@ -57,31 +57,31 @@ func (a *Algorithm) StorageScore(node *ultron.WeightedNode, pod *ultron.Weighted
 }
 
 func (a *Algorithm) NetworkScore(node *ultron.WeightedNode, pod *ultron.WeightedPod) float64 {
-	if node.NetworkType == pod.RequestedNetworkType && node.LatencyRate.Value >= 0 {
-		return 1.0 - node.LatencyRate.Value
+	if node.Annotations[ultron.AnnotationNetworkType] == pod.Annotations[ultron.AnnotationNetworkType] && node.LatencyRate.Weight >= 0 {
+		return 1.0 - node.LatencyRate.Weight
 	}
 
 	return 0.0
 }
 
 func (a *Algorithm) PriceScore(node *ultron.WeightedNode) float64 {
-	if node.Price == 0 {
+	if node.Weights[ultron.WeightKeyPrice] == 0 {
 		return 0.0
 	}
 
-	return 1.0 - (node.MedianPrice / node.Price)
+	return 1.0 - (node.Weights[ultron.WeightKeyPriceMedian] / node.Weights[ultron.WeightKeyPrice])
 }
 
 func (a *Algorithm) NodeScore(node *ultron.WeightedNode) float64 {
-	if node.Price == 0 || node.MedianPrice == 0 || node.InterruptionRate.Value < 0 {
+	if node.Weights[ultron.WeightKeyPrice] == 0 || node.Weights[ultron.WeightKeyPriceMedian] == 0 || node.InterruptionRate.Weight < 0 {
 		return 0.0
 	}
 
-	return node.Price / (node.MedianPrice + node.InterruptionRate.Value)
+	return node.Weights[ultron.WeightKeyPrice] / (node.Weights[ultron.WeightKeyPriceMedian] + node.InterruptionRate.Weight)
 }
 
 func (a *Algorithm) PodScore(pod *ultron.WeightedPod) float64 {
-	if pod.Priority == ultron.PriorityHigh {
+	if pod.Annotations[ultron.AnnotationWorkloadPriority] == ultron.WorkloadPriorityHigh.String() {
 		return 1.0
 	}
 

@@ -108,8 +108,8 @@ func (ks *KubernetesService) GetNodeMetrics(ctx context.Context, options metav1.
 		memoryUsage := nodeMetric.Usage["memory"]
 
 		metrics[nodeMetric.Name] = map[string]string{
-			ultron.MetricKeyCpuUsage:    cpuUsage.AsDec().String(),
-			ultron.MetricKeyMemoryUsage: memoryUsage.AsDec().String(),
+			ultron.WeightKeyCpuUsage:    cpuUsage.AsDec().String(),
+			ultron.WeightKeyMemoryUsage: memoryUsage.AsDec().String(),
 		}
 	}
 
@@ -144,8 +144,8 @@ func (ks *KubernetesService) GetPodMetrics(ctx context.Context, options metav1.L
 
 			metricsKey := fmt.Sprintf("%s/%s", podMetric.Namespace, podMetric.Name)
 			metrics[metricsKey] = map[string]string{
-				ultron.MetricKeyCpuTotal:    strconv.FormatInt(cpuTotal, 10),
-				ultron.MetricKeyMemoryTotal: strconv.FormatInt(memoryTotal, 10),
+				ultron.WeightKeyCpuTotal:    strconv.FormatInt(cpuTotal, 10),
+				ultron.WeightKeyMemoryTotal: strconv.FormatInt(memoryTotal, 10),
 			}
 		}
 	}

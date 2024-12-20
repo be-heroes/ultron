@@ -22,7 +22,6 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 			Annotations: map[string]string{
 				ultron.AnnotationDiskType:    "HDD",
 				ultron.AnnotationNetworkType: "4G",
-				ultron.AnnotationStorageSize: "20",
 			},
 		},
 		Spec: corev1.PodSpec{
@@ -48,11 +47,10 @@ func TestMapPodToWeightedPod_Success(t *testing.T) {
 
 	// Assert
 	assert.NoError(t, err, "MapPodToWeightedPod should not return an error")
-	assert.Equal(t, 0.5, weightedPod.RequestedCPU, "Expected RequestedCPU to be 0.5")
-	assert.Equal(t, float64(1*1024*1024*1024), weightedPod.RequestedMemory, "Expected RequestedMemory to be 1Gi")
-	assert.Equal(t, "HDD", weightedPod.RequestedDiskType, "Expected RequestedDiskType to be HDD")
-	assert.Equal(t, "4G", weightedPod.RequestedNetworkType, "Expected RequestedNetworkType to be 4G")
-	assert.Equal(t, float64(20), weightedPod.RequestedStorage, "Expected RequestedStorage to be 20GB")
+	assert.Equal(t, 0.5, weightedPod.Weights[ultron.WeightKeyCpuRequested], "Expected RequestedCPU to be 0.5")
+	assert.Equal(t, float64(1*1024*1024*1024), weightedPod.Weights[ultron.WeightKeyMemoryRequested], "Expected RequestedMemory to be 1Gi")
+	assert.Equal(t, "HDD", weightedPod.Annotations[ultron.AnnotationDiskType], "Expected DiskType to be HDD")
+	assert.Equal(t, "4G", weightedPod.Annotations[ultron.AnnotationNetworkType], "Expected NetworkType to be 4G")
 }
 
 func TestMapPodToWeightedPod_MissingName(t *testing.T) {
@@ -106,12 +104,12 @@ func TestMapNodeToWeightedNode_Success(t *testing.T) {
 
 	// Assert
 	assert.NoError(t, err, "MapNodeToWeightedNode should not return an error")
-	assert.Equal(t, 2.0, weightedNode.AvailableCPU, "Expected AvailableCPU to be 2")
-	assert.Equal(t, 4.0, weightedNode.TotalCPU, "Expected TotalCPU to be 4")
-	assert.Equal(t, float64(8), weightedNode.AvailableMemory, "Expected AvailableMemory to be 8Gi")
-	assert.Equal(t, float64(16), weightedNode.TotalMemory, "Expected TotalMemory to be 16Gi")
-	assert.Equal(t, "SSD", weightedNode.DiskType, "Expected DiskType to be SSD")
-	assert.Equal(t, "5G", weightedNode.NetworkType, "Expected NetworkType to be 5G")
+	assert.Equal(t, 2.0, weightedNode.Weights[ultron.WeightKeyCpuAvailable], "Expected AvailableCPU to be 2")
+	assert.Equal(t, 4.0, weightedNode.Weights[ultron.WeightKeyCpuTotal], "Expected TotalCPU to be 4")
+	assert.Equal(t, float64(8), weightedNode.Weights[ultron.WeightKeyMemoryAvailable], "Expected AvailableMemory to be 8Gi")
+	assert.Equal(t, float64(16), weightedNode.Weights[ultron.WeightKeyMemoryTotal], "Expected TotalMemory to be 16Gi")
+	assert.Equal(t, "SSD", weightedNode.Annotations[ultron.AnnotationDiskType], "Expected DiskType to be SSD")
+	assert.Equal(t, "5G", weightedNode.Annotations[ultron.AnnotationNetworkType], "Expected NetworkType to be 5G")
 }
 
 func TestMapNodeToWeightedNode_MissingInstanceType(t *testing.T) {
@@ -177,10 +175,10 @@ func TestGetPriorityFromAnnotation(t *testing.T) {
 
 	tests := []struct {
 		annotations   map[string]string
-		expectedValue ultron.PriorityEnum
+		expectedValue ultron.WorkloadPriorityEnum
 	}{
-		{map[string]string{ultron.AnnotationPriority: "PriorityHigh"}, ultron.PriorityHigh},
-		{map[string]string{ultron.AnnotationPriority: "PriorityLow"}, ultron.PriorityLow},
+		{map[string]string{ultron.AnnotationWorkloadPriority: "PriorityHigh"}, ultron.WorkloadPriorityHigh},
+		{map[string]string{ultron.AnnotationWorkloadPriority: "PriorityLow"}, ultron.WorkloadPriorityLow},
 	}
 
 	for _, test := range tests {

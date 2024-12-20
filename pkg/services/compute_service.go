@@ -65,16 +65,20 @@ func (cs *ComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			}
 
 			wNode = &ultron.WeightedNode{
-				Selector:         map[string]string{ultron.LabelInstanceType: instanceType, ultron.AnnotationManaged: "true"},
-				AvailableCPU:     float64(*computeConfiguration.VCpu),
-				TotalCPU:         float64(*computeConfiguration.VCpu),
-				AvailableMemory:  float64(*computeConfiguration.RamGb),
-				TotalMemory:      float64(*computeConfiguration.RamGb),
-				AvailableStorage: float64(*computeConfiguration.VolumeGb),
-				DiskType:         wPod.RequestedDiskType,
-				NetworkType:      wPod.RequestedNetworkType,
-				Price:            float64(*computeConfiguration.Cost.PricePerUnit),
-				InstanceType:     instanceType,
+				Selector: map[string]string{ultron.LabelInstanceType: instanceType, ultron.AnnotationManaged: "true"},
+				Weights: map[string]float64{
+					ultron.WeightKeyCpuAvailable:     float64(*computeConfiguration.VCpu),
+					ultron.WeightKeyCpuTotal:         float64(*computeConfiguration.VCpu),
+					ultron.WeightKeyMemoryAvailable:  float64(*computeConfiguration.RamGb),
+					ultron.WeightKeyMemoryTotal:      float64(*computeConfiguration.RamGb),
+					ultron.WeightKeyStorageAvailable: float64(*computeConfiguration.VolumeGb),
+					ultron.WeightKeyPrice:            float64(*computeConfiguration.Cost.PricePerUnit),
+				},
+				Annotations: map[string]string{
+					ultron.AnnotationInstanceType: instanceType,
+					ultron.AnnotationDiskType:     wPod.Annotations[ultron.AnnotationDiskType],
+					ultron.AnnotationNetworkType:  wPod.Annotations[ultron.AnnotationNetworkType],
+				},
 			}
 
 			interuptionRate, err := cs.GetInteruptionRateForWeightedNode(wNode)
@@ -85,7 +89,7 @@ func (cs *ComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			if interuptionRate != nil {
 				wNode.InterruptionRate = *interuptionRate
 			} else {
-				wNode.InterruptionRate = ultron.WeightedInteruptionRate{Value: -1}
+				wNode.InterruptionRate = ultron.WeightedInteruptionRate{Weight: -1}
 			}
 
 			latencyRate, err := cs.GetLatencyRateForWeightedNode(wNode)
@@ -96,7 +100,7 @@ func (cs *ComputeService) MatchPodSpec(pod *corev1.Pod) (*ultron.WeightedNode, e
 			if interuptionRate != nil {
 				wNode.LatencyRate = *latencyRate
 			} else {
-				wNode.LatencyRate = ultron.WeightedLatencyRate{Value: -1}
+				wNode.LatencyRate = ultron.WeightedLatencyRate{Weight: -1}
 			}
 		}
 	}
@@ -162,7 +166,7 @@ func (cs *ComputeService) MatchWeightedPodToWeightedNode(pod *ultron.WeightedPod
 	highestScore := math.Inf(-1)
 
 	for _, wNode := range wNodes {
-		if wNode.AvailableCPU < pod.RequestedCPU || wNode.AvailableMemory < pod.RequestedMemory {
+		if wNode.Weights[ultron.WeightKeyCpuAvailable] < pod.Weights[ultron.WeightKeyCpuRequested] || wNode.Weights[ultron.WeightKeyMemoryAvailable] < pod.Weights[ultron.WeightKeyMemoryRequested] {
 			continue
 		}
 
@@ -200,23 +204,23 @@ func (cs *ComputeService) CalculateWeightedNodeMedianPrice(wNode *ultron.Weighte
 }
 
 func (cs *ComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(computeConfiguration *ultron.ComputeConfiguration, wNode *ultron.WeightedNode) bool {
-	if float64(*computeConfiguration.VCpu) > wNode.AvailableCPU {
+	if float64(*computeConfiguration.VCpu) > wNode.Weights[ultron.WeightKeyCpuAvailable] {
 		return false
 	}
 
-	if float64(*computeConfiguration.RamGb) > wNode.AvailableMemory {
+	if float64(*computeConfiguration.RamGb) > wNode.Weights[ultron.WeightKeyMemoryAvailable] {
 		return false
 	}
 
-	if float64(*computeConfiguration.VolumeGb) > wNode.AvailableStorage {
+	if float64(*computeConfiguration.VolumeGb) > wNode.Weights[ultron.WeightKeyStorageAvailable] {
 		return false
 	}
 
-	if (*computeConfiguration.VolumeType) != wNode.DiskType {
+	if (*computeConfiguration.VolumeType) != wNode.Annotations[ultron.AnnotationDiskType] {
 		return false
 	}
 
-	if !slices.Contains(computeConfiguration.CloudNetworkTypes, wNode.NetworkType) {
+	if !slices.Contains(computeConfiguration.CloudNetworkTypes, wNode.Annotations[ultron.AnnotationNetworkType]) {
 		return false
 	}
 
@@ -224,23 +228,23 @@ func (cs *ComputeService) ComputeConfigurationMatchesWeightedNodeRequirements(co
 }
 
 func (cs *ComputeService) ComputeConfigurationMatchesWeightedPodRequirements(computeConfiguration *ultron.ComputeConfiguration, wPod *ultron.WeightedPod) bool {
-	if float64(*computeConfiguration.VCpu) < wPod.RequestedCPU {
+	if float64(*computeConfiguration.VCpu) < wPod.Weights[ultron.WeightKeyCpuRequested] {
 		return false
 	}
 
-	if float64(*computeConfiguration.RamGb) < wPod.RequestedMemory {
+	if float64(*computeConfiguration.RamGb) < wPod.Weights[ultron.WeightKeyMemoryRequested] {
 		return false
 	}
 
-	if float64(*computeConfiguration.VolumeGb) < wPod.RequestedStorage {
+	if float64(*computeConfiguration.VolumeGb) < wPod.Weights[ultron.WeightKeyStorageRequested] {
 		return false
 	}
 
-	if (*computeConfiguration.VolumeType) != wPod.RequestedDiskType {
+	if (*computeConfiguration.VolumeType) != wPod.Annotations[ultron.AnnotationDiskType] {
 		return false
 	}
 
-	if !slices.Contains(computeConfiguration.CloudNetworkTypes, wPod.RequestedNetworkType) {
+	if !slices.Contains(computeConfiguration.CloudNetworkTypes, wPod.Annotations[ultron.AnnotationNetworkType]) {
 		return false
 	}
 
@@ -254,7 +258,7 @@ func (cs *ComputeService) GetInteruptionRateForWeightedNode(wNode *ultron.Weight
 	}
 
 	for _, rate := range rates {
-		if rate.Selector[ultron.LabelInstanceType] == wNode.InstanceType {
+		if rate.Selector[ultron.LabelInstanceType] == wNode.Annotations[ultron.AnnotationInstanceType] {
 			match = &rate
 
 			break
@@ -271,7 +275,7 @@ func (cs *ComputeService) GetLatencyRateForWeightedNode(wNode *ultron.WeightedNo
 	}
 
 	for _, rate := range rates {
-		if rate.Selector[ultron.LabelInstanceType] == wNode.InstanceType {
+		if rate.Selector[ultron.LabelInstanceType] == wNode.Annotations[ultron.AnnotationInstanceType] {
 			match = &rate
 
 			break

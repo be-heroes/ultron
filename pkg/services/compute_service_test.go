@@ -12,8 +12,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 )
 
-func intPtr(i int32) *int32         { return &i }
-func float32Ptr(f float32) *float32 { return &f }
+func int64Ptr(i int64) *int64       { return &i }
+func float64Ptr(f float64) *float64 { return &f }
 func stringPtr(s string) *string    { return &s }
 
 func TestComputePodSpec_Success(t *testing.T) {
@@ -27,22 +27,32 @@ func TestComputePodSpec_Success(t *testing.T) {
 	pod := &corev1.Pod{}
 
 	mockMapper.On("MapPodToWeightedPod", pod).Return(ultron.WeightedPod{
-		RequestedCPU:         2,
-		RequestedMemory:      4,
-		RequestedStorage:     50,
-		RequestedDiskType:    "SSD",
-		RequestedNetworkType: "isolated",
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType:      "SSD",
+			ultron.AnnotationNetworkType:   "isolated",
+			ultron.AnnotationStorageSizeGb: "50",
+		},
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuRequested:     2,
+			ultron.WeightKeyMemoryRequested:  4,
+			ultron.WeightKeyStorageRequested: 50,
+		},
 	}, nil)
 
 	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{
 		{
-			AvailableCPU:     4,
-			TotalCPU:         4,
-			AvailableMemory:  8,
-			TotalMemory:      8,
-			AvailableStorage: 50,
-			DiskType:         "SSD",
-			NetworkType:      "isolated",
+			Annotations: map[string]string{
+				ultron.AnnotationDiskType:      "SSD",
+				ultron.AnnotationNetworkType:   "isolated",
+				ultron.AnnotationStorageSizeGb: "50",
+			},
+			Weights: map[string]float64{
+				ultron.WeightKeyCpuAvailable:     4,
+				ultron.WeightKeyCpuTotal:         4,
+				ultron.WeightKeyMemoryAvailable:  8,
+				ultron.WeightKeyMemoryTotal:      8,
+				ultron.WeightKeyStorageAvailable: 50,
+			},
 		},
 	}, nil)
 
@@ -54,9 +64,9 @@ func TestComputePodSpec_Success(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, wNode)
-	assert.Equal(t, 4.0, wNode.AvailableCPU)
-	assert.Equal(t, "SSD", wNode.DiskType)
-	assert.Equal(t, "isolated", wNode.NetworkType)
+	assert.Equal(t, 4.0, wNode.Weights[ultron.WeightKeyCpuAvailable])
+	assert.Equal(t, "SSD", wNode.Annotations[ultron.AnnotationDiskType])
+	assert.Equal(t, "isolated", wNode.Annotations[ultron.AnnotationNetworkType])
 
 	mockMapper.AssertExpectations(t)
 	mockCache.AssertExpectations(t)
@@ -100,21 +110,26 @@ func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wPod := ultron.WeightedPod{
-		RequestedCPU:         1,
-		RequestedMemory:      2,
-		RequestedStorage:     30,
-		RequestedDiskType:    "SSD",
-		RequestedNetworkType: "isolated",
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType:      "SSD",
+			ultron.AnnotationNetworkType:   "isolated",
+			ultron.AnnotationStorageSizeGb: "30",
+		},
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuRequested:     1,
+			ultron.WeightKeyMemoryRequested:  2,
+			ultron.WeightKeyStorageRequested: 30,
+		},
 	}
 
 	mockCache.On("GetAllComputeConfigurations").Return([]ultron.ComputeConfiguration{
 		{
 			ComputeType: ultron.ComputeTypeDurable,
-			VCpu:        intPtr(2),
-			RamGb:       intPtr(8),
-			VolumeGb:    intPtr(50),
+			VCpu:        int64Ptr(2),
+			RamGb:       int64Ptr(8),
+			VolumeGb:    int64Ptr(50),
 			Cost: &ultron.ComputeCost{
-				PricePerUnit: float32Ptr(0.2),
+				PricePerUnit: float64Ptr(0.2),
 			},
 			VolumeType:        stringPtr("SSD"),
 			CloudNetworkTypes: []string{"isolated", "public"},
@@ -127,7 +142,7 @@ func TestMatchWeightedPodToComputeConfiguration_Success(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, computeConfig)
-	assert.Equal(t, int32(2), *computeConfig.VCpu)
+	assert.Equal(t, int64(2), *computeConfig.VCpu)
 	assert.Equal(t, ultron.ComputeTypeDurable, computeConfig.ComputeType)
 
 	mockCache.AssertExpectations(t)
@@ -142,23 +157,30 @@ func TestCalculateWeightedNodeMedianPrice_Success(t *testing.T) {
 	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wNode := ultron.WeightedNode{
-		AvailableCPU:     4,
-		AvailableMemory:  8,
-		AvailableStorage: 50,
-		DiskType:         "SSD",
-		NetworkType:      "isolated",
-		Price:            10.0,
-		MedianPrice:      5.0,
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType:      "SSD",
+			ultron.AnnotationNetworkType:   "isolated",
+			ultron.AnnotationStorageSizeGb: "50",
+		},
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuAvailable:     4,
+			ultron.WeightKeyCpuTotal:         4,
+			ultron.WeightKeyMemoryAvailable:  8,
+			ultron.WeightKeyMemoryTotal:      8,
+			ultron.WeightKeyStorageAvailable: 50,
+			ultron.WeightKeyPrice:            10.0,
+			ultron.WeightKeyPriceMedian:      5.0,
+		},
 	}
 
 	mockCache.On("GetAllComputeConfigurations").Return([]ultron.ComputeConfiguration{
 		{
 			ComputeType: ultron.ComputeTypeDurable,
-			VCpu:        intPtr(2),
-			RamGb:       intPtr(8),
-			VolumeGb:    intPtr(50),
+			VCpu:        int64Ptr(2),
+			RamGb:       int64Ptr(8),
+			VolumeGb:    int64Ptr(50),
 			Cost: &ultron.ComputeCost{
-				PricePerUnit: float32Ptr(0.2),
+				PricePerUnit: float64Ptr(0.2),
 			},
 			VolumeType:        stringPtr("SSD"),
 			CloudNetworkTypes: []string{"isolated", "public"},
@@ -186,16 +208,22 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 	service := services.NewComputeService(mockAlgorithm, mockCache, mockMapper)
 
 	wPod := ultron.WeightedPod{
-		RequestedCPU:    2,
-		RequestedMemory: 4,
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuRequested:    2,
+			ultron.WeightKeyMemoryRequested: 4,
+		},
 	}
 
 	mockCache.On("GetWeightedNodes").Return([]ultron.WeightedNode{
 		{
-			AvailableCPU:    4,
-			AvailableMemory: 8,
-			DiskType:        "SSD",
-			NetworkType:     "isolated",
+			Annotations: map[string]string{
+				ultron.AnnotationDiskType:    "SSD",
+				ultron.AnnotationNetworkType: "isolated",
+			},
+			Weights: map[string]float64{
+				ultron.WeightKeyCpuAvailable:    4,
+				ultron.WeightKeyMemoryAvailable: 8,
+			},
 		},
 	}, nil)
 
@@ -207,7 +235,7 @@ func TestMatchWeightedPodToWeightedNode_Success(t *testing.T) {
 	// Assert
 	assert.NoError(t, err)
 	assert.NotNil(t, wNode, "Expected a weighted node to be found")
-	assert.Equal(t, 4.0, wNode.AvailableCPU)
+	assert.Equal(t, 4.0, wNode.Weights[ultron.WeightKeyCpuAvailable])
 
 	mockCache.AssertExpectations(t)
 	mockAlgorithm.AssertExpectations(t)

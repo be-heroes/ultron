@@ -67,19 +67,24 @@ func (m *Mapper) MapPodToWeightedPod(pod *corev1.Pod) (ultron.WeightedPod, error
 
 	requestedDiskType := m.GetAnnotationOrDefault(pod.Annotations, ultron.AnnotationDiskType, ultron.DefaultDiskType)
 	requestedNetworkType := m.GetAnnotationOrDefault(pod.Annotations, ultron.AnnotationNetworkType, ultron.DefaultNetworkType)
-	requestedStorageSize := m.GetFloatAnnotationOrDefault(pod.Annotations, ultron.AnnotationStorageSize, ultron.DefaultStorageSizeGB)
+	requestedStorageSize := m.GetFloatAnnotationOrDefault(pod.Annotations, ultron.AnnotationStorageSizeGb, ultron.DefaultStorageSizeGB)
 	priority := m.GetPriorityFromAnnotation(pod.Annotations)
 
 	return ultron.WeightedPod{
-		Selector:             map[string]string{ultron.MetadataName: pod.Name},
-		RequestedCPU:         totalCPURequest,
-		RequestedMemory:      totalMemoryRequest,
-		RequestedStorage:     requestedStorageSize,
-		RequestedDiskType:    requestedDiskType,
-		RequestedNetworkType: requestedNetworkType,
-		LimitCPU:             totalCPULimit,
-		LimitMemory:          totalMemoryLimit,
-		Priority:             priority,
+		Selector: map[string]string{ultron.MetadataName: pod.Name},
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType:         requestedDiskType,
+			ultron.AnnotationNetworkType:      requestedNetworkType,
+			ultron.AnnotationWorkloadPriority: priority.String(),
+			ultron.AnnotationStorageSizeGb:    strconv.FormatFloat(requestedStorageSize, 'f', -1, 64),
+		},
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuRequested:     totalCPURequest,
+			ultron.WeightKeyCpuLimit:         totalCPULimit,
+			ultron.WeightKeyMemoryRequested:  totalMemoryRequest,
+			ultron.WeightKeyMemoryLimit:      totalMemoryLimit,
+			ultron.WeightKeyStorageRequested: requestedStorageSize,
+		},
 	}, nil
 }
 
@@ -121,19 +126,23 @@ func (m *Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, 
 	}
 
 	return ultron.WeightedNode{
-		Selector:         selector,
-		AvailableCPU:     availableCPU,
-		TotalCPU:         totalCPU,
-		AvailableMemory:  availableMemory,
-		TotalMemory:      totalMemory,
-		AvailableStorage: availableStorage,
-		TotalStorage:     totalStorage,
-		DiskType:         node.Annotations[ultron.AnnotationDiskType],
-		NetworkType:      node.Annotations[ultron.AnnotationNetworkType],
-		Price:            0,
-		MedianPrice:      0,
-		InstanceType:     instanceType,
-		InterruptionRate: ultron.WeightedInteruptionRate{Value: 0},
+		Selector: selector,
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType:     node.Annotations[ultron.AnnotationDiskType],
+			ultron.AnnotationNetworkType:  node.Annotations[ultron.AnnotationNetworkType],
+			ultron.AnnotationInstanceType: instanceType,
+		},
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuAvailable:     availableCPU,
+			ultron.WeightKeyCpuTotal:         totalCPU,
+			ultron.WeightKeyMemoryAvailable:  availableMemory,
+			ultron.WeightKeyMemoryTotal:      totalMemory,
+			ultron.WeightKeyStorageAvailable: availableStorage,
+			ultron.WeightKeyStorageTotal:     totalStorage,
+			ultron.WeightKeyPrice:            0,
+			ultron.WeightKeyPriceMedian:      0,
+		},
+		InterruptionRate: ultron.WeightedInteruptionRate{Weight: 0},
 	}, nil
 }
 
@@ -155,15 +164,15 @@ func (m *Mapper) GetFloatAnnotationOrDefault(annotations map[string]string, key 
 	return defaultValue
 }
 
-func (m *Mapper) GetPriorityFromAnnotation(annotations map[string]string) ultron.PriorityEnum {
-	if value, exists := annotations[ultron.AnnotationPriority]; exists {
+func (m *Mapper) GetPriorityFromAnnotation(annotations map[string]string) ultron.WorkloadPriorityEnum {
+	if value, exists := annotations[ultron.AnnotationWorkloadPriority]; exists {
 		switch value {
 		case "PriorityHigh":
-			return ultron.PriorityHigh
+			return ultron.WorkloadPriorityHigh
 		case "PriorityLow":
-			return ultron.PriorityLow
+			return ultron.WorkloadPriorityLow
 		}
 	}
 
-	return ultron.DefaultPriority
+	return ultron.DefaultWorkloadPriority
 }

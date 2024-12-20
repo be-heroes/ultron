@@ -5,14 +5,37 @@ import (
 )
 
 type ComputeType string
-type PriorityEnum bool
+type WorkloadPriorityEnum bool
 
-func (p PriorityEnum) String() string {
+func (p WorkloadPriorityEnum) String() string {
 	if p {
 		return "PriorityHigh"
 	}
 
 	return "PriorityLow"
+}
+
+type ComputeConfiguration struct {
+	Identifier        *string      `json:"identifier,omitempty"`
+	Provider          *string      `json:"provider,omitempty"`
+	Location          *string      `json:"location,omitempty"`
+	DataCenter        *string      `json:"dataCenter,omitempty"`
+	OsType            *string      `json:"osType,omitempty"`
+	OsVersion         *string      `json:"osVersion,omitempty"`
+	CloudNetworkTypes []string     `json:"cloudNetworkTypes,omitempty"`
+	VCpuType          *string      `json:"vCpuType,omitempty"`
+	VCpu              *int64       `json:"vCpu,omitempty"`
+	RamGb             *int64       `json:"ramGb,omitempty"`
+	VolumeGb          *int64       `json:"volumeGb,omitempty"`
+	VolumeType        *string      `json:"volumeType,omitempty"`
+	Cost              *ComputeCost `json:"cost,omitempty"`
+	ComputeType       ComputeType  `json:"computeType,omitempty"`
+}
+
+type ComputeCost struct {
+	Unit         *string  `json:"unit,omitempty"`
+	Currency     *string  `json:"currency,omitempty"`
+	PricePerUnit *float64 `json:"pricePerUnit,omitempty"`
 }
 
 type Config struct {
@@ -28,69 +51,27 @@ type Config struct {
 }
 
 type WeightedNode struct {
+	Annotations      map[string]string
 	Selector         map[string]string
-	AvailableCPU     float64
-	TotalCPU         float64
-	AvailableMemory  float64
-	TotalMemory      float64
-	AvailableStorage float64
-	TotalStorage     float64
-	DiskType         string
-	NetworkType      string
-	Price            float64
-	MedianPrice      float64
-	InstanceType     string
+	Weights          map[string]float64
 	InterruptionRate WeightedInteruptionRate
 	LatencyRate      WeightedLatencyRate
 }
 
 type WeightedPod struct {
-	Selector             map[string]string
-	RequestedCPU         float64
-	RequestedMemory      float64
-	RequestedStorage     float64
-	RequestedDiskType    string
-	RequestedNetworkType string
-	LimitCPU             float64
-	LimitMemory          float64
-	Priority             PriorityEnum
+	Annotations map[string]string
+	Selector    map[string]string
+	Weights     map[string]float64
 }
 
 type WeightedInteruptionRate struct {
 	Selector map[string]string
-	Value    float64
+	Weight   float64
 }
 
 type WeightedLatencyRate struct {
 	Selector map[string]string
-	Value    float64
-}
-
-type ComputeCost struct {
-	Unit         *string  `json:"unit,omitempty"`
-	Currency     *string  `json:"currency,omitempty"`
-	PricePerUnit *float32 `json:"pricePerUnit,omitempty"`
-}
-
-type ComputeConfiguration struct {
-	Id                *int32       `json:"id,omitempty"`
-	ProviderId        *int32       `json:"providerId,omitempty"`
-	ProviderName      *string      `json:"providerName,omitempty"`
-	LocationId        *int32       `json:"locationId,omitempty"`
-	LocationName      *string      `json:"locationName,omitempty"`
-	DataCenterId      *string      `json:"dataCenterId,omitempty"`
-	DataCenterName    *string      `json:"dataCenterName,omitempty"`
-	OsId              *int32       `json:"osId,omitempty"`
-	OsType            *string      `json:"osType,omitempty"`
-	OsVersion         *string      `json:"osVersion,omitempty"`
-	CloudNetworkTypes []string     `json:"cloudNetworkTypes,omitempty"`
-	VCpuType          *string      `json:"vCpuType,omitempty"`
-	VCpu              *int32       `json:"vCpu,omitempty"`
-	RamGb             *int32       `json:"ramGb,omitempty"`
-	VolumeGb          *int32       `json:"volumeGb,omitempty"`
-	VolumeType        *string      `json:"volumeType,omitempty"`
-	Cost              *ComputeCost `json:"cost,omitempty"`
-	ComputeType       ComputeType  `json:"computeType,omitempty"`
+	Weight   float64
 }
 
 type MetricsNodeList struct {

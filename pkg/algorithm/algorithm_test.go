@@ -13,15 +13,19 @@ func TestResourceScore(t *testing.T) {
 	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
-		TotalCPU:        8,
-		AvailableCPU:    4,
-		TotalMemory:     16,
-		AvailableMemory: 8,
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuTotal:        8,
+			ultron.WeightKeyCpuAvailable:    4,
+			ultron.WeightKeyMemoryTotal:     16,
+			ultron.WeightKeyMemoryAvailable: 8,
+		},
 	}
 
 	pod := ultron.WeightedPod{
-		RequestedCPU:    2,
-		RequestedMemory: 4,
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuRequested:    2,
+			ultron.WeightKeyMemoryRequested: 4,
+		},
 	}
 
 	// Act
@@ -37,18 +41,22 @@ func TestStorageScore(t *testing.T) {
 	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
-		DiskType: "SSD",
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType: "SSD",
+		},
 	}
 
 	pod := ultron.WeightedPod{
-		RequestedDiskType: "SSD",
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType: "SSD",
+		},
 	}
 
 	// Act
 	score1 := alg.StorageScore(&node, &pod)
 	expected1 := 1.0
 
-	pod.RequestedDiskType = "HDD"
+	pod.Annotations[ultron.AnnotationDiskType] = "HDD"
 	score2 := alg.StorageScore(&node, &pod)
 	expected2 := 0.0
 
@@ -62,18 +70,22 @@ func TestNetworkScore(t *testing.T) {
 	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
-		NetworkType: "10G",
+		Annotations: map[string]string{
+			ultron.AnnotationNetworkType: "10G",
+		},
 	}
 
 	pod := ultron.WeightedPod{
-		RequestedNetworkType: "10G",
+		Annotations: map[string]string{
+			ultron.AnnotationNetworkType: "10G",
+		},
 	}
 
 	// Act
 	score1 := alg.NetworkScore(&node, &pod)
 	expected1 := 1.0
 
-	pod.RequestedNetworkType = "1G"
+	pod.Annotations[ultron.AnnotationNetworkType] = "1G"
 	score2 := alg.NetworkScore(&node, &pod)
 	expected2 := 0.0
 
@@ -87,15 +99,17 @@ func TestPriceScore(t *testing.T) {
 	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
-		Price:       10.0,
-		MedianPrice: 8.0,
+		Weights: map[string]float64{
+			ultron.WeightKeyPrice:       10.0,
+			ultron.WeightKeyPriceMedian: 8.0,
+		},
 	}
 
 	// Act
 	score1 := alg.PriceScore(&node)
-	expected1 := 1.0 - (node.MedianPrice / node.Price)
+	expected1 := 1.0 - (node.Weights[ultron.WeightKeyPriceMedian] / node.Weights[ultron.WeightKeyPrice])
 
-	node.Price = 0
+	node.Weights[ultron.WeightKeyPrice] = 0
 	score2 := alg.PriceScore(&node)
 	expected2 := 0.0
 
@@ -109,16 +123,18 @@ func TestNodeScore(t *testing.T) {
 	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
-		Price:            10.0,
-		MedianPrice:      8.0,
-		InterruptionRate: ultron.WeightedInteruptionRate{Value: 0.1},
+		Weights: map[string]float64{
+			ultron.WeightKeyPrice:       10.0,
+			ultron.WeightKeyPriceMedian: 8.0,
+		},
+		InterruptionRate: ultron.WeightedInteruptionRate{Weight: 0.1},
 	}
 
 	// Act
 	score1 := alg.NodeScore(&node)
-	expected1 := node.Price / (node.MedianPrice + node.InterruptionRate.Value)
+	expected1 := node.Weights[ultron.WeightKeyPrice] / (node.Weights[ultron.WeightKeyPriceMedian] + node.InterruptionRate.Weight)
 
-	node.Price = 0
+	node.Weights[ultron.WeightKeyPrice] = 0
 	score2 := alg.NodeScore(&node)
 	expected2 := 0.0
 
@@ -132,14 +148,16 @@ func TestPodScore(t *testing.T) {
 	alg := algorithm.NewAlgorithm()
 
 	pod := ultron.WeightedPod{
-		Priority: ultron.PriorityHigh,
+		Annotations: map[string]string{
+			ultron.AnnotationWorkloadPriority: ultron.WorkloadPriorityHigh.String(),
+		},
 	}
 
 	// Act
 	score1 := alg.PodScore(&pod)
 	expected1 := 1.0
 
-	pod.Priority = ultron.PriorityLow
+	pod.Annotations[ultron.AnnotationWorkloadPriority] = ultron.WorkloadPriorityLow.String()
 	score2 := alg.PodScore(&pod)
 	expected2 := 0.0
 
@@ -153,23 +171,31 @@ func TestTotalScore(t *testing.T) {
 	alg := algorithm.NewAlgorithm()
 
 	node := ultron.WeightedNode{
-		TotalCPU:         8,
-		AvailableCPU:     4,
-		TotalMemory:      16,
-		AvailableMemory:  8,
-		DiskType:         "SSD",
-		NetworkType:      "10G",
-		Price:            10.0,
-		MedianPrice:      8.0,
-		InterruptionRate: ultron.WeightedInteruptionRate{Value: 0.1},
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType:    "SSD",
+			ultron.AnnotationNetworkType: "10G",
+		},
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuTotal:        8,
+			ultron.WeightKeyCpuAvailable:    4,
+			ultron.WeightKeyMemoryTotal:     16,
+			ultron.WeightKeyMemoryAvailable: 8,
+			ultron.WeightKeyPrice:           10.0,
+			ultron.WeightKeyPriceMedian:     8.0,
+		},
+		InterruptionRate: ultron.WeightedInteruptionRate{Weight: 0.1},
 	}
 
 	pod := ultron.WeightedPod{
-		RequestedCPU:         2,
-		RequestedMemory:      4,
-		RequestedDiskType:    "SSD",
-		RequestedNetworkType: "10G",
-		Priority:             ultron.PriorityHigh,
+		Annotations: map[string]string{
+			ultron.AnnotationDiskType:         "SSD",
+			ultron.AnnotationNetworkType:      "10G",
+			ultron.AnnotationWorkloadPriority: ultron.WorkloadPriorityHigh.String(),
+		},
+		Weights: map[string]float64{
+			ultron.WeightKeyCpuRequested:    2,
+			ultron.WeightKeyMemoryRequested: 4,
+		},
 	}
 
 	// Act

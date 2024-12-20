@@ -1,11 +1,12 @@
 package pkg
 
 const (
-	AnnotationDiskType    = "ultron.io/disk-type"
-	AnnotationNetworkType = "ultron.io/network-type"
-	AnnotationStorageSize = "ultron.io/storage-size"
-	AnnotationPriority    = "ultron.io/priority"
-	AnnotationManaged     = "ultron.io/managed"
+	AnnotationDiskType         = "ultron.io/disk-type"
+	AnnotationInstanceType     = "ultron.io/instance-type"
+	AnnotationManaged          = "ultron.io/managed"
+	AnnotationNetworkType      = "ultron.io/network-type"
+	AnnotationStorageSizeGb    = "ultron.io/storage-size-gb"
+	AnnotationWorkloadPriority = "ultron.io/workload-priority"
 
 	BlockTypeCertificate   = "CERTIFICATE"
 	BlockTypeRsaPrivateKey = "RSA PRIVATE KEY"
@@ -22,9 +23,9 @@ const (
 	DefaultDiskType              = "SSD"
 	DefaultNetworkType           = "isolated"
 	DefaultStorageSizeGB         = 10.0
-	DefaultPriority              = PriorityLow
 	DefaultDurableInstanceType   = "ultron.durable"
 	DefaultEphemeralInstanceType = "ultron.ephemeral"
+	DefaultWorkloadPriority      = WorkloadPriorityLow
 
 	EnvServerAddress                 = "ULTRON_SERVER_ADDRESS"
 	EnvServerCertificateOrganization = "ULTRON_SERVER_CERTIFICATE_ORGANIZATION"
@@ -44,14 +45,28 @@ const (
 
 	MetadataName = "metadata.name"
 
-	MetricKeyCpuUsage    = "cpu_usage"
-	MetricKeyCpuTotal    = "cpu_total"
-	MetricKeyMemoryUsage = "memory_usage"
-	MetricKeyMemoryTotal = "memory_total"
-
-	PriorityLow  PriorityEnum = false
-	PriorityHigh PriorityEnum = true
-
 	TopicNodeObserve = "ULTRON_TOPIC_NODE_OBSERVE"
 	TopicPodObserve  = "ULTRON_TOPIC_POD_OBSERVE"
+
+	WeightKeyCpuAvailable     = "cpu_available"
+	WeightKeyCpuLimit         = "cpu_limit"
+	WeightKeyCpuRequested     = "cpu_requested"
+	WeightKeyCpuTotal         = "cpu_total"
+	WeightKeyCpuUsage         = "cpu_usage"
+	WeightKeyInterruptionRate = "interruption_rate"
+	WeightKeyLatencyRate      = "latency_rate"
+	WeightKeyMemoryAvailable  = "memory_available"
+	WeightKeyMemoryLimit      = "memory_limit"
+	WeightKeyMemoryRequested  = "memory_requested"
+	WeightKeyMemoryTotal      = "memory_total"
+	WeightKeyMemoryUsage      = "memory_usage"
+	WeightKeyStorageAvailable = "storage_available"
+	WeightKeyStorageRequested = "storage_requested"
+	WeightKeyStorageTotal     = "storage_total"
+	WeightKeyStorageUsage     = "storage_usage"
+	WeightKeyPrice            = "price"
+	WeightKeyPriceMedian      = "price_median"
+
+	WorkloadPriorityLow  WorkloadPriorityEnum = false
+	WorkloadPriorityHigh WorkloadPriorityEnum = true
 )

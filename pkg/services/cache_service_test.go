@@ -27,8 +27,8 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 	iCache := services.NewCacheService(nil, nil)
 
 	computeConfigs := []ultron.ComputeConfiguration{
-		{Id: nil, ComputeType: ultron.ComputeTypeEphemeral, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
-		{Id: nil, ComputeType: ultron.ComputeTypeEphemeral, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+		{Identifier: nil, ComputeType: ultron.ComputeTypeEphemeral, Provider: nil, Location: nil, DataCenter: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+		{Identifier: nil, ComputeType: ultron.ComputeTypeEphemeral, Provider: nil, Location: nil, DataCenter: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
 	}
 
 	// Act
@@ -42,7 +42,7 @@ func TestGetEphemeralComputeConfigurations(t *testing.T) {
 
 	for i, config := range getComputeConfigs {
 		assert.Equal(t, ultron.ComputeTypeEphemeral, config.ComputeType, "Expected ComputeTypeEphemeral")
-		assert.Equal(t, computeConfigs[i].Id, config.Id, "Expected matching Id")
+		assert.Equal(t, computeConfigs[i].Identifier, config.Identifier, "Expected matching Id")
 	}
 }
 
@@ -62,8 +62,8 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 	iCache := services.NewCacheService(nil, nil)
 
 	computeConfigs := []ultron.ComputeConfiguration{
-		{Id: nil, ComputeType: ultron.ComputeTypeDurable, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
-		{Id: nil, ComputeType: ultron.ComputeTypeDurable, ProviderId: nil, ProviderName: nil, LocationId: nil, LocationName: nil, DataCenterId: nil, DataCenterName: nil, OsId: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+		{Identifier: nil, ComputeType: ultron.ComputeTypeDurable, Provider: nil, Location: nil, DataCenter: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
+		{Identifier: nil, ComputeType: ultron.ComputeTypeDurable, Provider: nil, Location: nil, DataCenter: nil, OsType: nil, OsVersion: nil, CloudNetworkTypes: nil, VCpuType: nil, VCpu: nil, RamGb: nil, VolumeGb: nil, VolumeType: nil, Cost: nil},
 	}
 
 	// Act
@@ -77,7 +77,7 @@ func TestGetDurableComputeConfigurations(t *testing.T) {
 
 	for i, config := range getComputeConfigs {
 		assert.Equal(t, ultron.ComputeTypeDurable, config.ComputeType, "Expected ComputeTypeDurable")
-		assert.Equal(t, computeConfigs[i].Id, config.Id, "Expected matching Id")
+		assert.Equal(t, computeConfigs[i].Identifier, config.Identifier, "Expected matching Id")
 	}
 }
 
