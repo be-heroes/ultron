@@ -23,8 +23,7 @@ This automatic labeling system is crucial for Kubernetes clusters that rely on a
 
 The application requires the following environment variables to be set:
 
-- `EMMA_CLIENT_ID`: Your Emma API client ID
-- `EMMA_CLIENT_SECRET`: Your Emma API client secret
+TODO
 
 ## Installation
 
