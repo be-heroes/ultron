@@ -53,7 +53,7 @@ func main() {
 	sugar.Info("Generated self-signed certificate")
 
 	if config.CertificateExportPath != "" {
-		sugar.Info("Exporting CA certificate")
+		sugar.Info("Exporting CA certificate to path: %s", config.CertificateExportPath)
 
 		err = certificateService.ExportCACert(cert.Certificate[0], config.CertificateExportPath)
 		if err != nil {
