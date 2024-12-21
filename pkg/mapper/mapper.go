@@ -107,19 +107,14 @@ func (m *Mapper) MapNodeToWeightedNode(node *corev1.Node) (ultron.WeightedNode, 
 	instanceType := node.Labels[ultron.LabelInstanceType]
 	managed := node.Annotations[ultron.AnnotationManaged]
 
-	if hostname == "" && instanceType == "" {
+	if hostname == "" || instanceType == "" {
 		return ultron.WeightedNode{}, fmt.Errorf("missing required label: %s or %s", ultron.LabelHostName, ultron.LabelInstanceType)
 	}
 
 	selector := map[string]string{}
 
-	if instanceType != "" {
-		selector[ultron.LabelInstanceType] = instanceType
-	}
-
-	if hostname != "" {
-		selector[ultron.LabelHostName] = hostname
-	}
+	selector[ultron.LabelInstanceType] = instanceType
+	selector[ultron.LabelHostName] = hostname
 
 	if managed != "" {
 		selector[ultron.AnnotationManaged] = managed
