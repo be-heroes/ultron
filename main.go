@@ -68,7 +68,7 @@ func main() {
 	mux.HandleFunc("/validate", validationHandler.ValidatePodSpec)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) })
 
-	sugar.Info("Starting Ultron")
+	sugar.Info("Starting Ultron on %s", config.ServerAddress)
 
 	server := &http.Server{
 		Addr: config.ServerAddress,
