@@ -39,8 +39,8 @@ type KubernetesService struct {
 	MetricsClient IMetricsClient
 }
 
-func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath string) (*KubernetesService, error) {
-	if kubernetesMasterUrl == "tcp://:" {
+func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath string, insecure bool) (*KubernetesService, error) {
+	if kubernetesMasterUrl == "https://:" {
 		kubernetesMasterUrl = ""
 	}
 
@@ -48,6 +48,8 @@ func NewKubernetesService(kubernetesMasterUrl string, kubernetesConfigPath strin
 	if err != nil {
 		return nil, err
 	}
+
+	config.Insecure = insecure
 
 	k8sClientset, err := kubernetes.NewForConfig(config)
 	if err != nil {
